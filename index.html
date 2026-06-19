@@ -138,6 +138,13 @@
   .about { text-align: center; font-size: 12px; color: var(--text-muted); padding: 4px 0 20px; line-height: 1.8; }
   .about strong { color: var(--teal); }
 
+  /* PRO */
+  .chip.pro-only { opacity: 0.5; }
+  .chip.pro-only.unlocked { opacity: 1; }
+  .pro-badge { font-size: 10px; background: var(--teal); color: var(--navy); padding: 2px 7px; border-radius: 8px; font-weight: 700; margin-left: 6px; vertical-align: middle; }
+  .pro-input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 10px; font-size: 13px; font-family: inherit; outline: none; margin-top: 8px; }
+  .pro-input:focus { border-color: var(--border2); }
+
   /* MESSAGE LIMIT */
   .limit-bar { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 6px 16px; display: flex !important; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .limit-text { font-size: 12px; color: var(--text-muted); }
@@ -190,11 +197,11 @@
   </div>
 
   <!-- MODEL BAR -->
-  <div class="model-bar">
-    <div class="chip active" onclick="setModel(this,'llama-3.3-70b-versatile','Llama 3.3')">⚡ Llama 3.3</div>
-    <div class="chip" onclick="setModel(this,'mistral-saba-24b','Mistral')">Mistral</div>
-    <div class="chip" onclick="setModel(this,'gemma2-9b-it','Gemma 2')">Gemma 2</div>
-    <div class="chip" onclick="setModel(this,'llama-3.1-8b-instant','Llama Fast')">🚀 Llama Fast</div>
+  <div class="model-bar" id="model-bar">
+    <div class="chip pro-only" onclick="selectModel(this,'llama-3.3-70b-versatile','Llama 3.3')">⚡ Llama 3.3 🔒</div>
+    <div class="chip pro-only" onclick="selectModel(this,'mistral-saba-24b','Mistral')">Mistral 🔒</div>
+    <div class="chip active" onclick="selectModel(this,'gemma2-9b-it','Gemma 2')">Gemma 2</div>
+    <div class="chip pro-only" onclick="selectModel(this,'llama-3.1-8b-instant','Llama Fast')">🚀 Llama Fast 🔒</div>
   </div>
 
   <!-- LANG BAR -->
@@ -231,11 +238,16 @@
     <div class="upgrade-period">per month · cancel anytime</div>
     <div class="upgrade-features">
       <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Unlimited messages daily</div>
-      <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Priority access to Llama 3.3</div>
-      <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Faster responses</div>
-      <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Support TeqXus AI 🌍</div>
+      <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>All models — Llama 3.3, Mistral, Llama Fast</div>
+      <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Longer, more detailed responses</div>
+      <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>No ads · Support TeqXus AI 🌍</div>
     </div>
     <button class="upgrade-btn" onclick="goToPay()">Upgrade for $3/month</button>
+    <div style="margin-top:16px;width:100%;">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">Already paid? Enter your Pro code:</div>
+      <input class="pro-input" id="pro-code-input" type="text" placeholder="Enter code e.g. TXPRO-XXXX" />
+      <button class="upgrade-btn" style="margin-top:8px;background:var(--surface);color:var(--teal);border:1px solid var(--border2);" onclick="activatePro()">Activate Pro</button>
+    </div>
     <div class="upgrade-dismiss" onclick="hideUpgrade()">Maybe tomorrow</div>
   </div>
 
@@ -347,9 +359,7 @@
     AR: 'Respond in Arabic (العربية). Keep answers clear and helpful. Use Modern Standard Arabic.'
   };
 
-  const GROQ_KEY = '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';
-  const OPENROUTER_KEY = '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';
-  function getKey() { return GROQ_KEY; }
+  const BACKEND = 'https://teqxus-backend.onrender.com';
   function checkSetup() {}
 
   function updateStatus() {
@@ -374,7 +384,58 @@
     document.getElementById('queue-count-display').textContent = n + ' pending';
   }
 
-  function setModel(el, id, name) {
+  // PRO STATUS
+  // Pro codes verified server-side — not stored in frontend
+  function isPro() { return localStorage.getItem('teqxus_pro') === 'true'; }
+
+  async function activatePro() {
+    const code = document.getElementById('pro-code-input').value.trim().toUpperCase();
+    try {
+      const res = await fetch(BACKEND + '/verify-pro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      if (data.valid) {
+        localStorage.setItem('teqxus_pro', 'true');
+        applyProStatus();
+        hideUpgrade();
+        alert('🎉 Welcome to TeqXus Pro!');
+      } else {
+        alert('Invalid code. Please check your code and try again.');
+      }
+    } catch(err) {
+      alert('Could not verify code. Please check your connection and try again.');
+    }
+  }
+
+  function applyProStatus() {
+    const pro = isPro();
+    // Unlock model chips
+    document.querySelectorAll('.chip.pro-only').forEach(c => {
+      c.classList.toggle('unlocked', pro);
+      c.innerHTML = c.innerHTML.replace(' 🔒', '');
+    });
+    // Update limit bar
+    const limitBar = document.getElementById('limit-bar');
+    if (pro) {
+      limitBar.innerHTML = '<span class="limit-text">TeqXus <span class="pro-badge">PRO</span></span><span style="font-size:12px;color:var(--teal);">Unlimited ✓</span>';
+    }
+    // Set default model
+    if (pro) {
+      model = 'llama-3.3-70b-versatile';
+      modelName = 'Llama 3.3';
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      document.querySelector('.chip.pro-only').classList.add('active');
+    }
+  }
+
+  function selectModel(el, id, name) {
+    if (el.classList.contains('pro-only') && !isPro()) {
+      showUpgrade();
+      return;
+    }
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
     model = id; modelName = name;
@@ -443,68 +504,27 @@
     return div;
   }
 
-  const SYSTEM_PROMPT = (l) => `You are TeqXus AI. You are a fast, no-nonsense AI assistant built for people in low-data, high-hustle environments. You answer questions directly and practically — no long intros, no filler. Think of yourself as the smartest person in the room who also has great network coverage. If asked who you are, say: I am TeqXus AI — built light, built fast, built for everywhere. ${langPrompts[l]}`;
-
-  async function callGroq(userMsg) {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
-      body: JSON.stringify({
-        model: model,
-        max_tokens: 1024,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT(lang) },
-          ...conversationHistory.slice(0, -1),
-          { role: 'user', content: userMsg }
-        ]
-      })
-    });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API error'); }
-    const data = await res.json();
-    return data.choices[0].message.content;
-  }
-
-  async function callOpenRouter(userMsg) {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + OPENROUTER_KEY,
-        'HTTP-Referer': 'https://teqxus.app',
-        'X-Title': 'TeqXus AI'
-      },
-      body: JSON.stringify({
-        model: 'meta-llama/llama-3.3-70b-instruct:free',
-        max_tokens: 1024,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT(lang) },
-          ...conversationHistory.slice(0, -1),
-          { role: 'user', content: userMsg }
-        ]
-      })
-    });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'OpenRouter error'); }
-    const data = await res.json();
-    return data.choices[0].message.content;
-  }
-
   // Conversation history for memory
   let conversationHistory = [];
 
   async function callAI(userMsg) {
     conversationHistory.push({ role: 'user', content: userMsg });
-    // Keep last 10 exchanges to stay within token limits
     if (conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
-    try {
-      const reply = await callGroq(userMsg);
-      conversationHistory.push({ role: 'assistant', content: reply });
-      return reply;
-    } catch(err) {
-      console.warn('Groq failed, switching to OpenRouter:', err.message);
-      const reply = await callOpenRouter(userMsg);
-      conversationHistory.push({ role: 'assistant', content: reply });
-      return reply;
-    }
+
+    const res = await fetch(BACKEND + '/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: conversationHistory,
+        model: model,
+        lang: lang,
+        isPro: isPro()
+      })
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Server error'); }
+    const data = await res.json();
+    conversationHistory.push({ role: 'assistant', content: data.reply });
+    return data.reply;
   }
 
   function resetConversation() {
@@ -516,7 +536,7 @@
     const text = input.value.trim();
     if (!text) return;
 
-    if (!hasMessagesLeft()) {
+    if (!isPro() && !hasMessagesLeft()) {
       showUpgrade();
       return;
     }
@@ -540,7 +560,7 @@
       typing.remove();
       addBubble(reply, 'ai', modelName + ' · ' + langName);
       saveToHistory(text, reply);
-      incrementMsgs();
+      if (!isPro()) incrementMsgs();
     } catch(err) {
       typing.remove();
       addBubble('⚠️ ' + err.message, 'ai', 'Error');
@@ -681,12 +701,13 @@
   }
 
   function goToPay() {
-    alert('Payment coming soon! Follow teqxus.app for updates.');
+    alert('Payment link coming soon! Follow teqxus.app for updates.');
   }
 
   checkSetup();
   updateStatus();
   updateLimitBar();
+  applyProStatus();
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');
