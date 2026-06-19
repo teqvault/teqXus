@@ -198,9 +198,8 @@
 
   <!-- MODEL BAR -->
   <div class="model-bar" id="model-bar">
-    <div class="chip active" onclick="selectModel(this,'deepseek-chat','DeepSeek V3')">🆓 DeepSeek V3</div>
+    <div class="chip active" onclick="selectModel(this,'deepseek-chat','Llama 3.3')">⚡ Llama 3.3</div>
     <div class="chip" onclick="selectModel(this,'gemma2-9b-it','Gemma 2')">Gemma 2</div>
-    <div class="chip pro-only" onclick="selectModel(this,'llama-3.3-70b-versatile','Llama 3.3')">⚡ Llama 3.3 🔒</div>
     <div class="chip pro-only" onclick="selectModel(this,'mistral-saba-24b','Mistral')">Mistral 🔒</div>
     <div class="chip pro-only" onclick="selectModel(this,'meta-llama/llama-4-maverick','Llama 4')">🦙 Llama 4 🔒</div>
     <div class="chip pro-only" onclick="selectModel(this,'qwen/qwen3-235b-a22b','Qwen3')">Qwen3 🔒</div>
@@ -298,7 +297,7 @@
         <div class="settings-label">Current Session</div>
         <div class="settings-row">
           <span>AI Model</span>
-          <span class="settings-val" id="model-display">DeepSeek V3</span>
+          <span class="settings-val" id="model-display">Llama 3.3</span>
         </div>
         <div class="settings-row">
           <span>Language</span>
@@ -345,7 +344,7 @@
 
 <script>
   let model = 'deepseek-chat';
-  let modelName = 'DeepSeek V3';
+  let modelName = 'Llama 3.3';
   let lang = 'EN';
   let langName = 'English';
   let queue = [];
