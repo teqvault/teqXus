@@ -28,7 +28,7 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--navy); color: var(--text); }
-  #app { display: flex; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; background: var(--navy); position: relative; }
+  #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 480px; margin: 0 auto; background: var(--navy); position: relative; }
 
   /* TOP BAR */
   .topbar { background: var(--navy2); padding: 10px 14px 9px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0; }
@@ -180,9 +180,12 @@
       </div>
       <div class="logo-text">Teq<span>Xus</span> AI</div>
     </div>
-    <div class="status">
-      <div class="dot" id="dot"></div>
-      <span id="status-text">Online</span>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="newChat()" style="font-size:11px;padding:4px 10px;border:1px solid var(--border2);border-radius:10px;background:var(--teal-glow);color:var(--teal);cursor:pointer;">+ New chat</button>
+      <div class="status">
+        <div class="dot" id="dot"></div>
+        <span id="status-text">Online</span>
+      </div>
     </div>
   </div>
 
@@ -451,6 +454,7 @@
         max_tokens: 1024,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT(lang) },
+          ...conversationHistory.slice(0, -1),
           { role: 'user', content: userMsg }
         ]
       })
@@ -474,6 +478,7 @@
         max_tokens: 1024,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT(lang) },
+          ...conversationHistory.slice(0, -1),
           { role: 'user', content: userMsg }
         ]
       })
@@ -483,13 +488,27 @@
     return data.choices[0].message.content;
   }
 
+  // Conversation history for memory
+  let conversationHistory = [];
+
   async function callAI(userMsg) {
+    conversationHistory.push({ role: 'user', content: userMsg });
+    // Keep last 10 exchanges to stay within token limits
+    if (conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
     try {
-      return await callGroq(userMsg);
+      const reply = await callGroq(userMsg);
+      conversationHistory.push({ role: 'assistant', content: reply });
+      return reply;
     } catch(err) {
       console.warn('Groq failed, switching to OpenRouter:', err.message);
-      return await callOpenRouter(userMsg);
+      const reply = await callOpenRouter(userMsg);
+      conversationHistory.push({ role: 'assistant', content: reply });
+      return reply;
     }
+  }
+
+  function resetConversation() {
+    conversationHistory = [];
   }
 
   async function send() {
@@ -589,6 +608,29 @@
     history = [];
     localStorage.removeItem('teqxus_history');
     renderHistory();
+  }
+
+  function newChat() {
+    resetConversation();
+    const area = document.getElementById('chat-area');
+    area.innerHTML = `<div class="welcome-card">
+        <div class="welcome-logo">Teq<span>Xus</span> AI</div>
+        <div class="welcome-tagline">Built light. Built fast. Built for everywhere.</div>
+        <div class="welcome-desc">Your AI assistant that works even when your connection doesn't. Ask anything — in your language.</div>
+        <div class="welcome-features">
+          <div class="welcome-feature"><div class="feature-dot"></div>Works on slow 2G & 3G connections</div>
+          <div class="welcome-feature"><div class="feature-dot"></div>Saves your chat history on device</div>
+          <div class="welcome-feature"><div class="feature-dot"></div>Queues messages when offline</div>
+          <div class="welcome-feature"><div class="feature-dot"></div>7 African languages supported</div>
+        </div>
+        <div class="welcome-prompts">
+          <div class="prompt-chip" onclick="quickPrompt('How do I start a small business?')">💼 Start a business</div>
+          <div class="prompt-chip" onclick="quickPrompt('Explain solar energy simply')">☀️ Solar energy</div>
+          <div class="prompt-chip" onclick="quickPrompt('What are symptoms of malaria?')">🏥 Health tips</div>
+          <div class="prompt-chip" onclick="quickPrompt('How do I save money effectively?')">💰 Save money</div>
+        </div>
+      </div>`;
+    showTab('chat');
   }
 
   function showTab(name) {
