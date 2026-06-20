@@ -1,5 +1,5 @@
-const CACHE = 'teqxus-v3';
-const ASSETS = ['/', '/index.html', '/manifest.json'];
+const CACHE = 'teqxus-v4';
+const ASSETS = ['/', '/index.html', '/manifest.json', '/admin.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -16,8 +16,15 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Always fetch fresh from network, fall back to cache
-  if (e.request.url.includes('onrender.com') || e.request.url.includes('groq.com') || e.request.url.includes('openrouter.ai')) return;
+  // Never cache POST requests or API calls
+  if (e.request.method !== 'GET') return;
+  if (e.request.url.includes('onrender.com')) return;
+  if (e.request.url.includes('supabase.co')) return;
+  if (e.request.url.includes('groq.com')) return;
+  if (e.request.url.includes('openrouter.ai')) return;
+  if (e.request.url.includes('anthropic.com')) return;
+  if (e.request.url.includes('chrome-extension')) return;
+
   e.respondWith(
     fetch(e.request)
       .then(res => {
