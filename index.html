@@ -574,11 +574,12 @@
 
     if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Server error'); }
 
-    // Update remaining count from header
-    const remaining = res.headers.get('X-Messages-Remaining');
-    if (remaining !== null && !isPro()) updateLimitBar(parseInt(remaining));
-
     const data = await res.json();
+
+    // Update remaining count from response body
+    if (data.remaining !== null && data.remaining !== undefined && !isPro()) {
+      updateLimitBar(data.remaining);
+    }
     conversationHistory.push({ role: 'assistant', content: data.reply });
     return data.reply;
   }
