@@ -254,7 +254,7 @@
     <div class="upgrade-period">per month · cancel anytime</div>
     <div class="upgrade-features">
       <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Unlimited messages daily</div>
-      <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>All models — Gemini Pro, Llama 3.3, Mistral, Llama 4</div>
+      <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Claude Sonnet 4 — Anthropic's most powerful model</div>
       <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Longer, more detailed responses</div>
       <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>No ads · Support TeqXus AI 🌍</div>
     </div>
@@ -325,7 +325,7 @@
         <div class="settings-label">Current Session</div>
         <div class="settings-row">
           <span>AI Model</span>
-          <span class="settings-val" id="model-display">Llama 3.3</span>
+          <span class="settings-val" id="model-display">Claude Haiku</span>
         </div>
         <div class="settings-row">
           <span>Language</span>
@@ -371,8 +371,8 @@
 </div>
 
 <script>
-  let model = 'deepseek-chat';
-  let modelName = 'Llama 3.3';
+  let model = 'claude-haiku';
+  let modelName = 'Claude Haiku';
   let lang = 'EN';
   let langName = 'English';
   let queue = [];
@@ -450,12 +450,12 @@
     // Update limit bar
     const limitBar = document.getElementById('limit-bar');
     if (pro) {
-      limitBar.innerHTML = '<span class="limit-text">TeqXus <span class="pro-badge">PRO</span></span><span style="font-size:12px;color:var(--teal);">Unlimited ✓</span>';
+      limitBar.innerHTML = '<span class="limit-text">TeqXus <span class="pro-badge">PRO</span></span><span style="font-size:12px;color:var(--teal);">Claude Sonnet 4 ✓</span>';
     }
     // Set default model
     if (pro) {
-      model = 'llama-3.3-70b-versatile';
-      modelName = 'Llama 3.3';
+      model = 'claude-sonnet';
+      modelName = 'Claude Sonnet 4';
       document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.chip.pro-only')[0].classList.add('active');
     }
