@@ -237,11 +237,14 @@
 
   <!-- LIMIT BAR -->
   <div class="limit-bar" id="limit-bar">
-    <span class="limit-text">Daily messages</span>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span class="limit-count" id="limit-count">30 left</span>
-      <span class="upgrade-link" onclick="showUpgrade()">Go Pro</span>
+    <span class="limit-text" id="limit-label">Messages</span>
+    <div style="display:flex;align-items:center;gap:10px;flex:1;margin:0 10px;">
+      <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:10px;height:6px;overflow:hidden;">
+        <div id="limit-progress" style="height:100%;border-radius:10px;background:var(--teal);transition:width 0.3s;width:100%;"></div>
+      </div>
+      <span class="limit-count" id="limit-count">30</span>
     </div>
+    <span class="upgrade-link" onclick="showUpgrade()" id="upgrade-link">Go Pro</span>
   </div>
 
   <!-- UPGRADE SCREEN -->
@@ -462,7 +465,7 @@
     // Update limit bar
     const limitBar = document.getElementById('limit-bar');
     if (pro) {
-      limitBar.innerHTML = '<span class="limit-text">TeqXus <span class="pro-badge">PRO</span></span><span style="font-size:12px;color:var(--teal);">Claude Sonnet 4 ✓</span>';
+      updateLimitBar(500, 500);
     }
     // Set default model
     if (pro) {
@@ -577,8 +580,8 @@
     const data = await res.json();
 
     // Update remaining count from response body
-    if (data.remaining !== null && data.remaining !== undefined && !isPro()) {
-      updateLimitBar(data.remaining);
+    if (data.remaining !== null && data.remaining !== undefined) {
+      updateLimitBar(data.remaining, isPro() ? 500 : 30);
     }
     conversationHistory.push({ role: 'assistant', content: data.reply });
     return data.reply;
@@ -731,12 +734,27 @@
 
   // MESSAGE LIMIT — tracked server-side
   let msgsRemaining = 30;
+  let msgLimit = 30;
 
-  function updateLimitBar(remaining) {
+  function updateLimitBar(remaining, limit) {
     if (remaining !== undefined) msgsRemaining = remaining;
+    if (limit !== undefined) msgLimit = limit;
     const el = document.getElementById('limit-count');
+    const bar = document.getElementById('limit-progress');
+    const label = document.getElementById('limit-label');
+    const upgradeLink = document.getElementById('upgrade-link');
     if (!el) return;
-    el.textContent = msgsRemaining + ' left';
+
+    const pct = Math.max(0, Math.min(100, (msgsRemaining / msgLimit) * 100));
+    el.textContent = msgsRemaining;
+
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.style.background = pct > 30 ? 'var(--teal)' : pct > 10 ? 'var(--amber)' : 'var(--danger)';
+    }
+    if (label) label.textContent = isPro() ? 'Pro messages' : 'Free messages';
+    if (upgradeLink) upgradeLink.style.display = isPro() ? 'none' : 'block';
+
     el.className = 'limit-count' + (msgsRemaining <= 5 ? ' warning' : '') + (msgsRemaining === 0 ? ' empty' : '');
   }
 
@@ -813,7 +831,7 @@
 
   checkSetup();
   updateStatus();
-  updateLimitBar();
+  updateLimitBar(isPro() ? 500 : 30, isPro() ? 500 : 30);
   applyProStatus();
 
   if ('serviceWorker' in navigator) {
