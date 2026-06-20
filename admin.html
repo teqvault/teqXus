@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeqXus AI — Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0A1628; color: #EEF2F7; min-height: 100vh; padding: 24px 16px; }
+  .logo { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .logo span { color: #3ECFA0; }
+  .subtitle { font-size: 13px; color: #7A9BBF; margin-bottom: 32px; }
+  .card { background: #162540; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: 13px; color: #3ECFA0; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-bottom: 16px; }
+  input, select { width: 100%; background: #0A1628; border: 1px solid rgba(255,255,255,0.1); color: #EEF2F7; padding: 10px 14px; border-radius: 10px; font-size: 14px; margin-bottom: 12px; outline: none; font-family: inherit; }
+  input:focus { border-color: rgba(62,207,160,0.4); }
+  button { width: 100%; padding: 12px; background: #3ECFA0; color: #0A1628; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+  button:active { opacity: 0.85; }
+  button.danger { background: #E24B4A; color: #fff; }
+  button.secondary { background: #162540; color: #3ECFA0; border: 1px solid rgba(62,207,160,0.3); }
+  .codes-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .code-item { background: #0A1628; border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; }
+  .code-text { font-family: monospace; font-size: 14px; color: #3ECFA0; letter-spacing: 1px; }
+  .code-status { font-size: 11px; padding: 3px 8px; border-radius: 8px; }
+  .code-status.unused { background: rgba(62,207,160,0.15); color: #3ECFA0; }
+  .code-status.used { background: rgba(226,75,74,0.15); color: #E24B4A; }
+  .code-used-by { font-size: 10px; color: #7A9BBF; margin-top: 3px; }
+  .copy-btn { font-size: 11px; padding: 4px 10px; background: rgba(62,207,160,0.1); border: 1px solid rgba(62,207,160,0.2); color: #3ECFA0; border-radius: 8px; cursor: pointer; width: auto; margin: 0; }
+  .msg { padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 12px; display: none; }
+  .msg.success { background: rgba(62,207,160,0.1); border: 1px solid rgba(62,207,160,0.3); color: #3ECFA0; }
+  .msg.error { background: rgba(226,75,74,0.1); border: 1px solid rgba(226,75,74,0.3); color: #E24B4A; }
+  .login-screen { max-width: 360px; margin: 80px auto 0; }
+  .main-screen { max-width: 480px; margin: 0 auto; display: none; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat { background: #162540; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 14px; text-align: center; }
+  .stat-num { font-size: 28px; font-weight: 800; color: #3ECFA0; }
+  .stat-label { font-size: 11px; color: #7A9BBF; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="logo">Teq<span>Xus</span> AI</div>
+  <div class="subtitle">Admin Panel</div>
+  <div class="card">
+    <div class="card-title">Sign In</div>
+    <div class="msg" id="login-msg"></div>
+    <input type="password" id="admin-key-input" placeholder="Enter admin key..." />
+    <button onclick="login()">Sign In</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-screen" id="main-screen">
+  <div class="logo">Teq<span>Xus</span> AI</div>
+  <div class="subtitle">Admin Panel · <span style="color:#3ECFA0;cursor:pointer;" onclick="logout()">Sign out</span></div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total codes</div></div>
+    <div class="stat"><div class="stat-num" id="stat-used">—</div><div class="stat-label">Active Pro users</div></div>
+  </div>
+
+  <!-- GENERATE -->
+  <div class="card">
+    <div class="card-title">Generate Pro Codes</div>
+    <div class="msg" id="gen-msg"></div>
+    <select id="code-count">
+      <option value="1">Generate 1 code</option>
+      <option value="5">Generate 5 codes</option>
+      <option value="10">Generate 10 codes</option>
+      <option value="20">Generate 20 codes</option>
+    </select>
+    <button onclick="generateCodes()">⚡ Generate Codes</button>
+    <div class="codes-list" id="new-codes"></div>
+  </div>
+
+  <!-- ALL CODES -->
+  <div class="card">
+    <div class="card-title">All Codes</div>
+    <button class="secondary" onclick="loadCodes()" style="margin-bottom:12px;">↻ Refresh</button>
+    <div class="codes-list" id="all-codes"><div style="color:#7A9BBF;font-size:13px;">Click refresh to load codes</div></div>
+  </div>
+</div>
+
+<script>
+  const BACKEND = 'https://teqxus-backend.onrender.com';
+  let adminKey = '';
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'msg ' + type;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 4000);
+  }
+
+  async function login() {
+    const key = document.getElementById('admin-key-input').value.trim();
+    if (!key) { showMsg('login-msg', 'Please enter your admin key', 'error'); return; }
+
+    // Test the key by generating 0 codes
+    try {
+      const res = await fetch(BACKEND + '/admin/generate-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count: 0, adminKey: key })
+      });
+      const data = await res.json();
+      if (res.status === 401) { showMsg('login-msg', 'Invalid admin key', 'error'); return; }
+      adminKey = key;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-screen').style.display = 'block';
+      loadCodes();
+    } catch(err) {
+      showMsg('login-msg', 'Connection failed. Is the backend running?', 'error');
+    }
+  }
+
+  function logout() {
+    adminKey = '';
+    document.getElementById('login-screen').style.display = 'block';
+    document.getElementById('main-screen').style.display = 'none';
+    document.getElementById('admin-key-input').value = '';
+  }
+
+  async function generateCodes() {
+    const count = parseInt(document.getElementById('code-count').value);
+    try {
+      const res = await fetch(BACKEND + '/admin/generate-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count, adminKey })
+      });
+      const data = await res.json();
+      if (res.status === 401) { showMsg('gen-msg', 'Unauthorized', 'error'); return; }
+
+      const list = document.getElementById('new-codes');
+      list.innerHTML = '<div style="font-size:12px;color:#7A9BBF;margin-bottom:8px;">New codes — copy and send to customers:</div>';
+      data.codes.forEach(code => {
+        const div = document.createElement('div');
+        div.className = 'code-item';
+        div.innerHTML = `<div><div class="code-text">${code}</div></div><button class="copy-btn" onclick="copyCode('${code}', this)">Copy</button>`;
+        list.appendChild(div);
+      });
+      showMsg('gen-msg', `${count} code${count > 1 ? 's' : ''} generated!`, 'success');
+      loadCodes();
+    } catch(err) {
+      showMsg('gen-msg', 'Failed to generate codes', 'error');
+    }
+  }
+
+  async function loadCodes() {
+    try {
+      const res = await fetch(BACKEND + '/admin/list-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminKey })
+      });
+      const data = await res.json();
+      if (!data.codes) return;
+
+      const total = data.codes.length;
+      const used = data.codes.filter(c => c.is_used).length;
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-used').textContent = used;
+
+      const list = document.getElementById('all-codes');
+      if (total === 0) { list.innerHTML = '<div style="color:#7A9BBF;font-size:13px;">No codes yet</div>'; return; }
+
+      list.innerHTML = '';
+      data.codes.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'code-item';
+        div.innerHTML = `
+          <div>
+            <div class="code-text">${c.code}</div>
+            ${c.is_used ? `<div class="code-used-by">Used by: ${c.used_by || 'unknown'}</div>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="code-status ${c.is_used ? 'used' : 'unused'}">${c.is_used ? 'Active' : 'Unused'}</span>
+            ${!c.is_used ? `<button class="copy-btn" onclick="copyCode('${c.code}', this)">Copy</button>` : ''}
+          </div>`;
+        list.appendChild(div);
+      });
+    } catch(err) {
+      console.error('Failed to load codes:', err);
+    }
+  }
+
+  function copyCode(code, btn) {
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = '✓ Copied';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
