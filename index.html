@@ -28,7 +28,11 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--navy); color: var(--text); }
-  #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 480px; margin: 0 auto; background: var(--navy); position: relative; }
+  #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 480px; margin: 0 auto; background: var(--navy); position: relative; overflow: hidden; }
+  #space-bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  #space-bg::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 20%, rgba(62,207,160,0.10) 0%, transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(24,95,165,0.08) 0%, transparent 50%); }
+  #star-canvas { display: none; }
+  .topbar, .model-bar, .lang-bar, .limit-bar, .queue-banner, .view, .tab-bar, .upgrade-screen { position: relative; z-index: 1; }
 
   /* TOP BAR */
   .topbar { background: var(--navy2); padding: 10px 14px 9px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0; }
@@ -68,17 +72,26 @@
   .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
   /* WELCOME CARD */
-  .welcome-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 14px; margin-bottom: 4px; }
-  .welcome-logo { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+  .welcome-card { margin-bottom: 4px; }
+  .welcome-header { padding: 14px 4px 10px; }
+  .welcome-logo { font-size: 20px; font-weight: 800; margin-bottom: 2px; }
   .welcome-logo span { color: var(--teal); }
-  .welcome-tagline { font-size: 12px; color: var(--teal); font-weight: 500; margin-bottom: 8px; letter-spacing: 0.2px; }
+  .welcome-tagline { font-size: 12px; color: var(--teal); font-weight: 500; margin-bottom: 6px; }
   .welcome-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
-  .welcome-features { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .welcome-features { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 12px; }
   .welcome-feature { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
   .feature-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
-  .welcome-prompts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .prompt-chip { padding: 5px 10px; border-radius: 20px; font-size: 11px; border: 1px solid var(--border2); color: var(--teal); cursor: pointer; background: var(--teal-glow); transition: all 0.15s; }
-  .prompt-chip:active { transform: scale(0.95); }
+
+  /* PROMPT GRID CARDS */
+  .prompt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .prompt-card { border-radius: 14px; padding: 14px 12px; cursor: pointer; position: relative; overflow: hidden; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.15s; border: 1px solid rgba(255,255,255,0.06); }
+  .prompt-card:active { transform: scale(0.96); }
+  .prompt-card-1 { background: linear-gradient(135deg, #1a3a5c, #0d2238); }
+  .prompt-card-2 { background: linear-gradient(135deg, #1a4a2e, #0d2a1a); }
+  .prompt-card-3 { background: linear-gradient(135deg, #3a1a1a, #221010); }
+  .prompt-card-4 { background: linear-gradient(135deg, #2a2a1a, #1a1a0d); }
+  .prompt-card-title { font-size: 13px; font-weight: 600; color: #fff; line-height: 1.3; }
+  .prompt-card-icon { font-size: 28px; align-self: flex-end; opacity: 0.9; }
 
   /* BUBBLES */
   .bubble { max-width: 82%; padding: 11px 15px; border-radius: 18px; font-size: 14px; line-height: 1.6; word-break: break-word; animation: popIn 0.2s ease; }
@@ -259,20 +272,34 @@
     <div class="chat-area" id="chat-area">
       <!-- WELCOME CARD -->
       <div class="welcome-card">
-        <div class="welcome-logo">Teq<span>Xus</span> AI</div>
-        <div class="welcome-tagline">Built light. Built fast. Built for everywhere.</div>
-        <div class="welcome-desc">Your AI assistant that works even when your connection doesn't. Ask anything — in your language.</div>
-        <div class="welcome-features">
-          <div class="welcome-feature"><div class="feature-dot"></div>Works on slow 2G & 3G connections</div>
-          <div class="welcome-feature"><div class="feature-dot"></div>Saves your chat history on device</div>
-          <div class="welcome-feature"><div class="feature-dot"></div>Queues messages when offline</div>
-          <div class="welcome-feature"><div class="feature-dot"></div>7 African languages supported</div>
+        <div class="welcome-header">
+          <div class="welcome-logo">Teq<span>Xus</span> AI</div>
+          <div class="welcome-tagline">Built light. Built fast. Built for everywhere.</div>
+          <div class="welcome-desc">Your AI assistant that works even when your connection doesn't. Ask anything — in your language.</div>
+          <div class="welcome-features">
+            <div class="welcome-feature"><div class="feature-dot"></div>Works on 2G & 3G</div>
+            <div class="welcome-feature"><div class="feature-dot"></div>Saves chats on device</div>
+            <div class="welcome-feature"><div class="feature-dot"></div>Works offline</div>
+            <div class="welcome-feature"><div class="feature-dot"></div>7 African languages</div>
+          </div>
         </div>
-        <div class="welcome-prompts">
-          <div class="prompt-chip" onclick="quickPrompt('How do I start a small business?')">💼 Start a business</div>
-          <div class="prompt-chip" onclick="quickPrompt('Explain solar energy simply')">☀️ Solar energy</div>
-          <div class="prompt-chip" onclick="quickPrompt('What are symptoms of malaria?')">🏥 Health tips</div>
-          <div class="prompt-chip" onclick="quickPrompt('How do I save money effectively?')">💰 Save money</div>
+        <div class="prompt-grid">
+          <div class="prompt-card prompt-card-1" onclick="quickPrompt('How do I start a small business?')">
+            <div class="prompt-card-title">Start a business</div>
+            <div class="prompt-card-icon">💼</div>
+          </div>
+          <div class="prompt-card prompt-card-2" onclick="quickPrompt('Explain solar energy simply')">
+            <div class="prompt-card-title">Solar energy</div>
+            <div class="prompt-card-icon">☀️</div>
+          </div>
+          <div class="prompt-card prompt-card-3" onclick="quickPrompt('What are symptoms of malaria?')">
+            <div class="prompt-card-title">Health tips</div>
+            <div class="prompt-card-icon">🏥</div>
+          </div>
+          <div class="prompt-card prompt-card-4" onclick="quickPrompt('How do I save money effectively?')">
+            <div class="prompt-card-title">Save money</div>
+            <div class="prompt-card-icon">💰</div>
+          </div>
         </div>
       </div>
     </div>
@@ -637,20 +664,34 @@
     resetConversation();
     const area = document.getElementById('chat-area');
     area.innerHTML = `<div class="welcome-card">
-        <div class="welcome-logo">Teq<span>Xus</span> AI</div>
-        <div class="welcome-tagline">Built light. Built fast. Built for everywhere.</div>
-        <div class="welcome-desc">Your AI assistant that works even when your connection doesn't. Ask anything — in your language.</div>
-        <div class="welcome-features">
-          <div class="welcome-feature"><div class="feature-dot"></div>Works on slow 2G & 3G connections</div>
-          <div class="welcome-feature"><div class="feature-dot"></div>Saves your chat history on device</div>
-          <div class="welcome-feature"><div class="feature-dot"></div>Queues messages when offline</div>
-          <div class="welcome-feature"><div class="feature-dot"></div>7 African languages supported</div>
+        <div class="welcome-header">
+          <div class="welcome-logo">Teq<span>Xus</span> AI</div>
+          <div class="welcome-tagline">Built light. Built fast. Built for everywhere.</div>
+          <div class="welcome-desc">Your AI assistant that works even when your connection doesn't. Ask anything — in your language.</div>
+          <div class="welcome-features">
+            <div class="welcome-feature"><div class="feature-dot"></div>Works on 2G & 3G</div>
+            <div class="welcome-feature"><div class="feature-dot"></div>Saves chats on device</div>
+            <div class="welcome-feature"><div class="feature-dot"></div>Works offline</div>
+            <div class="welcome-feature"><div class="feature-dot"></div>7 African languages</div>
+          </div>
         </div>
-        <div class="welcome-prompts">
-          <div class="prompt-chip" onclick="quickPrompt('How do I start a small business?')">💼 Start a business</div>
-          <div class="prompt-chip" onclick="quickPrompt('Explain solar energy simply')">☀️ Solar energy</div>
-          <div class="prompt-chip" onclick="quickPrompt('What are symptoms of malaria?')">🏥 Health tips</div>
-          <div class="prompt-chip" onclick="quickPrompt('How do I save money effectively?')">💰 Save money</div>
+        <div class="prompt-grid">
+          <div class="prompt-card prompt-card-1" onclick="quickPrompt('How do I start a small business?')">
+            <div class="prompt-card-title">Start a business</div>
+            <div class="prompt-card-icon">💼</div>
+          </div>
+          <div class="prompt-card prompt-card-2" onclick="quickPrompt('Explain solar energy simply')">
+            <div class="prompt-card-title">Solar energy</div>
+            <div class="prompt-card-icon">☀️</div>
+          </div>
+          <div class="prompt-card prompt-card-3" onclick="quickPrompt('What are symptoms of malaria?')">
+            <div class="prompt-card-title">Health tips</div>
+            <div class="prompt-card-icon">🏥</div>
+          </div>
+          <div class="prompt-card prompt-card-4" onclick="quickPrompt('How do I save money effectively?')">
+            <div class="prompt-card-title">Save money</div>
+            <div class="prompt-card-icon">💰</div>
+          </div>
         </div>
       </div>`;
     showTab('chat');
@@ -706,6 +747,65 @@
   function goToPay() {
     alert('Payment link coming soon! Follow teqxus.app for updates.');
   }
+
+  // Draw stars
+  (function() {
+    const canvas = document.getElementById('star-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      const W = window.innerWidth > 480 ? 480 : window.innerWidth;
+      const H = window.innerHeight;
+      canvas.width = W;
+      canvas.height = H;
+      ctx.clearRect(0, 0, W, H);
+
+      // Regular stars
+      for (let i = 0; i < 180; i++) {
+        const x = Math.random() * W;
+        const y = Math.random() * H;
+        const r = Math.random() * 1.8;
+        const opacity = 0.3 + Math.random() * 0.7;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${opacity})`;
+        ctx.fill();
+      }
+
+      // Teal glowing stars
+      for (let i = 0; i < 12; i++) {
+        const x = Math.random() * W;
+        const y = Math.random() * H;
+        ctx.beginPath();
+        ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(62,207,160,0.9)';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(62,207,160,0.15)';
+        ctx.fill();
+      }
+
+      // Sparkle crosses
+      for (let i = 0; i < 12; i++) {
+        const x = Math.random() * W;
+        const y = Math.random() * H;
+        const s = 4 + Math.random() * 6;
+        const op = 0.5 + Math.random() * 0.5;
+        ctx.strokeStyle = `rgba(255,255,255,${op})`;
+        ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.moveTo(x-s, y); ctx.lineTo(x+s, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, y-s); ctx.lineTo(x, y+s); ctx.stroke();
+        // Diagonal arms
+        const sd = s * 0.5;
+        ctx.lineWidth = 0.4;
+        ctx.beginPath(); ctx.moveTo(x-sd, y-sd); ctx.lineTo(x+sd, y+sd); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x+sd, y-sd); ctx.lineTo(x-sd, y+sd); ctx.stroke();
+      }
+    }
+    draw();
+    window.addEventListener('resize', draw);
+  })();
 
   checkSetup();
   updateStatus();
