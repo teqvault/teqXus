@@ -30,7 +30,7 @@
   html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--navy); color: var(--text); }
   #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 480px; margin: 0 auto; background: var(--navy); position: relative; overflow: hidden; }
   #space-bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-  #space-bg::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 20%, rgba(62,207,160,0.10) 0%, transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(24,95,165,0.08) 0%, transparent 50%); }
+  #space-bg::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 15% 25%, rgba(62,207,160,0.22) 0%, transparent 45%), radial-gradient(ellipse at 88% 75%, rgba(88,28,220,0.18) 0%, transparent 40%), radial-gradient(ellipse at 50% 5%, rgba(24,95,165,0.15) 0%, transparent 38%), radial-gradient(ellipse at 75% 40%, rgba(62,207,160,0.08) 0%, transparent 30%); }
   #star-canvas { display: none; }
   .topbar, .model-bar, .lang-bar, .limit-bar, .queue-banner, .view, .tab-bar, .upgrade-screen { position: relative; z-index: 1; }
 
@@ -83,15 +83,17 @@
   .feature-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
 
   /* PROMPT GRID CARDS */
-  .prompt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .prompt-card { border-radius: 14px; padding: 14px 12px; cursor: pointer; position: relative; overflow: hidden; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.15s; border: 1px solid rgba(255,255,255,0.06); }
+  .prompt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .prompt-card { border-radius: 16px; padding: 14px 14px 10px; cursor: pointer; position: relative; overflow: hidden; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid rgba(255,255,255,0.1); }
   .prompt-card:active { transform: scale(0.96); }
-  .prompt-card-1 { background: linear-gradient(135deg, #1a3a5c, #0d2238); }
-  .prompt-card-2 { background: linear-gradient(135deg, #1a4a2e, #0d2a1a); }
-  .prompt-card-3 { background: linear-gradient(135deg, #3a1a1a, #221010); }
-  .prompt-card-4 { background: linear-gradient(135deg, #2a2a1a, #1a1a0d); }
-  .prompt-card-title { font-size: 13px; font-weight: 600; color: #fff; line-height: 1.3; }
-  .prompt-card-icon { font-size: 28px; align-self: flex-end; opacity: 0.9; }
+  .prompt-card::before { content: ''; position: absolute; inset: 0; background: inherit; filter: brightness(1.1); opacity: 0; transition: opacity 0.2s; }
+  .prompt-card:hover::before { opacity: 1; }
+  .prompt-card-1 { background: linear-gradient(145deg, #c8860a, #7a4f00); box-shadow: 0 4px 20px rgba(200,134,10,0.3); }
+  .prompt-card-2 { background: linear-gradient(145deg, #c87a0a, #8B4500); box-shadow: 0 4px 20px rgba(200,120,10,0.3); }
+  .prompt-card-3 { background: linear-gradient(145deg, #0a6b6b, #004040); box-shadow: 0 4px 20px rgba(10,107,107,0.3); }
+  .prompt-card-4 { background: linear-gradient(145deg, #4a4a6a, #2a2a4a); box-shadow: 0 4px 20px rgba(74,74,106,0.3); }
+  .prompt-card-title { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.3; text-shadow: 0 1px 3px rgba(0,0,0,0.5); z-index: 1; }
+  .prompt-card-icon { font-size: 52px; align-self: flex-end; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); z-index: 1; line-height: 1; }
 
   /* BUBBLES */
   .bubble { max-width: 82%; padding: 11px 15px; border-radius: 18px; font-size: 14px; line-height: 1.6; word-break: break-word; animation: popIn 0.2s ease; }
@@ -285,24 +287,7 @@
             <div class="welcome-feature"><div class="feature-dot"></div>7 African languages</div>
           </div>
         </div>
-        <div class="prompt-grid">
-          <div class="prompt-card prompt-card-1" onclick="quickPrompt('How do I start a small business?')">
-            <div class="prompt-card-title">Start a business</div>
-            <div class="prompt-card-icon">💼</div>
-          </div>
-          <div class="prompt-card prompt-card-2" onclick="quickPrompt('Explain solar energy simply')">
-            <div class="prompt-card-title">Solar energy</div>
-            <div class="prompt-card-icon">☀️</div>
-          </div>
-          <div class="prompt-card prompt-card-3" onclick="quickPrompt('What are symptoms of malaria?')">
-            <div class="prompt-card-title">Health tips</div>
-            <div class="prompt-card-icon">🏥</div>
-          </div>
-          <div class="prompt-card prompt-card-4" onclick="quickPrompt('How do I save money effectively?')">
-            <div class="prompt-card-title">Save money</div>
-            <div class="prompt-card-icon">💰</div>
-          </div>
-        </div>
+        <div id="prompt-grid-container"></div>
       </div>
     </div>
     <div class="input-bar">
@@ -702,24 +687,7 @@
             <div class="welcome-feature"><div class="feature-dot"></div>7 African languages</div>
           </div>
         </div>
-        <div class="prompt-grid">
-          <div class="prompt-card prompt-card-1" onclick="quickPrompt('How do I start a small business?')">
-            <div class="prompt-card-title">Start a business</div>
-            <div class="prompt-card-icon">💼</div>
-          </div>
-          <div class="prompt-card prompt-card-2" onclick="quickPrompt('Explain solar energy simply')">
-            <div class="prompt-card-title">Solar energy</div>
-            <div class="prompt-card-icon">☀️</div>
-          </div>
-          <div class="prompt-card prompt-card-3" onclick="quickPrompt('What are symptoms of malaria?')">
-            <div class="prompt-card-title">Health tips</div>
-            <div class="prompt-card-icon">🏥</div>
-          </div>
-          <div class="prompt-card prompt-card-4" onclick="quickPrompt('How do I save money effectively?')">
-            <div class="prompt-card-title">Save money</div>
-            <div class="prompt-card-icon">💰</div>
-          </div>
-        </div>
+        <div id="prompt-grid-container"></div>
       </div>`;
     showTab('chat');
   }
@@ -783,7 +751,7 @@
       ctx.clearRect(0, 0, W, H);
 
       // Regular stars
-      for (let i = 0; i < 180; i++) {
+      for (let i = 0; i < 220; i++) {
         const x = Math.random() * W;
         const y = Math.random() * H;
         const r = Math.random() * 1.8;
@@ -829,10 +797,54 @@
     window.addEventListener('resize', draw);
   })();
 
+  // RANDOM PROMPTS
+  const ALL_PROMPTS = [
+    { title: 'Start a business', prompt: 'How do I start a small business?', icon: '🏢', color: '1' },
+    { title: 'Solar energy', prompt: 'Explain solar energy simply', icon: '☀️', color: '2' },
+    { title: 'Health tips', prompt: 'What are symptoms of malaria?', icon: '🏥', color: '3' },
+    { title: 'Save money', prompt: 'How do I save money effectively?', icon: '💰', color: '4' },
+    { title: 'Learn coding', prompt: 'How do I start learning to code?', icon: '💻', color: '1' },
+    { title: 'Grow crops', prompt: 'What are the best crops to grow in dry season?', icon: '🌾', color: '2' },
+    { title: 'Stay healthy', prompt: 'How do I stay healthy on a budget?', icon: '💪', color: '3' },
+    { title: 'Job interview', prompt: 'How do I prepare for a job interview?', icon: '🎯', color: '4' },
+    { title: 'Send money', prompt: 'What is the cheapest way to send money abroad?', icon: '💸', color: '1' },
+    { title: 'Build a CV', prompt: 'Help me write a professional CV', icon: '📄', color: '2' },
+    { title: 'Clean water', prompt: 'How do I purify water at home?', icon: '💧', color: '3' },
+    { title: 'Start farming', prompt: 'How do I start a small farm with little money?', icon: '🚜', color: '4' },
+    { title: 'Mobile money', prompt: 'How does mobile money work and how do I use it?', icon: '📱', color: '1' },
+    { title: 'Chicken farming', prompt: 'How do I start a profitable chicken farm?', icon: '🐔', color: '2' },
+    { title: 'First aid', prompt: 'What are basic first aid tips I should know?', icon: '🩺', color: '3' },
+    { title: 'Study tips', prompt: 'What are the best ways to study and remember things?', icon: '📚', color: '4' },
+    { title: 'Solar power', prompt: 'How can I use solar power at home affordably?', icon: '⚡', color: '1' },
+    { title: 'Negotiation', prompt: 'How do I negotiate a better salary or price?', icon: '🤝', color: '2' },
+    { title: 'Lose weight', prompt: 'How do I lose weight without a gym?', icon: '🥗', color: '3' },
+    { title: 'Invest money', prompt: 'How do I start investing with little money?', icon: '📈', color: '4' },
+  ];
+
+  function getRandomPrompts() {
+    const shuffled = [...ALL_PROMPTS].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 4);
+  }
+
+  function renderPromptGrid(container) {
+    const picks = getRandomPrompts();
+    return `<div class="prompt-grid">
+      ${picks.map(p => `
+        <div class="prompt-card prompt-card-${p.color}" onclick="quickPrompt('${p.prompt}')">
+          <div class="prompt-card-title">${p.title}</div>
+          <div class="prompt-card-icon">${p.icon}</div>
+        </div>`).join('')}
+    </div>`;
+  }
+
   checkSetup();
   updateStatus();
   updateLimitBar(isPro() ? 500 : 30, isPro() ? 500 : 30);
   applyProStatus();
+
+  // Render random prompts after all functions defined
+  const pgc = document.getElementById('prompt-grid-container');
+  if (pgc) pgc.innerHTML = renderPromptGrid();
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');
