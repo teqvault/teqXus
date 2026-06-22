@@ -200,8 +200,9 @@ body { background: var(--parchment); color: var(--ink); font-family: var(--font-
 .md-body img { max-width: 100%; border-radius: var(--radius); margin: 1.5rem 0; height: auto; box-shadow: var(--shadow); }
 .md-body input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; margin-right: 6px; cursor: default; vertical-align: middle; position: relative; top: -1px; }
 
-/* Highlights */
-.td-highlight { background: rgba(196,154,60,0.35); border-radius: 2px; padding: 0 1px; cursor: pointer; }
+/* MD body fade in */
+@keyframes mdFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.md-body.fade-in { animation: mdFadeIn 0.35s ease-out; }
 .td-highlight.active { background: rgba(196,154,60,0.6); }
 
 /* Focus mode */
@@ -210,9 +211,9 @@ body.focus-mode .doc-info-bar { opacity: 0; pointer-events: none; transition: op
 body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 
 /* ── PDF VIEWER ── */
-#pdf-viewer { display: none; }
-#pdf-viewer.visible { display: block; }
-.pdf-toolbar { display: flex; align-items: center; gap: 8px; padding: 10px 2rem; border-bottom: 1px solid var(--parchment3); background: var(--parchment2); position: sticky; top: 0; z-index: 30; flex-wrap: wrap; }
+#pdf-viewer { display: none; flex-direction: column; }
+#pdf-viewer.visible { display: flex; height: 100%; }
+.pdf-toolbar { display: flex; align-items: center; gap: 8px; padding: 10px 2rem; border-bottom: 1px solid var(--parchment3); background: var(--parchment2); position: sticky; top: 0; z-index: 30; flex-wrap: wrap; flex-shrink: 0; }
 .pdf-tb-btn { background: none; border: 1px solid var(--parchment3); border-radius: 7px; padding: 5px 11px; font-size: 0.78rem; color: var(--ink2); cursor: pointer; font-family: var(--font-ui); font-weight: 600; transition: all 0.15s; white-space: nowrap; }
 .pdf-tb-btn:hover { border-color: var(--accent); color: var(--accent); }
 .pdf-tb-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -220,14 +221,59 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 .pdf-page-input { width: 48px; background: var(--parchment); border: 1px solid var(--parchment3); border-radius: 6px; color: var(--ink); font-size: 0.82rem; padding: 4px 6px; text-align: center; font-family: var(--font-ui); outline: none; }
 .pdf-page-input:focus { border-color: var(--accent); }
 .pdf-spacer { flex: 1; }
-.pdf-canvas-wrap { padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-.pdf-page-container { position: relative; box-shadow: 0 4px 24px rgba(0,0,0,0.15); border-radius: 4px; overflow: hidden; background: white; }
+
+/* Continuous scroll container */
+.pdf-scroll-wrap {
+  flex: 1; overflow-y: auto; overflow-x: auto;
+  background: var(--parchment3);
+  padding: 2rem 1rem;
+  display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Page turn animation */
+.pdf-page-container {
+  position: relative;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  border-radius: 2px;
+  background: white;
+  transform-origin: center center;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s;
+  cursor: default;
+}
+.pdf-page-container.page-flip-left {
+  animation: flipLeft 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.pdf-page-container.page-flip-right {
+  animation: flipRight 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes flipLeft {
+  0% { transform: perspective(1200px) rotateY(0deg); opacity: 1; }
+  50% { transform: perspective(1200px) rotateY(-12deg); opacity: 0.7; }
+  100% { transform: perspective(1200px) rotateY(0deg); opacity: 1; }
+}
+@keyframes flipRight {
+  0% { transform: perspective(1200px) rotateY(0deg); opacity: 1; }
+  50% { transform: perspective(1200px) rotateY(12deg); opacity: 0.7; }
+  100% { transform: perspective(1200px) rotateY(0deg); opacity: 1; }
+}
 .pdf-canvas { display: block; }
 .pdf-text-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; pointer-events: none; }
 .pdf-text-layer span { position: absolute; white-space: pre; cursor: text; }
 .pdf-anno-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
 .pdf-highlight-rect { position: absolute; background: rgba(196,154,60,0.35); border-radius: 2px; pointer-events: none; }
-.pdf-page-label { font-size: 0.72rem; color: var(--ink3); font-family: var(--font-ui); }
+.pdf-page-label {
+  font-size: 0.7rem; color: var(--ink3); font-family: var(--font-ui);
+  text-align: center; padding: 4px 0;
+}
+.pdf-page-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+
+/* Zoom indicator */
+.pdf-zoom-display {
+  font-size: 0.78rem; color: var(--ink3); font-family: var(--font-ui);
+  min-width: 44px; text-align: center; font-weight: 600;
+}
 
 /* Annotation panel */
 #anno-panel { width: 240px; flex-shrink: 0; background: var(--parchment2); border-left: 1px solid var(--parchment3); display: none; flex-direction: column; }
@@ -572,8 +618,9 @@ mark.current { background: var(--gold); color: #000; }
           <button class="pdf-tb-btn" onclick="pdfNextPage()">Next →</button>
           <!-- Zoom -->
           <button class="pdf-tb-btn" onclick="pdfZoomOut()">−</button>
-          <span style="font-size:0.78rem;color:var(--ink3);font-family:var(--font-ui);min-width:38px;text-align:center" id="pdf-zoom-label">150%</span>
+          <span class="pdf-zoom-display" id="pdf-zoom-label">150%</span>
           <button class="pdf-tb-btn" onclick="pdfZoomIn()">+</button>
+          <button class="pdf-tb-btn" onclick="pdfZoomFit()" title="Fit to width">⊡ Fit</button>
           <div class="pdf-spacer"></div>
           <!-- Edit tools -->
           <button class="pdf-tb-btn" id="pdf-highlight-btn" onclick="setPdfTool('highlight')">🖊 Highlight</button>
@@ -587,7 +634,7 @@ mark.current { background: var(--gold); color: #000; }
           <button class="pdf-tb-btn" onclick="savePdfEdits()" style="background:var(--accent);color:#fff;border-color:var(--accent)">💾 Save PDF</button>
         </div>
 
-        <!-- Add text input overlay (hidden by default) -->
+        <!-- Add text input overlay -->
         <div id="pdf-text-input-wrap" style="display:none;position:fixed;z-index:300;background:var(--parchment2);border:1px solid var(--accent);border-radius:8px;padding:8px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
           <input id="pdf-text-input" type="text" placeholder="Type text…" style="background:var(--parchment);border:1px solid var(--parchment3);border-radius:6px;padding:6px 10px;font-size:0.9rem;color:var(--ink);font-family:var(--font-ui);outline:none;width:200px;">
           <button onclick="confirmAddText()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:0.8rem;font-weight:700;cursor:pointer;margin-left:4px;">Add</button>
@@ -627,8 +674,8 @@ mark.current { background: var(--gold); color: #000; }
           </div>
         </div>
 
-        <div style="display:flex;flex:1;overflow:hidden">
-          <div class="pdf-canvas-wrap" id="pdf-canvas-wrap"></div>
+        <div style="display:flex;flex:1;overflow:hidden;min-height:0;">
+          <div class="pdf-scroll-wrap" id="pdf-canvas-wrap"></div>
           <div id="anno-panel">
             <div class="anno-header">
               <span>Notes & Highlights</span>
@@ -839,7 +886,7 @@ function openEditorById(id) {
 
 /* ── Recent ── */
 function addRecent(name,content,type='md'){
-  try{let r=JSON.parse(localStorage.getItem('teqdocs-recent')||'[]');r=r.filter(x=>x.name!==name);r.unshift({name,content,date:Date.now(),type});r=r.slice(0,10);localStorage.setItem('teqdocs-recent',JSON.stringify(r));}catch(e){}
+  try{let r=JSON.parse(localStorage.getItem('teqdocs-recent')||'[]');r=r.filter(x=>x.name!==name);r.unshift({name,content,date:Date.now(),type});r=r.slice(0,5);localStorage.setItem('teqdocs-recent',JSON.stringify(r));}catch(e){}
 }
 function renderRecent(){
   const list=document.getElementById('recent-list');
@@ -977,6 +1024,9 @@ function renderDoc(){
   hideAll();
   const body=document.getElementById('md-body');
   body.innerHTML=parseMd(currentMd);
+  body.classList.remove('fade-in');
+  void body.offsetWidth;
+  body.classList.add('fade-in');
   body.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach((h,i)=>h.id='heading-'+i);
   highlightCode('md-body');
   document.getElementById('doc-filename').textContent=currentFilename;
@@ -1055,110 +1105,174 @@ async function loadPDF(file) {
   pdfCurrentPage=1;
   addRecent(file.name,'','pdf');
   renderRecent();
-  await renderPdfPage(pdfCurrentPage);
+  await renderAllPages();
+  setupPdfZoom();
   toast('PDF loaded ✓');
 }
 
-/* ── PDF Render ── */
-async function renderPdfPage(pageNum){
-  if(!pdfDoc)return;
+/* ── Render ALL pages (continuous scroll) ── */
+async function renderAllPages() {
   const wrap=document.getElementById('pdf-canvas-wrap');
+  const scrollPos=wrap.scrollTop;
   wrap.innerHTML='';
+  for(let i=1;i<=pdfTotalPages;i++) await renderSinglePage(i,wrap);
+  wrap.scrollTop=scrollPos;
+  updatePageIndicator();
+  wrap.onscroll=onPdfScroll;
+}
+
+async function renderSinglePage(pageNum,wrap) {
   const page=await pdfDoc.getPage(pageNum);
   const viewport=page.getViewport({scale:pdfScale});
-
+  const wrapper=document.createElement('div');
+  wrapper.className='pdf-page-wrapper';
+  wrapper.dataset.page=pageNum;
   const container=document.createElement('div');
   container.className='pdf-page-container';
   container.style.width=viewport.width+'px';
   container.style.height=viewport.height+'px';
   container.style.position='relative';
-
   const canvas=document.createElement('canvas');
   canvas.className='pdf-canvas';
   canvas.width=viewport.width;canvas.height=viewport.height;
   container.appendChild(canvas);
   await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
-
-  // Annotation overlay
+  if(pdfDarkMode) canvas.style.filter='invert(1) hue-rotate(180deg)';
   const annoLayer=document.createElement('div');
   annoLayer.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;';
   container.appendChild(annoLayer);
-
-  // Re-render saved highlights
   const saved=JSON.parse(localStorage.getItem('teqdocs-pdf-highlights')||'[]');
   saved.filter(h=>h.file===pdfCurrentFilename&&h.page===pageNum).forEach(h=>{
     const rect=document.createElement('div');
-    rect.className='pdf-highlight-rect';
     rect.style.cssText=`position:absolute;left:${h.x}px;top:${h.y}px;width:${h.w}px;height:${h.h}px;background:rgba(196,154,60,0.4);border-radius:2px;pointer-events:none;`;
     annoLayer.appendChild(rect);
   });
-
-  // Re-render text annotations for this page
-  pdfTextAnnotations.filter(a=>a.page===pageNum).forEach(a=>{
-    const el=createTextAnnotEl(a,annoLayer);
-    annoLayer.appendChild(el);
-  });
-
-  // Canvas click — handle tools
+  pdfTextAnnotations.filter(a=>a.page===pageNum).forEach(a=>annoLayer.appendChild(createTextAnnotEl(a,annoLayer)));
   canvas.addEventListener('click',e=>{
-    if(pdfCurrentTool==='addtext'){
-      const rect=canvas.getBoundingClientRect();
-      const x=e.clientX-rect.left, y=e.clientY-rect.top;
-      // Convert to PDF coords (unscaled)
-      const pdfX=x/pdfScale, pdfY=y/pdfScale;
-      pendingTextPos={x,y,pageNum,pdfX,pdfY,viewport};
-      showTextInput(e.clientX, e.clientY);
-    }
+    if(pdfCurrentTool!=='addtext')return;
+    const r=canvas.getBoundingClientRect();
+    const x=e.clientX-r.left,y=e.clientY-r.top;
+    pendingTextPos={x,y,pageNum,pdfX:x/pdfScale,pdfY:y/pdfScale,viewport};
+    showTextInput(e.clientX,e.clientY);
   });
-
-  // Canvas mouseup — highlight tool
   canvas.addEventListener('mouseup',e=>{
     if(pdfCurrentTool!=='highlight')return;
     const sel=window.getSelection();
     if(!sel||sel.isCollapsed)return;
-    const text=sel.toString().trim();
-    if(!text)return;
-    const rect=canvas.getBoundingClientRect();
-    const x=e.clientX-rect.left, y=e.clientY-rect.top;
+    const text=sel.toString().trim();if(!text)return;
+    const r=canvas.getBoundingClientRect();
+    const x=e.clientX-r.left,y=e.clientY-r.top;
     const hl={file:pdfCurrentFilename,page:pageNum,text,x:Math.max(0,x-80),y:Math.max(0,y-12),w:160,h:18,date:Date.now()};
     let hls=JSON.parse(localStorage.getItem('teqdocs-pdf-highlights')||'[]');
     hls.unshift(hl);localStorage.setItem('teqdocs-pdf-highlights',JSON.stringify(hls));
     const hrect=document.createElement('div');
     hrect.style.cssText=`position:absolute;left:${hl.x}px;top:${hl.y}px;width:${hl.w}px;height:${hl.h}px;background:rgba(196,154,60,0.4);border-radius:2px;pointer-events:none;`;
     annoLayer.appendChild(hrect);
-    savePdfAnnotation(text,pageNum);
-    sel.removeAllRanges();
-    toast('Highlighted ✓');
+    savePdfAnnotation(text,pageNum);sel.removeAllRanges();toast('Highlighted ✓');
   });
-
   const label=document.createElement('div');
   label.className='pdf-page-label';
   label.textContent=`Page ${pageNum} of ${pdfTotalPages}`;
-  wrap.appendChild(container);
-  wrap.appendChild(label);
+  wrapper.appendChild(container);wrapper.appendChild(label);
+  wrap.appendChild(wrapper);
+}
 
-  document.getElementById('pdf-page-input').value=pageNum;
+/* ── Scroll tracking ── */
+function onPdfScroll() {
+  const wrap=document.getElementById('pdf-canvas-wrap');
+  const mid=wrap.scrollTop+wrap.clientHeight/2;
+  let current=1;
+  wrap.querySelectorAll('.pdf-page-wrapper').forEach(w=>{
+    if(w.offsetTop<=mid) current=parseInt(w.dataset.page);
+  });
+  if(current!==pdfCurrentPage){pdfCurrentPage=current;updatePageIndicator();}
+}
+function updatePageIndicator(){
+  document.getElementById('pdf-page-input').value=pdfCurrentPage;
   document.getElementById('pdf-zoom-label').textContent=Math.round(pdfScale*100)+'%';
 }
 
-/* ── Text Annotation ── */
-function createTextAnnotEl(a, layer){
-  const el=document.createElement('div');
-  el.style.cssText=`position:absolute;left:${a.x}px;top:${a.y-16}px;background:rgba(255,255,180,0.9);border:1px solid #c8a000;border-radius:4px;padding:2px 6px;font-size:${Math.max(10,12*pdfScale)}px;font-family:sans-serif;color:#333;cursor:move;white-space:nowrap;max-width:300px;box-shadow:0 2px 6px rgba(0,0,0,0.15);z-index:10;`;
-  el.textContent=a.text;
-  el.title='Double-click to delete';
-  el.addEventListener('dblclick',()=>{
-    pdfTextAnnotations=pdfTextAnnotations.filter(x=>x!==a);
-    el.remove();
-    toast('Annotation removed');
-  });
-  return el;
+/* ── Navigation with flip animation ── */
+async function pdfNextPage(){
+  if(pdfCurrentPage>=pdfTotalPages)return;
+  pdfCurrentPage++;scrollToPage(pdfCurrentPage,'left');
+}
+async function pdfPrevPage(){
+  if(pdfCurrentPage<=1)return;
+  pdfCurrentPage--;scrollToPage(pdfCurrentPage,'right');
+}
+async function pdfGoToPage(n){
+  const p=Math.min(pdfTotalPages,Math.max(1,parseInt(n)||1));
+  const dir=p>pdfCurrentPage?'left':'right';
+  pdfCurrentPage=p;scrollToPage(p,dir);
+}
+function scrollToPage(pageNum,flipDir){
+  const wrap=document.getElementById('pdf-canvas-wrap');
+  const target=wrap.querySelector(`.pdf-page-wrapper[data-page="${pageNum}"]`);
+  if(!target)return;
+  const container=target.querySelector('.pdf-page-container');
+  if(container){
+    container.classList.remove('page-flip-left','page-flip-right');
+    void container.offsetWidth;
+    container.classList.add(flipDir==='left'?'page-flip-left':'page-flip-right');
+    setTimeout(()=>container.classList.remove('page-flip-left','page-flip-right'),400);
+  }
+  target.scrollIntoView({behavior:'smooth',block:'start'});
+  updatePageIndicator();
 }
 
-function showTextInput(clientX, clientY){
+/* ── Zoom ── */
+async function pdfZoomIn(){pdfScale=Math.min(3,pdfScale+0.25);await renderAllPages();}
+async function pdfZoomOut(){pdfScale=Math.max(0.5,pdfScale-0.25);await renderAllPages();}
+async function pdfZoomFit(){
+  const wrap=document.getElementById('pdf-canvas-wrap');
+  if(!pdfDoc)return;
+  const page=await pdfDoc.getPage(1);
+  const vp=page.getViewport({scale:1});
+  pdfScale=Math.max(0.5,(wrap.clientWidth-64)/vp.width);
+  await renderAllPages();
+}
+
+/* ── Pinch/scroll zoom setup ── */
+function setupPdfZoom(){
+  const wrap=document.getElementById('pdf-canvas-wrap');
+  wrap.addEventListener('wheel',async e=>{
+    if(!e.ctrlKey&&!e.metaKey)return;
+    e.preventDefault();
+    pdfScale=e.deltaY<0?Math.min(3,pdfScale+0.1):Math.max(0.5,pdfScale-0.1);
+    await renderAllPages();
+  },{passive:false});
+  let lastDist=0;
+  wrap.addEventListener('touchstart',e=>{
+    if(e.touches.length===2) lastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+  },{passive:true});
+  wrap.addEventListener('touchmove',async e=>{
+    if(e.touches.length!==2)return;
+    const dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    if(lastDist>0){
+      const delta=dist-lastDist;
+      if(Math.abs(delta)>5){pdfScale=Math.min(3,Math.max(0.5,pdfScale+delta*0.005));lastDist=dist;await renderAllPages();}
+    }
+    lastDist=dist;
+  },{passive:true});
+  wrap.addEventListener('touchend',()=>{lastDist=0;},{passive:true});
+  wrap.addEventListener('dblclick',async e=>{
+    if(e.target.closest('.pdf-page-container')){pdfScale=1.5;await renderAllPages();toast('Zoom reset');}
+  });
+}
+
+/* ── Text Annotation ── */
+function createTextAnnotEl(a,layer){
+  const el=document.createElement('div');
+  el.style.cssText=`position:absolute;left:${a.x}px;top:${a.y-16}px;background:rgba(255,255,180,0.9);border:1px solid #c8a000;border-radius:4px;padding:2px 6px;font-size:${Math.max(10,12*pdfScale)}px;font-family:sans-serif;color:#333;cursor:move;white-space:nowrap;max-width:300px;box-shadow:0 2px 6px rgba(0,0,0,0.15);z-index:10;`;
+  el.textContent=a.text;el.title='Double-click to delete';
+  el.addEventListener('dblclick',()=>{pdfTextAnnotations=pdfTextAnnotations.filter(x=>x!==a);el.remove();toast('Annotation removed');});
+  return el;
+}
+function showTextInput(clientX,clientY){
   const wrap=document.getElementById('pdf-text-input-wrap');
   wrap.style.display='flex';
-  wrap.style.left=Math.min(clientX, window.innerWidth-280)+'px';
+  wrap.style.left=Math.min(clientX,window.innerWidth-280)+'px';
   wrap.style.top=(clientY+10)+'px';
   document.getElementById('pdf-text-input').value='';
   setTimeout(()=>document.getElementById('pdf-text-input').focus(),50);
@@ -1166,34 +1280,25 @@ function showTextInput(clientX, clientY){
 function confirmAddText(){
   const text=document.getElementById('pdf-text-input').value.trim();
   if(!text||!pendingTextPos){cancelAddText();return;}
-  const a={...pendingTextPos,text};
-  pdfTextAnnotations.push(a);
-  // Re-render page to show annotation
-  renderPdfPage(pdfCurrentPage);
-  savePdfAnnotation(text+' [added text]', pendingTextPos.pageNum);
-  cancelAddText();
-  toast('Text added ✓');
+  pdfTextAnnotations.push({...pendingTextPos,text});
+  renderAllPages();
+  savePdfAnnotation(text+' [added text]',pendingTextPos.pageNum);
+  cancelAddText();toast('Text added ✓');
 }
-function cancelAddText(){
-  document.getElementById('pdf-text-input-wrap').style.display='none';
-  pendingTextPos=null;
-}
-document.getElementById('pdf-text-input').addEventListener('keydown',e=>{
-  if(e.key==='Enter')confirmAddText();
-  if(e.key==='Escape')cancelAddText();
-});
+function cancelAddText(){document.getElementById('pdf-text-input-wrap').style.display='none';pendingTextPos=null;}
+document.getElementById('pdf-text-input').addEventListener('keydown',e=>{if(e.key==='Enter')confirmAddText();if(e.key==='Escape')cancelAddText();});
 
 /* ── Tool switcher ── */
 function setPdfTool(tool){
   pdfCurrentTool=pdfCurrentTool===tool?'none':tool;
   document.getElementById('pdf-highlight-btn').classList.toggle('active',pdfCurrentTool==='highlight');
   document.getElementById('pdf-addtext-btn').classList.toggle('active',pdfCurrentTool==='addtext');
-  if(pdfCurrentTool==='highlight') toast('Highlight mode — select text on the page');
-  else if(pdfCurrentTool==='addtext') toast('Add Text mode — click anywhere on the page');
+  if(pdfCurrentTool==='highlight')toast('Highlight mode — select text on the page');
+  else if(pdfCurrentTool==='addtext')toast('Add Text mode — click anywhere on the page');
   else toast('Tool deactivated');
 }
 
-/* ── Save PDF with edits (pdf-lib) ── */
+/* ── Save PDF ── */
 async function savePdfEdits(){
   if(!pdfRawBytes){toast('No PDF loaded');return;}
   if(typeof PDFLib==='undefined'){toast('pdf-lib not loaded');return;}
@@ -1203,57 +1308,30 @@ async function savePdfEdits(){
     const pdfLibDoc=await PDFDocument.load(pdfRawBytes);
     const font=await pdfLibDoc.embedFont(StandardFonts.Helvetica);
     const pages=pdfLibDoc.getPages();
-
-    // Write text annotations into the PDF
     pdfTextAnnotations.forEach(a=>{
-      const page=pages[a.page-1];
-      if(!page)return;
+      const page=pages[a.page-1];if(!page)return;
       const {height}=page.getSize();
-      // Convert screen coords back to PDF coords
-      const pdfX=a.pdfX;
-      const pdfY=height-(a.pdfY); // flip Y axis
-      page.drawText(a.text,{
-        x:pdfX, y:pdfY,
-        size:12, font, color:rgb(0,0,0),
-      });
+      page.drawText(a.text,{x:a.pdfX,y:height-a.pdfY,size:12,font,color:rgb(0,0,0)});
     });
-
     const pdfBytes=await pdfLibDoc.save();
     const blob=new Blob([pdfBytes],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);
     const fname=pdfCurrentFilename.replace(/\.pdf$/i,'')+'_edited.pdf';
-
     if(window.electronAPI){
-      // In Electron, use native save dialog
-      const reader=new FileReader();
-      reader.onload=async()=>{
-        const result=await window.electronAPI.showSaveDialog(fname, reader.result);
-        if(result.success)toast('PDF saved to disk ✓');
-      };
-      reader.readAsText(blob);
+      const result=await window.electronAPI.showSaveDialog(fname,'');
+      if(result.success)toast('PDF saved ✓');
     } else {
+      const url=URL.createObjectURL(blob);
       const a=document.createElement('a');a.href=url;a.download=fname;
       document.body.appendChild(a);a.click();document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast('PDF downloaded ✓');
+      URL.revokeObjectURL(url);toast('PDF downloaded ✓');
     }
-  }catch(e){
-    console.error(e);
-    toast('Error saving PDF: '+e.message);
-  }
+  }catch(e){toast('Error: '+e.message);}
 }
 
 /* ── Merge PDFs ── */
-function showMergeDialog(){
-  mergeFiles=[];
-  document.getElementById('merge-file-list').textContent='No files selected';
-  document.getElementById('merge-dialog').style.display='flex';
-}
+function showMergeDialog(){mergeFiles=[];document.getElementById('merge-file-list').textContent='No files selected';document.getElementById('merge-dialog').style.display='flex';}
 function closeMergeDialog(){document.getElementById('merge-dialog').style.display='none';}
-document.getElementById('merge-input').addEventListener('change',e=>{
-  mergeFiles=Array.from(e.target.files);
-  document.getElementById('merge-file-list').textContent=mergeFiles.map(f=>f.name).join(', ');
-});
+document.getElementById('merge-input').addEventListener('change',e=>{mergeFiles=Array.from(e.target.files);document.getElementById('merge-file-list').textContent=mergeFiles.map(f=>f.name).join(', ');});
 async function doMergePDFs(){
   if(mergeFiles.length<2){toast('Select at least 2 PDF files');return;}
   if(typeof PDFLib==='undefined'){toast('pdf-lib not loaded');return;}
@@ -1272,18 +1350,12 @@ async function doMergePDFs(){
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;a.download='merged.pdf';
     document.body.appendChild(a);a.click();document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    closeMergeDialog();
-    toast(`Merged ${mergeFiles.length} PDFs ✓`);
+    URL.revokeObjectURL(url);closeMergeDialog();toast(`Merged ${mergeFiles.length} PDFs ✓`);
   }catch(e){toast('Merge failed: '+e.message);}
 }
 
 /* ── Split PDF ── */
-function showSplitDialog(){
-  document.getElementById('split-from').value=1;
-  document.getElementById('split-to').value=pdfTotalPages||1;
-  document.getElementById('split-dialog').style.display='flex';
-}
+function showSplitDialog(){document.getElementById('split-from').value=1;document.getElementById('split-to').value=pdfTotalPages||1;document.getElementById('split-dialog').style.display='flex';}
 function closeSplitDialog(){document.getElementById('split-dialog').style.display='none';}
 async function doSplitPDF(){
   if(!pdfRawBytes){toast('No PDF loaded');return;}
@@ -1305,9 +1377,7 @@ async function doSplitPDF(){
     const fname=pdfCurrentFilename.replace(/\.pdf$/i,'')+`_pages_${from}-${to}.pdf`;
     const a=document.createElement('a');a.href=url;a.download=fname;
     document.body.appendChild(a);a.click();document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    closeSplitDialog();
-    toast(`Extracted pages ${from}–${to} ✓`);
+    URL.revokeObjectURL(url);closeSplitDialog();toast(`Extracted pages ${from}–${to} ✓`);
   }catch(e){toast('Split failed: '+e.message);}
 }
 
@@ -1318,12 +1388,8 @@ function savePdfAnnotation(text,page){
   renderHighlights();
 }
 
-async function pdfNextPage(){if(pdfCurrentPage<pdfTotalPages){pdfCurrentPage++;await renderPdfPage(pdfCurrentPage);}}
-async function pdfPrevPage(){if(pdfCurrentPage>1){pdfCurrentPage--;await renderPdfPage(pdfCurrentPage);}}
-async function pdfGoToPage(n){const p=Math.min(pdfTotalPages,Math.max(1,parseInt(n)||1));pdfCurrentPage=p;await renderPdfPage(p);}
-async function pdfZoomIn(){pdfScale=Math.min(3,pdfScale+0.25);await renderPdfPage(pdfCurrentPage);}
-async function pdfZoomOut(){pdfScale=Math.max(0.5,pdfScale-0.25);await renderPdfPage(pdfCurrentPage);}
 function toggleAnnoPanel(){annoPanelOpen=!annoPanelOpen;document.getElementById('anno-panel').classList.toggle('open',annoPanelOpen);}
+
 
 /* ── Screen helpers ── */
 function hideAll(){
