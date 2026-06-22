@@ -735,40 +735,66 @@ document.getElementById('search-input').addEventListener('input', e => doSearch(
 document.getElementById('search-input').addEventListener('keydown', e => { if(e.key==='Enter') nextMatch(); });
 
 function doSearch(term) {
-  clearHighlights(); searchMatches=[]; searchIndex=0;
-  if (!term||term.length<2) { document.getElementById('search-count').textContent=''; return; }
+  clearHighlights();
+  searchMatches=[]; searchIndex=0;
+  const countEl = document.getElementById('search-count');
+  if (!term || term.length < 1) { countEl.textContent=''; return; }
+
   const body = document.getElementById('md-body');
-  const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+  if (!body) { countEl.textContent='No results'; return; }
+
+  // Collect all text nodes first (snapshot before we mutate)
   const nodes = [];
+  const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, null, false);
   while (walker.nextNode()) nodes.push(walker.currentNode);
-  const re = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');
+
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const re = new RegExp(escaped, 'gi');
+
   nodes.forEach(node => {
+    if (!node.parentNode) return; // already detached
     const text = node.textContent;
-    if (!re.test(text)) return;
-    re.lastIndex=0;
+    re.lastIndex = 0;
+    if (!re.test(text)) return; // quick check
+    re.lastIndex = 0; // reset after test
+
     const frag = document.createDocumentFragment();
-    let last=0,m;
-    while ((m=re.exec(text))!==null) {
-      frag.appendChild(document.createTextNode(text.slice(last,m.index)));
-      const mark=document.createElement('mark'); mark.textContent=m[0]; frag.appendChild(mark);
-      searchMatches.push(mark); last=m.index+m[0].length;
+    let last = 0, m;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+      const mark = document.createElement('mark');
+      mark.textContent = m[0];
+      frag.appendChild(mark);
+      searchMatches.push(mark);
+      last = m.index + m[0].length;
     }
-    frag.appendChild(document.createTextNode(text.slice(last)));
-    node.parentNode.replaceChild(frag,node);
+    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
   });
-  if (searchMatches.length) { searchMatches[0].classList.add('current'); searchMatches[0].scrollIntoView({block:'center'}); }
-  document.getElementById('search-count').textContent = searchMatches.length ? `1 / ${searchMatches.length}` : 'No results';
+
+  if (searchMatches.length) {
+    searchMatches[0].classList.add('current');
+    searchMatches[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
+    countEl.textContent = `1 / ${searchMatches.length}`;
+  } else {
+    countEl.textContent = 'No results';
+  }
 }
 function nextMatch() {
   if (!searchMatches.length) return;
   searchMatches[searchIndex].classList.remove('current');
-  searchIndex=(searchIndex+1)%searchMatches.length;
+  searchIndex = (searchIndex + 1) % searchMatches.length;
   searchMatches[searchIndex].classList.add('current');
-  searchMatches[searchIndex].scrollIntoView({block:'center'});
-  document.getElementById('search-count').textContent=`${searchIndex+1} / ${searchMatches.length}`;
+  searchMatches[searchIndex].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  document.getElementById('search-count').textContent = `${searchIndex+1} / ${searchMatches.length}`;
 }
 function clearHighlights() {
-  document.querySelectorAll('mark').forEach(m=>{ m.parentNode.replaceChild(document.createTextNode(m.textContent),m); m.parentNode&&m.parentNode.normalize(); });
+  // Replace each mark with its text content without calling normalize()
+  // (normalize can merge nodes in ways that break subsequent searches)
+  document.querySelectorAll('#md-body mark').forEach(m => {
+    if (!m.parentNode) return;
+    m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+  });
   searchMatches=[]; searchIndex=0;
 }
 
