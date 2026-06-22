@@ -11,8 +11,9 @@
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
 <style>
 :root {
@@ -271,6 +272,81 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 mark { background: rgba(196,154,60,0.35); color: var(--ink); border-radius: 2px; padding: 0 2px; }
 mark.current { background: var(--gold); color: #000; }
 
+/* ── SPLASH SCREEN ── */
+#splash {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--parchment);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; transition: opacity 0.5s;
+}
+#splash.hidden { opacity: 0; pointer-events: none; }
+.splash-logo { width: 72px; height: 72px; background: var(--accent); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: 0 8px 32px rgba(139,69,19,0.3); animation: splashPulse 1.5s ease-in-out infinite; }
+@keyframes splashPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+.splash-title { font-family: var(--font-serif); font-size: 2rem; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; }
+.splash-title span { color: var(--accent); }
+.splash-sub { font-size: 0.82rem; color: var(--ink3); font-family: var(--font-ui); }
+.splash-version { font-size: 0.72rem; color: var(--ink3); font-family: var(--font-ui); position: absolute; bottom: 24px; }
+
+/* ── BOOKMARK STYLES ── */
+.bookmark-btn { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1rem; padding: 2px 6px; border-radius: 5px; transition: color 0.15s; }
+.bookmark-btn:hover { color: var(--gold); }
+.bookmark-btn.bookmarked { color: var(--gold); }
+.bookmark-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 7px; cursor: pointer; transition: background 0.12s; }
+.bookmark-item:hover { background: var(--parchment3); }
+.bookmark-item .bm-icon { color: var(--gold); font-size: 0.9rem; flex-shrink: 0; }
+.bookmark-item .bm-text { font-size: 0.8rem; color: var(--ink2); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bookmark-item .bm-del { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 0.75rem; padding: 2px 4px; border-radius: 4px; opacity: 0; transition: opacity 0.15s; }
+.bookmark-item:hover .bm-del { opacity: 1; }
+.bookmark-item .bm-del:hover { color: #c43131; }
+.bm-empty { font-size: 0.78rem; color: var(--ink3); text-align: center; padding: 1.5rem 1rem; font-style: italic; }
+
+/* ── CODE COPY BUTTON ── */
+.code-wrap { position: relative; }
+.code-copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: rgba(255,255,255,0.6); font-size: 0.72rem; font-family: var(--font-ui); font-weight: 600; padding: 3px 8px; cursor: pointer; transition: all 0.15s; z-index: 5; }
+.code-copy-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+.code-copy-btn.copied { background: rgba(62,207,100,0.2); border-color: rgba(62,207,100,0.4); color: #3ecf64; }
+
+/* ── EDITOR WORD COUNT BAR ── */
+#editor-status { display: flex; align-items: center; gap: 16px; padding: 5px 14px; background: var(--parchment2); border-top: 1px solid var(--parchment3); font-size: 0.72rem; color: var(--ink3); font-family: var(--font-ui); flex-shrink: 0; }
+#editor-status span { display: flex; align-items: center; gap: 4px; }
+#autosave-indicator { color: var(--ink3); transition: color 0.3s; }
+#autosave-indicator.saving { color: var(--gold); }
+#autosave-indicator.saved { color: #3ecf64; }
+
+/* ── ABOUT PANEL ── */
+#about-panel { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 800; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+#about-panel.open { display: flex; }
+.about-box { background: var(--parchment2); border-radius: var(--radius); padding: 2rem; width: 90%; max-width: 360px; border: 1px solid var(--parchment3); text-align: center; position: relative; }
+.about-close { position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.1rem; }
+.about-logo { width: 56px; height: 56px; background: var(--accent); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem; }
+.about-title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--ink); }
+.about-title span { color: var(--accent); }
+.about-version { font-size: 0.78rem; color: var(--ink3); margin-top: 4px; font-family: var(--font-ui); }
+.about-desc { font-size: 0.85rem; color: var(--ink2); margin-top: 1rem; line-height: 1.6; font-family: var(--font-serif); font-style: italic; }
+.about-brand { margin-top: 1.5rem; font-size: 0.78rem; color: var(--ink3); font-family: var(--font-ui); }
+.about-brand strong { color: var(--accent); }
+.about-formats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 1rem; }
+.about-badge { font-size: 0.68rem; padding: 3px 8px; border-radius: 12px; background: var(--parchment3); color: var(--ink3); font-family: var(--font-ui); font-weight: 600; }
+
+/* ── SHORTCUTS PANEL ── */
+#shortcuts-panel { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 800; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+#shortcuts-panel.open { display: flex; }
+.shortcuts-box { background: var(--parchment2); border-radius: var(--radius); padding: 1.5rem; width: 90%; max-width: 400px; border: 1px solid var(--parchment3); position: relative; max-height: 80vh; overflow-y: auto; }
+.shortcuts-close { position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.1rem; }
+.shortcuts-title { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 1rem; }
+.shortcut-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--parchment3); }
+.shortcut-row:last-child { border-bottom: none; }
+.shortcut-desc { font-size: 0.82rem; color: var(--ink2); font-family: var(--font-ui); }
+.shortcut-key { font-size: 0.72rem; font-family: var(--font-mono); background: var(--parchment3); border: 1px solid var(--parchment3); border-radius: 5px; padding: 2px 7px; color: var(--ink); white-space: nowrap; }
+
+/* ── DARK PDF OVERLAY ── */
+#pdf-dark-overlay { position: absolute; inset: 0; background: rgba(20,18,14,0.65); pointer-events: none; display: none; mix-blend-mode: multiply; border-radius: 4px; }
+#pdf-dark-overlay.active { display: block; }
+
+/* ── READING PROGRESS SAVED indicator ── */
+.progress-resume-hint { position: fixed; bottom: 70px; right: 20px; background: var(--parchment2); border: 1px solid var(--parchment3); border-radius: 20px; padding: 7px 14px; font-size: 0.75rem; color: var(--ink3); font-family: var(--font-ui); z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.3s; box-shadow: var(--shadow); }
+.progress-resume-hint.show { opacity: 1; pointer-events: all; cursor: pointer; }
+
 /* ── MODAL ── */
 #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
 #modal-overlay.open { display: flex; }
@@ -326,6 +402,55 @@ mark.current { background: var(--gold); color: #000; }
   <p>Drop a file to open it</p>
 </div>
 <div class="progress-bar" id="progress-bar"></div>
+<div class="progress-resume-hint" id="resume-hint" onclick="resumeReading()"></div>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <div class="splash-logo">📖</div>
+  <div class="splash-title">Teq<span>Docs</span></div>
+  <div class="splash-sub">Your beautiful reading & writing companion</div>
+  <div class="splash-version">v2.0.0 · TeqVault LLC</div>
+</div>
+
+<!-- ABOUT PANEL -->
+<div id="about-panel">
+  <div class="about-box">
+    <button class="about-close" onclick="closeAbout()">✕</button>
+    <div class="about-logo">📖</div>
+    <div class="about-title">Teq<span>Docs</span></div>
+    <div class="about-version">Version 2.0.0 · TeqVault LLC</div>
+    <div class="about-desc">Your beautiful offline reading & writing companion. Built for documents, notes, and everything in between.</div>
+    <div class="about-formats">
+      <span class="about-badge">📝 Markdown</span>
+      <span class="about-badge">📄 PDF</span>
+      <span class="about-badge">📃 Word</span>
+      <span class="about-badge">📋 Text</span>
+    </div>
+    <div class="about-brand">Made with ♥ by <strong>TeqVault LLC</strong></div>
+  </div>
+</div>
+
+<!-- SHORTCUTS PANEL -->
+<div id="shortcuts-panel">
+  <div class="shortcuts-box">
+    <button class="shortcuts-close" onclick="closeShortcuts()">✕</button>
+    <div class="shortcuts-title">⌨ Keyboard Shortcuts</div>
+    <div class="shortcut-row"><span class="shortcut-desc">Open file</span><span class="shortcut-key">Ctrl + O</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">New document</span><span class="shortcut-key">Ctrl + N</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Save</span><span class="shortcut-key">Ctrl + S</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Search in document</span><span class="shortcut-key">Ctrl + F</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Toggle sidebar</span><span class="shortcut-key">Ctrl + B</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Toggle theme</span><span class="shortcut-key">Ctrl + D</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Focus mode</span><span class="shortcut-key">Ctrl + Shift + F</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Add bookmark</span><span class="shortcut-key">Ctrl + M</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">PDF next page</span><span class="shortcut-key">→ / Page Down</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">PDF prev page</span><span class="shortcut-key">← / Page Up</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">PDF zoom in</span><span class="shortcut-key">Ctrl + =</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">PDF zoom out</span><span class="shortcut-key">Ctrl + -</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">This help screen</span><span class="shortcut-key">?</span></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Close panel / Go back</span><span class="shortcut-key">Escape</span></div>
+  </div>
+</div>
 
 <div id="app">
   <!-- HEADER -->
@@ -338,9 +463,11 @@ mark.current { background: var(--gold); color: #000; }
     <div class="hdr-spacer"></div>
     <span class="hdr-doc-title" id="hdr-doc-title">Your reading library</span>
     <div class="hdr-spacer"></div>
-    <button class="hdr-btn" onclick="toggleSearch()" title="Search">🔍 Search</button>
-    <button class="hdr-btn" id="focus-btn" onclick="toggleFocusMode()" title="Focus mode">⊙</button>
+    <button class="hdr-btn" onclick="toggleSearch()" title="Search (Ctrl+F)">🔍 Search</button>
+    <button class="hdr-btn" id="focus-btn" onclick="toggleFocusMode()" title="Focus mode (Ctrl+Shift+F)">⊙</button>
     <button class="hdr-btn" onclick="toggleTheme()" id="theme-btn">☀️</button>
+    <button class="hdr-btn" onclick="openShortcuts()" title="Keyboard shortcuts (?)">⌨</button>
+    <button class="hdr-btn" onclick="openAbout()" title="About TeqDocs">ℹ</button>
   </div>
 
   <!-- BODY -->
@@ -350,6 +477,7 @@ mark.current { background: var(--gold); color: #000; }
       <div class="sidebar-tabs">
         <button class="sb-tab active" onclick="switchSbTab('library')">Library</button>
         <button class="sb-tab" onclick="switchSbTab('contents')">Contents</button>
+        <button class="sb-tab" onclick="switchSbTab('bookmarks')">Bookmarks</button>
         <button class="sb-tab" onclick="switchSbTab('notes')">Notes</button>
       </div>
 
@@ -380,6 +508,14 @@ mark.current { background: var(--gold); color: #000; }
           <div id="highlights-list"></div>
         </div>
       </div>
+
+      <!-- Bookmarks panel -->
+      <div class="sb-panel" id="sb-bookmarks">
+        <div class="sb-section">
+          <div class="sb-label">Bookmarks</div>
+          <div id="bookmarks-list"></div>
+        </div>
+      </div>
     </div>
 
     <!-- CONTENT -->
@@ -397,6 +533,7 @@ mark.current { background: var(--gold); color: #000; }
         <div class="welcome-formats">
           <span class="wf-badge">📝 Markdown</span>
           <span class="wf-badge">📄 PDF</span>
+          <span class="wf-badge">📃 Word (.docx)</span>
           <span class="wf-badge">📋 Plain Text</span>
         </div>
       </div>
@@ -411,6 +548,7 @@ mark.current { background: var(--gold); color: #000; }
           </div>
           <div class="dib-actions">
             <button class="dib-btn" id="doc-edit-btn" onclick="openEditorFromReader()" style="display:none">✏️ Edit</button>
+            <button class="dib-btn" onclick="addBookmark()" title="Add bookmark (Ctrl+M)">🔖 Bookmark</button>
             <button class="dib-btn" id="doc-export-btn" onclick="toggleExportMenu()">Export ▾</button>
           </div>
           <div class="export-menu" id="export-menu">
@@ -425,25 +563,75 @@ mark.current { background: var(--gold); color: #000; }
       <!-- PDF Viewer -->
       <div id="pdf-viewer">
         <div class="pdf-toolbar">
+          <!-- Navigation -->
           <button class="pdf-tb-btn" onclick="pdfPrevPage()">← Prev</button>
           <div class="pdf-page-nav">
             Page <input class="pdf-page-input" id="pdf-page-input" type="number" min="1" value="1" onchange="pdfGoToPage(this.value)">
             of <span id="pdf-total-pages">—</span>
           </div>
           <button class="pdf-tb-btn" onclick="pdfNextPage()">Next →</button>
+          <!-- Zoom -->
           <button class="pdf-tb-btn" onclick="pdfZoomOut()">−</button>
-          <span style="font-size:0.78rem;color:var(--ink3);font-family:var(--font-ui)" id="pdf-zoom-label">100%</span>
+          <span style="font-size:0.78rem;color:var(--ink3);font-family:var(--font-ui);min-width:38px;text-align:center" id="pdf-zoom-label">150%</span>
           <button class="pdf-tb-btn" onclick="pdfZoomIn()">+</button>
           <div class="pdf-spacer"></div>
-          <button class="pdf-tb-btn active" id="pdf-highlight-btn" onclick="togglePdfHighlight()">🖊 Highlight</button>
+          <!-- Edit tools -->
+          <button class="pdf-tb-btn" id="pdf-highlight-btn" onclick="setPdfTool('highlight')">🖊 Highlight</button>
+          <button class="pdf-tb-btn" id="pdf-addtext-btn" onclick="setPdfTool('addtext')">T+ Add Text</button>
+          <button class="pdf-tb-btn" id="pdf-dark-btn" onclick="togglePdfDark()">🌙 Night</button>
           <button class="pdf-tb-btn" onclick="toggleAnnoPanel()">📝 Notes</button>
-          <button class="pdf-tb-btn" onclick="pdfExport()">Export ▾</button>
+          <div style="width:1px;height:20px;background:var(--parchment3);margin:0 4px;flex-shrink:0"></div>
+          <!-- File ops -->
+          <button class="pdf-tb-btn" onclick="showMergeDialog()">⊕ Merge</button>
+          <button class="pdf-tb-btn" onclick="showSplitDialog()">✂ Split</button>
+          <button class="pdf-tb-btn" onclick="savePdfEdits()" style="background:var(--accent);color:#fff;border-color:var(--accent)">💾 Save PDF</button>
         </div>
+
+        <!-- Add text input overlay (hidden by default) -->
+        <div id="pdf-text-input-wrap" style="display:none;position:fixed;z-index:300;background:var(--parchment2);border:1px solid var(--accent);border-radius:8px;padding:8px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+          <input id="pdf-text-input" type="text" placeholder="Type text…" style="background:var(--parchment);border:1px solid var(--parchment3);border-radius:6px;padding:6px 10px;font-size:0.9rem;color:var(--ink);font-family:var(--font-ui);outline:none;width:200px;">
+          <button onclick="confirmAddText()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:0.8rem;font-weight:700;cursor:pointer;margin-left:4px;">Add</button>
+          <button onclick="cancelAddText()" style="background:var(--parchment3);color:var(--ink);border:none;border-radius:6px;padding:6px 8px;font-size:0.8rem;cursor:pointer;margin-left:2px;">✕</button>
+        </div>
+
+        <!-- Merge dialog -->
+        <div id="merge-dialog" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+          <div style="background:var(--parchment2);border-radius:var(--radius);padding:1.5rem;width:90%;max-width:420px;border:1px solid var(--parchment3);">
+            <div style="font-weight:700;font-size:1rem;margin-bottom:1rem;font-family:var(--font-serif);">⊕ Merge PDFs</div>
+            <p style="font-size:0.82rem;color:var(--ink3);margin-bottom:1rem;">Select multiple PDF files to merge into one.</p>
+            <input type="file" id="merge-input" accept=".pdf" multiple style="display:none">
+            <button onclick="document.getElementById('merge-input').click()" style="width:100%;padding:10px;background:var(--parchment3);border:1px dashed var(--accent);border-radius:8px;color:var(--accent);font-weight:700;font-family:var(--font-ui);cursor:pointer;margin-bottom:1rem;">📂 Select PDF Files</button>
+            <div id="merge-file-list" style="font-size:0.78rem;color:var(--ink3);margin-bottom:1rem;min-height:24px;"></div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="closeMergeDialog()" style="flex:1;padding:10px;background:var(--parchment3);border:none;border-radius:8px;font-weight:700;font-family:var(--font-ui);cursor:pointer;">Cancel</button>
+              <button onclick="doMergePDFs()" style="flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;font-family:var(--font-ui);cursor:pointer;">Merge & Download</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Split dialog -->
+        <div id="split-dialog" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+          <div style="background:var(--parchment2);border-radius:var(--radius);padding:1.5rem;width:90%;max-width:420px;border:1px solid var(--parchment3);">
+            <div style="font-weight:700;font-size:1rem;margin-bottom:1rem;font-family:var(--font-serif);">✂ Split PDF</div>
+            <p style="font-size:0.82rem;color:var(--ink3);margin-bottom:1rem;">Extract a range of pages into a new PDF. Total pages: <strong id="split-total">—</strong></p>
+            <div style="display:flex;gap:10px;margin-bottom:1rem;align-items:center;">
+              <label style="font-size:0.82rem;color:var(--ink2);font-family:var(--font-ui);">From page</label>
+              <input id="split-from" type="number" min="1" value="1" style="width:60px;padding:6px;background:var(--parchment);border:1px solid var(--parchment3);border-radius:6px;color:var(--ink);font-family:var(--font-ui);text-align:center;">
+              <label style="font-size:0.82rem;color:var(--ink2);font-family:var(--font-ui);">to page</label>
+              <input id="split-to" type="number" min="1" value="1" style="width:60px;padding:6px;background:var(--parchment);border:1px solid var(--parchment3);border-radius:6px;color:var(--ink);font-family:var(--font-ui);text-align:center;">
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="closeSplitDialog()" style="flex:1;padding:10px;background:var(--parchment3);border:none;border-radius:8px;font-weight:700;font-family:var(--font-ui);cursor:pointer;">Cancel</button>
+              <button onclick="doSplitPDF()" style="flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;font-family:var(--font-ui);cursor:pointer;">Extract & Download</button>
+            </div>
+          </div>
+        </div>
+
         <div style="display:flex;flex:1;overflow:hidden">
           <div class="pdf-canvas-wrap" id="pdf-canvas-wrap"></div>
           <div id="anno-panel">
             <div class="anno-header">
-              <span>Highlights</span>
+              <span>Notes & Highlights</span>
               <button class="anno-close" onclick="toggleAnnoPanel()">✕</button>
             </div>
             <div class="anno-list" id="anno-list"></div>
@@ -479,6 +667,11 @@ mark.current { background: var(--gold); color: #000; }
         </div>
         <textarea id="md-editor" placeholder="Start writing Markdown...&#10;&#10;# My Document&#10;&#10;Hello world!"></textarea>
         <div id="editor-preview"><div class="md-body" id="editor-preview-body"></div></div>
+        <div id="editor-status">
+          <span>📝 <span id="editor-word-count">0</span> words</span>
+          <span>📄 <span id="editor-char-count">0</span> chars</span>
+          <span id="autosave-indicator">● Unsaved</span>
+        </div>
       </div>
 
     </div><!-- /content -->
@@ -506,11 +699,16 @@ mark.current { background: var(--gold); color: #000; }
 </div>
 
 <div id="toast"></div>
-<input type="file" id="file-input" accept=".md,.markdown,.txt,.pdf">
+<input type="file" id="file-input" accept=".md,.markdown,.txt,.pdf,.docx">
 
 <script>
 /* ── PDF.js worker ── */
-if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js';
+if(typeof pdfjsLib!=='undefined'){
+  const workerSrc = window.electronAPI
+    ? new URL('pdf.worker.min.js', document.baseURI).href
+    : 'pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+}
 
 /* ── State ── */
 let currentMd='', currentFilename='', currentSavedId=null, currentFileType='md';
@@ -530,9 +728,10 @@ applyTheme(); renderSaved(); renderRecent(); renderHighlights();
 
 /* ── Sidebar tabs ── */
 function switchSbTab(tab) {
-  document.querySelectorAll('.sb-tab').forEach((t,i)=>t.classList.toggle('active',['library','contents','notes'][i]===tab));
+  document.querySelectorAll('.sb-tab').forEach((t,i)=>t.classList.toggle('active',['library','contents','bookmarks','notes'][i]===tab));
   document.querySelectorAll('.sb-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('sb-'+tab).classList.add('active');
+  if(tab==='bookmarks') renderBookmarks();
 }
 function toggleSidebar() {
   sidebarOpen=!sidebarOpen;
@@ -552,12 +751,62 @@ document.addEventListener('drop',e=>{
 function loadFileByType(file) {
   const name=file.name.toLowerCase();
   if(name.endsWith('.pdf')) loadPDF(file);
+  else if(name.endsWith('.docx')) loadDocx(file);
   else loadMD(file);
 }
 function loadMD(file) {
   const r=new FileReader();
   r.onload=e=>{currentMd=e.target.result;currentFilename=file.name;currentSavedId=null;currentFileType='md';addRecent(file.name,currentMd,'md');renderDoc();};
   r.readAsText(file);
+}
+
+/* ── Word Doc (.docx) loader ── */
+async function loadDocx(file) {
+  if(typeof mammoth==='undefined'){toast('mammoth.js not loaded');return;}
+  toast('Opening Word document…');
+  try {
+    const ab=await file.arrayBuffer();
+    const result=await mammoth.convertToHtml({arrayBuffer:ab},{
+      styleMap:[
+        "p[style-name='Heading 1'] => h1:fresh",
+        "p[style-name='Heading 2'] => h2:fresh",
+        "p[style-name='Heading 3'] => h3:fresh",
+        "p[style-name='Heading 4'] => h4:fresh",
+        "b => strong",
+        "i => em",
+        "u => u",
+      ]
+    });
+    currentFilename=file.name;
+    currentSavedId=null;
+    currentFileType='docx';
+    addRecent(file.name, result.value, 'docx');
+    hideAll();
+    document.getElementById('hdr-doc-title').textContent=file.name;
+    // Render into reader using the converted HTML directly
+    const body=document.getElementById('md-body');
+    body.innerHTML=result.value;
+    // Style headings and elements to match TeqDocs theme
+    body.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach((h,i)=>h.id='heading-'+i);
+    highlightCode('md-body');
+    document.getElementById('doc-filename').textContent=file.name;
+    document.getElementById('hdr-doc-title').textContent=file.name;
+    // Word count
+    const words=body.innerText.trim().split(/\s+/).filter(Boolean).length;
+    const mins=Math.max(1,Math.round(words/200));
+    document.getElementById('doc-readtime').textContent=`${mins} min read`;
+    document.getElementById('doc-wordcount').textContent=`${words.toLocaleString()} words`;
+    document.getElementById('reader').classList.add('visible');
+    buildToc();
+    document.getElementById('content').scrollTo(0,0);
+    // Show any conversion warnings
+    if(result.messages.length) console.log('Docx warnings:',result.messages);
+    toast('Word document opened ✓');
+    body.addEventListener('mouseup',handleMdHighlight);
+  } catch(e) {
+    console.error(e);
+    toast('Failed to open Word doc: '+e.message);
+  }
 }
 
 /* ── Saved files ── */
@@ -602,9 +851,22 @@ function renderRecent(){
       const el=document.createElement('div');el.className='file-card';
       const d=Math.floor((Date.now()-f.date)/86400000);
       const ds=d===0?'Today':d===1?'Yesterday':d+'d ago';
-      const typeLabel=f.type==='pdf'?'<span class="fc-type pdf">PDF</span>':'<span class="fc-type md">MD</span>';
+      const type=f.type||'md';
+      const typeLabel=type==='pdf'?'<span class="fc-type pdf">PDF</span>':type==='docx'?'<span class="fc-type md" style="background:rgba(30,100,200,0.12);color:#4a90d9;">DOCX</span>':'<span class="fc-type md">MD</span>';
       el.innerHTML=`<div class="fc-name">${escapeHtml(f.name)}</div><div class="fc-meta"><span>${ds}</span>${typeLabel}</div>`;
-      el.onclick=()=>{if(f.content){currentMd=f.content;currentFilename=f.name;currentSavedId=null;currentFileType=f.type||'md';if(f.type==='md')renderDoc();}};
+      el.onclick=()=>{
+        if(type==='pdf'||type==='docx'){
+          // Can't reopen binary from localStorage — prompt user to reopen
+          toast(`Please reopen "${f.name}" from your files`);
+          document.getElementById('file-input').click();
+        } else if(f.content){
+          currentMd=f.content;
+          currentFilename=f.name;
+          currentSavedId=null;
+          currentFileType='md';
+          renderDoc();
+        }
+      };
       list.appendChild(el);
     });
   }catch(e){list.innerHTML='';}
@@ -768,18 +1030,28 @@ function renderHighlights(){
   }catch(e){}
 }
 
-/* ── PDF Viewer ── */
+/* ── PDF State ── */
+let pdfRawBytes=null; // store original bytes for pdf-lib editing
+let pdfTextAnnotations=[]; // {page, x, y, text, pdfX, pdfY, viewport}
+let pdfCurrentTool='none'; // 'highlight' | 'addtext' | 'none'
+let pendingTextPos=null; // {x,y,pageNum,pdfX,pdfY}
+let mergeFiles=[];
+
+/* ── PDF Load ── */
 async function loadPDF(file) {
-  if(typeof pdfjsLib==='undefined'){toast('PDF.js not loaded yet, please try again');return;}
+  if(typeof pdfjsLib==='undefined'){toast('PDF.js not loaded — check your connection');return;}
   hideAll();
   pdfCurrentFilename=file.name;
+  pdfTextAnnotations=[];
   document.getElementById('hdr-doc-title').textContent=file.name;
   document.getElementById('pdf-viewer').classList.add('visible');
   toast('Loading PDF…');
-  const ab=await file.arrayBuffer();
-  pdfDoc=await pdfjsLib.getDocument({data:ab}).promise;
+  pdfRawBytes=await file.arrayBuffer();
+  pdfDoc=await pdfjsLib.getDocument({data:pdfRawBytes.slice(0)}).promise;
   pdfTotalPages=pdfDoc.numPages;
   document.getElementById('pdf-total-pages').textContent=pdfTotalPages;
+  document.getElementById('split-total').textContent=pdfTotalPages;
+  document.getElementById('split-to').value=pdfTotalPages;
   pdfCurrentPage=1;
   addRecent(file.name,'','pdf');
   renderRecent();
@@ -787,85 +1059,256 @@ async function loadPDF(file) {
   toast('PDF loaded ✓');
 }
 
+/* ── PDF Render ── */
 async function renderPdfPage(pageNum){
   if(!pdfDoc)return;
   const wrap=document.getElementById('pdf-canvas-wrap');
   wrap.innerHTML='';
   const page=await pdfDoc.getPage(pageNum);
   const viewport=page.getViewport({scale:pdfScale});
+
   const container=document.createElement('div');
   container.className='pdf-page-container';
   container.style.width=viewport.width+'px';
   container.style.height=viewport.height+'px';
+  container.style.position='relative';
+
   const canvas=document.createElement('canvas');
   canvas.className='pdf-canvas';
   canvas.width=viewport.width;canvas.height=viewport.height;
-  const ctx=canvas.getContext('2d');
   container.appendChild(canvas);
+  await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
 
-  // Text layer for selection/highlight
-  const textLayerDiv=document.createElement('div');
-  textLayerDiv.className='pdf-text-layer';
-  textLayerDiv.style.width=viewport.width+'px';
-  textLayerDiv.style.height=viewport.height+'px';
-  container.appendChild(textLayerDiv);
-
-  // Label
-  const label=document.createElement('div');
-  label.className='pdf-page-label';
-  label.textContent=`Page ${pageNum} of ${pdfTotalPages}`;
-  wrap.appendChild(container);wrap.appendChild(label);
-
-  await page.render({canvasContext:ctx,viewport}).promise;
-
-  // Text layer
-  const textContent=await page.getTextContent();
-  textContent.items.forEach(item=>{
-    const tx=pdfjsLib.Util.transform(pdfjsLib.Util.transform(viewport.transform,item.transform),[1,0,0,-1,0,0]);
-    const span=document.createElement('span');
-    span.textContent=item.str;
-    span.style.left=tx[4]+'px';span.style.top=tx[5]+'px';
-    span.style.fontSize=Math.sqrt(tx[0]*tx[0]+tx[1]*tx[1])+'px';
-    span.style.fontFamily=item.fontName||'sans-serif';
-    textLayerDiv.appendChild(span);
-  });
-
-  // Highlight layer
+  // Annotation overlay
   const annoLayer=document.createElement('div');
-  annoLayer.className='pdf-anno-layer';
+  annoLayer.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;';
   container.appendChild(annoLayer);
 
-  // Re-render saved highlights for this page
+  // Re-render saved highlights
   const saved=JSON.parse(localStorage.getItem('teqdocs-pdf-highlights')||'[]');
   saved.filter(h=>h.file===pdfCurrentFilename&&h.page===pageNum).forEach(h=>{
     const rect=document.createElement('div');
     rect.className='pdf-highlight-rect';
-    rect.style.left=h.x+'px';rect.style.top=h.y+'px';rect.style.width=h.w+'px';rect.style.height=h.h+'px';
+    rect.style.cssText=`position:absolute;left:${h.x}px;top:${h.y}px;width:${h.w}px;height:${h.h}px;background:rgba(196,154,60,0.4);border-radius:2px;pointer-events:none;`;
     annoLayer.appendChild(rect);
   });
 
-  // PDF highlight click handler
-  canvas.addEventListener('mouseup',async e=>{
-    if(!pdfHighlightMode)return;
+  // Re-render text annotations for this page
+  pdfTextAnnotations.filter(a=>a.page===pageNum).forEach(a=>{
+    const el=createTextAnnotEl(a,annoLayer);
+    annoLayer.appendChild(el);
+  });
+
+  // Canvas click — handle tools
+  canvas.addEventListener('click',e=>{
+    if(pdfCurrentTool==='addtext'){
+      const rect=canvas.getBoundingClientRect();
+      const x=e.clientX-rect.left, y=e.clientY-rect.top;
+      // Convert to PDF coords (unscaled)
+      const pdfX=x/pdfScale, pdfY=y/pdfScale;
+      pendingTextPos={x,y,pageNum,pdfX,pdfY,viewport};
+      showTextInput(e.clientX, e.clientY);
+    }
+  });
+
+  // Canvas mouseup — highlight tool
+  canvas.addEventListener('mouseup',e=>{
+    if(pdfCurrentTool!=='highlight')return;
     const sel=window.getSelection();
     if(!sel||sel.isCollapsed)return;
     const text=sel.toString().trim();
     if(!text)return;
     const rect=canvas.getBoundingClientRect();
-    const x=e.clientX-rect.left,y=e.clientY-rect.top;
-    const hl={file:pdfCurrentFilename,page:pageNum,text,x:x-60,y:y-20,w:120,h:22,date:Date.now()};
+    const x=e.clientX-rect.left, y=e.clientY-rect.top;
+    const hl={file:pdfCurrentFilename,page:pageNum,text,x:Math.max(0,x-80),y:Math.max(0,y-12),w:160,h:18,date:Date.now()};
     let hls=JSON.parse(localStorage.getItem('teqdocs-pdf-highlights')||'[]');
     hls.unshift(hl);localStorage.setItem('teqdocs-pdf-highlights',JSON.stringify(hls));
-    const hrect=document.createElement('div');hrect.className='pdf-highlight-rect';
-    hrect.style.left=hl.x+'px';hrect.style.top=hl.y+'px';hrect.style.width=hl.w+'px';hrect.style.height=hl.h+'px';
+    const hrect=document.createElement('div');
+    hrect.style.cssText=`position:absolute;left:${hl.x}px;top:${hl.y}px;width:${hl.w}px;height:${hl.h}px;background:rgba(196,154,60,0.4);border-radius:2px;pointer-events:none;`;
     annoLayer.appendChild(hrect);
     savePdfAnnotation(text,pageNum);
     sel.removeAllRanges();
     toast('Highlighted ✓');
   });
 
+  const label=document.createElement('div');
+  label.className='pdf-page-label';
+  label.textContent=`Page ${pageNum} of ${pdfTotalPages}`;
+  wrap.appendChild(container);
+  wrap.appendChild(label);
+
   document.getElementById('pdf-page-input').value=pageNum;
   document.getElementById('pdf-zoom-label').textContent=Math.round(pdfScale*100)+'%';
+}
+
+/* ── Text Annotation ── */
+function createTextAnnotEl(a, layer){
+  const el=document.createElement('div');
+  el.style.cssText=`position:absolute;left:${a.x}px;top:${a.y-16}px;background:rgba(255,255,180,0.9);border:1px solid #c8a000;border-radius:4px;padding:2px 6px;font-size:${Math.max(10,12*pdfScale)}px;font-family:sans-serif;color:#333;cursor:move;white-space:nowrap;max-width:300px;box-shadow:0 2px 6px rgba(0,0,0,0.15);z-index:10;`;
+  el.textContent=a.text;
+  el.title='Double-click to delete';
+  el.addEventListener('dblclick',()=>{
+    pdfTextAnnotations=pdfTextAnnotations.filter(x=>x!==a);
+    el.remove();
+    toast('Annotation removed');
+  });
+  return el;
+}
+
+function showTextInput(clientX, clientY){
+  const wrap=document.getElementById('pdf-text-input-wrap');
+  wrap.style.display='flex';
+  wrap.style.left=Math.min(clientX, window.innerWidth-280)+'px';
+  wrap.style.top=(clientY+10)+'px';
+  document.getElementById('pdf-text-input').value='';
+  setTimeout(()=>document.getElementById('pdf-text-input').focus(),50);
+}
+function confirmAddText(){
+  const text=document.getElementById('pdf-text-input').value.trim();
+  if(!text||!pendingTextPos){cancelAddText();return;}
+  const a={...pendingTextPos,text};
+  pdfTextAnnotations.push(a);
+  // Re-render page to show annotation
+  renderPdfPage(pdfCurrentPage);
+  savePdfAnnotation(text+' [added text]', pendingTextPos.pageNum);
+  cancelAddText();
+  toast('Text added ✓');
+}
+function cancelAddText(){
+  document.getElementById('pdf-text-input-wrap').style.display='none';
+  pendingTextPos=null;
+}
+document.getElementById('pdf-text-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter')confirmAddText();
+  if(e.key==='Escape')cancelAddText();
+});
+
+/* ── Tool switcher ── */
+function setPdfTool(tool){
+  pdfCurrentTool=pdfCurrentTool===tool?'none':tool;
+  document.getElementById('pdf-highlight-btn').classList.toggle('active',pdfCurrentTool==='highlight');
+  document.getElementById('pdf-addtext-btn').classList.toggle('active',pdfCurrentTool==='addtext');
+  if(pdfCurrentTool==='highlight') toast('Highlight mode — select text on the page');
+  else if(pdfCurrentTool==='addtext') toast('Add Text mode — click anywhere on the page');
+  else toast('Tool deactivated');
+}
+
+/* ── Save PDF with edits (pdf-lib) ── */
+async function savePdfEdits(){
+  if(!pdfRawBytes){toast('No PDF loaded');return;}
+  if(typeof PDFLib==='undefined'){toast('pdf-lib not loaded');return;}
+  toast('Saving PDF…');
+  try{
+    const {PDFDocument,rgb,StandardFonts}=PDFLib;
+    const pdfLibDoc=await PDFDocument.load(pdfRawBytes);
+    const font=await pdfLibDoc.embedFont(StandardFonts.Helvetica);
+    const pages=pdfLibDoc.getPages();
+
+    // Write text annotations into the PDF
+    pdfTextAnnotations.forEach(a=>{
+      const page=pages[a.page-1];
+      if(!page)return;
+      const {height}=page.getSize();
+      // Convert screen coords back to PDF coords
+      const pdfX=a.pdfX;
+      const pdfY=height-(a.pdfY); // flip Y axis
+      page.drawText(a.text,{
+        x:pdfX, y:pdfY,
+        size:12, font, color:rgb(0,0,0),
+      });
+    });
+
+    const pdfBytes=await pdfLibDoc.save();
+    const blob=new Blob([pdfBytes],{type:'application/pdf'});
+    const url=URL.createObjectURL(blob);
+    const fname=pdfCurrentFilename.replace(/\.pdf$/i,'')+'_edited.pdf';
+
+    if(window.electronAPI){
+      // In Electron, use native save dialog
+      const reader=new FileReader();
+      reader.onload=async()=>{
+        const result=await window.electronAPI.showSaveDialog(fname, reader.result);
+        if(result.success)toast('PDF saved to disk ✓');
+      };
+      reader.readAsText(blob);
+    } else {
+      const a=document.createElement('a');a.href=url;a.download=fname;
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast('PDF downloaded ✓');
+    }
+  }catch(e){
+    console.error(e);
+    toast('Error saving PDF: '+e.message);
+  }
+}
+
+/* ── Merge PDFs ── */
+function showMergeDialog(){
+  mergeFiles=[];
+  document.getElementById('merge-file-list').textContent='No files selected';
+  document.getElementById('merge-dialog').style.display='flex';
+}
+function closeMergeDialog(){document.getElementById('merge-dialog').style.display='none';}
+document.getElementById('merge-input').addEventListener('change',e=>{
+  mergeFiles=Array.from(e.target.files);
+  document.getElementById('merge-file-list').textContent=mergeFiles.map(f=>f.name).join(', ');
+});
+async function doMergePDFs(){
+  if(mergeFiles.length<2){toast('Select at least 2 PDF files');return;}
+  if(typeof PDFLib==='undefined'){toast('pdf-lib not loaded');return;}
+  toast('Merging PDFs…');
+  try{
+    const {PDFDocument}=PDFLib;
+    const merged=await PDFDocument.create();
+    for(const file of mergeFiles){
+      const bytes=await file.arrayBuffer();
+      const doc=await PDFDocument.load(bytes);
+      const copied=await merged.copyPages(doc,doc.getPageIndices());
+      copied.forEach(p=>merged.addPage(p));
+    }
+    const bytes=await merged.save();
+    const blob=new Blob([bytes],{type:'application/pdf'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='merged.pdf';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    closeMergeDialog();
+    toast(`Merged ${mergeFiles.length} PDFs ✓`);
+  }catch(e){toast('Merge failed: '+e.message);}
+}
+
+/* ── Split PDF ── */
+function showSplitDialog(){
+  document.getElementById('split-from').value=1;
+  document.getElementById('split-to').value=pdfTotalPages||1;
+  document.getElementById('split-dialog').style.display='flex';
+}
+function closeSplitDialog(){document.getElementById('split-dialog').style.display='none';}
+async function doSplitPDF(){
+  if(!pdfRawBytes){toast('No PDF loaded');return;}
+  if(typeof PDFLib==='undefined'){toast('pdf-lib not loaded');return;}
+  const from=parseInt(document.getElementById('split-from').value)||1;
+  const to=parseInt(document.getElementById('split-to').value)||pdfTotalPages;
+  if(from>to||from<1||to>pdfTotalPages){toast('Invalid page range');return;}
+  toast('Extracting pages…');
+  try{
+    const {PDFDocument}=PDFLib;
+    const srcDoc=await PDFDocument.load(pdfRawBytes);
+    const newDoc=await PDFDocument.create();
+    const indices=Array.from({length:to-from+1},(_,i)=>from-1+i);
+    const copied=await newDoc.copyPages(srcDoc,indices);
+    copied.forEach(p=>newDoc.addPage(p));
+    const bytes=await newDoc.save();
+    const blob=new Blob([bytes],{type:'application/pdf'});
+    const url=URL.createObjectURL(blob);
+    const fname=pdfCurrentFilename.replace(/\.pdf$/i,'')+`_pages_${from}-${to}.pdf`;
+    const a=document.createElement('a');a.href=url;a.download=fname;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    closeSplitDialog();
+    toast(`Extracted pages ${from}–${to} ✓`);
+  }catch(e){toast('Split failed: '+e.message);}
 }
 
 function savePdfAnnotation(text,page){
@@ -880,10 +1323,7 @@ async function pdfPrevPage(){if(pdfCurrentPage>1){pdfCurrentPage--;await renderP
 async function pdfGoToPage(n){const p=Math.min(pdfTotalPages,Math.max(1,parseInt(n)||1));pdfCurrentPage=p;await renderPdfPage(p);}
 async function pdfZoomIn(){pdfScale=Math.min(3,pdfScale+0.25);await renderPdfPage(pdfCurrentPage);}
 async function pdfZoomOut(){pdfScale=Math.max(0.5,pdfScale-0.25);await renderPdfPage(pdfCurrentPage);}
-function togglePdfHighlight(){pdfHighlightMode=!pdfHighlightMode;document.getElementById('pdf-highlight-btn').classList.toggle('active',pdfHighlightMode);toast(pdfHighlightMode?'Highlight mode ON — select text':'Highlight mode OFF');}
 function toggleAnnoPanel(){annoPanelOpen=!annoPanelOpen;document.getElementById('anno-panel').classList.toggle('open',annoPanelOpen);}
-
-function pdfExport(){toast('Use Ctrl+P / Cmd+P to print or save as PDF');}
 
 /* ── Screen helpers ── */
 function hideAll(){
@@ -927,7 +1367,61 @@ function exportText(){
   triggerDownload((currentFilename.replace(/\.md$/i,'')||'document')+'.txt',t,'text/plain');
   toast('Exported as text ✓');
 }
-function exportPDF(){closeExportMenu();toast('Opening print dialog…');setTimeout(()=>window.print(),300);}
+function exportPDF(){
+  closeExportMenu();
+  // Open a clean print window with the document content
+  const title = currentFilename.replace(/\.(md|txt|docx)$/i,'') || 'document';
+  const isDarkMode = document.body.classList.contains('dark');
+  const content = document.getElementById('md-body').innerHTML;
+  const printWin = window.open('','_blank');
+  printWin.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(title)}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #fff; color: #1c1a16; font-family: Georgia, 'Times New Roman', serif; font-size: 12pt; line-height: 1.75; padding: 0; }
+  .page { max-width: 100%; padding: 2cm; }
+  h1,h2,h3,h4,h5,h6 { font-family: -apple-system, sans-serif; color: #1c1a16; margin-top: 1.5em; margin-bottom: 0.5em; page-break-after: avoid; }
+  h1 { font-size: 22pt; border-bottom: 2px solid #ccc; padding-bottom: 6pt; }
+  h2 { font-size: 16pt; border-bottom: 1px solid #ddd; padding-bottom: 4pt; }
+  h3 { font-size: 13pt; }
+  p { margin-bottom: 0.8em; text-align: justify; }
+  a { color: #8b4513; }
+  strong { font-weight: 700; }
+  em { font-style: italic; }
+  ul, ol { padding-left: 1.4em; margin-bottom: 0.8em; }
+  li { margin-bottom: 0.3em; }
+  blockquote { border-left: 3px solid #c49a3c; padding: 0.5em 1em; margin: 1em 0; color: #555; font-style: italic; background: #faf8f3; }
+  code { font-family: Consolas, monospace; font-size: 9pt; background: #f0ede6; padding: 1px 4px; border-radius: 3px; color: #8b4513; }
+  pre { background: #f0ede6; padding: 0.8em 1em; border-radius: 6px; overflow-x: auto; margin: 1em 0; page-break-inside: avoid; }
+  pre code { background: none; padding: 0; font-size: 9pt; color: #333; }
+  table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 10pt; page-break-inside: avoid; }
+  th { background: #f0ede6; font-family: sans-serif; font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 10px; text-align: left; border-bottom: 2px solid #8b4513; }
+  td { padding: 7px 10px; border-bottom: 1px solid #ddd; }
+  tr:last-child td { border-bottom: none; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 1.5em 0; }
+  img { max-width: 100%; height: auto; page-break-inside: avoid; }
+  .td-highlight { background: rgba(196,154,60,0.3); }
+  @media print {
+    body { font-size: 11pt; }
+    h1 { font-size: 20pt; }
+    h2 { font-size: 14pt; }
+    a { color: #000; }
+    pre, blockquote, table, img { page-break-inside: avoid; }
+    h1,h2,h3,h4 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">${content}</div>
+<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}}<\/script>
+</body>
+</html>`);
+  printWin.document.close();
+  toast('Print dialog opening…');
+}
 
 /* ── TOC ── */
 function buildToc(){
@@ -1047,6 +1541,281 @@ if(window.electronAPI){
 
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
+
+/* ══════════════════════════════════════════
+   FEATURE 1 — SPLASH SCREEN
+══════════════════════════════════════════ */
+window.addEventListener('load', () => {
+  const splash = document.getElementById('splash');
+  const start = Date.now();
+  const minDisplay = 2000;
+  function hideSplash() {
+    const elapsed = Date.now() - start;
+    const remaining = Math.max(0, minDisplay - elapsed);
+    setTimeout(() => {
+      splash.classList.add('hidden');
+      setTimeout(() => splash.style.display = 'none', 500);
+    }, remaining);
+  }
+  hideSplash();
+});
+
+/* ══════════════════════════════════════════
+   FEATURE 2 — READING PROGRESS SAVED
+══════════════════════════════════════════ */
+function saveReadingProgress() {
+  if (!currentFilename) return;
+  const scrollTop = document.getElementById('content').scrollTop;
+  const total = document.getElementById('content').scrollHeight;
+  const pct = total > 0 ? scrollTop / total : 0;
+  try {
+    let prog = JSON.parse(localStorage.getItem('teqdocs-progress') || '{}');
+    prog[currentFilename] = { pct, scrollTop, date: Date.now() };
+    localStorage.setItem('teqdocs-progress', JSON.stringify(prog));
+  } catch(e) {}
+}
+
+function loadReadingProgress(filename) {
+  try {
+    const prog = JSON.parse(localStorage.getItem('teqdocs-progress') || '{}');
+    return prog[filename] || null;
+  } catch(e) { return null; }
+}
+
+function resumeReading() {
+  const hint = document.getElementById('resume-hint');
+  hint.classList.remove('show');
+  const prog = loadReadingProgress(currentFilename);
+  if (prog) {
+    document.getElementById('content').scrollTo({ top: prog.scrollTop, behavior: 'smooth' });
+  }
+}
+
+// Save progress on scroll
+document.getElementById('content').addEventListener('scroll', () => {
+  saveReadingProgress();
+  // Progress bar
+  const el = document.getElementById('content');
+  document.getElementById('progress-bar').style.width = (el.scrollTop / (el.scrollHeight - el.clientHeight) * 100) + '%';
+});
+
+// Show resume hint when opening a file with saved progress
+function checkResumeHint() {
+  const prog = loadReadingProgress(currentFilename);
+  if (prog && prog.pct > 0.05) {
+    const hint = document.getElementById('resume-hint');
+    const pct = Math.round(prog.pct * 100);
+    hint.textContent = `↩ Resume at ${pct}%`;
+    hint.classList.add('show');
+    setTimeout(() => hint.classList.remove('show'), 5000);
+  }
+}
+
+/* ══════════════════════════════════════════
+   FEATURE 3 — BOOKMARKS
+══════════════════════════════════════════ */
+function getBookmarks() {
+  try { return JSON.parse(localStorage.getItem('teqdocs-bookmarks') || '[]'); } catch { return []; }
+}
+function putBookmarks(arr) { localStorage.setItem('teqdocs-bookmarks', JSON.stringify(arr)); }
+
+function addBookmark() {
+  if (!currentFilename) { toast('Open a document first'); return; }
+  const scrollTop = document.getElementById('content').scrollTop;
+  // Try to find the nearest heading
+  let label = currentFilename;
+  document.querySelectorAll('#md-body h1,#md-body h2,#md-body h3').forEach(h => {
+    const rect = h.getBoundingClientRect();
+    if (rect.top < 120) label = h.textContent;
+  });
+  const bm = { id: 'bm' + Date.now(), file: currentFilename, label, scrollTop, date: Date.now() };
+  let bms = getBookmarks();
+  bms.unshift(bm);
+  bms = bms.slice(0, 50);
+  putBookmarks(bms);
+  renderBookmarks();
+  switchSbTab('bookmarks');
+  toast('Bookmark added ✓');
+}
+
+function renderBookmarks() {
+  const list = document.getElementById('bookmarks-list');
+  const bms = getBookmarks();
+  if (!bms.length) { list.innerHTML = '<div class="bm-empty">No bookmarks yet.<br>Press Ctrl+M while reading to bookmark.</div>'; return; }
+  list.innerHTML = '';
+  bms.forEach(bm => {
+    const el = document.createElement('div');
+    el.className = 'bookmark-item';
+    el.innerHTML = `<span class="bm-icon">🔖</span><span class="bm-text" title="${escapeHtml(bm.file)}">${escapeHtml(bm.label)}</span><button class="bm-del" onclick="event.stopPropagation();deleteBookmark('${bm.id}')">✕</button>`;
+    el.onclick = () => {
+      if (bm.file !== currentFilename) { toast('Open ' + bm.file + ' first'); return; }
+      document.getElementById('content').scrollTo({ top: bm.scrollTop, behavior: 'smooth' });
+    };
+    list.appendChild(el);
+  });
+}
+
+function deleteBookmark(id) {
+  putBookmarks(getBookmarks().filter(b => b.id !== id));
+  renderBookmarks();
+  toast('Bookmark removed');
+}
+
+/* ══════════════════════════════════════════
+   FEATURE 4 — COPY BUTTON ON CODE BLOCKS
+══════════════════════════════════════════ */
+function addCopyButtons(containerId) {
+  const container = document.getElementById(containerId) || document.getElementById('md-body');
+  if (!container) return;
+  container.querySelectorAll('pre').forEach(pre => {
+    if (pre.querySelector('.code-copy-btn')) return; // already added
+    const wrap = document.createElement('div');
+    wrap.className = 'code-wrap';
+    wrap.style.position = 'relative';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'code-copy-btn';
+    btn.textContent = 'Copy';
+    btn.onclick = async () => {
+      const code = pre.querySelector('code');
+      const text = code ? code.innerText : pre.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      } catch(e) { toast('Copy failed'); }
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+/* ══════════════════════════════════════════
+   FEATURE 5 — LIVE WORD COUNT IN EDITOR
+══════════════════════════════════════════ */
+let autosaveTimer;
+document.getElementById('md-editor').addEventListener('input', () => {
+  const content = document.getElementById('md-editor').value;
+  const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+  const chars = content.length;
+  document.getElementById('editor-word-count').textContent = words.toLocaleString();
+  document.getElementById('editor-char-count').textContent = chars.toLocaleString();
+
+  // Autosave indicator
+  const ind = document.getElementById('autosave-indicator');
+  ind.textContent = '● Unsaved';
+  ind.className = '';
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    if (currentSavedId) {
+      doSave();
+      ind.textContent = '✓ Autosaved';
+      ind.className = 'saved';
+      setTimeout(() => { ind.textContent = '● Saved'; }, 2000);
+    }
+  }, 3000);
+});
+
+function updateEditorWordCount() {
+  const content = document.getElementById('md-editor').value;
+  const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+  document.getElementById('editor-word-count').textContent = words.toLocaleString();
+  document.getElementById('editor-char-count').textContent = content.length.toLocaleString();
+}
+
+/* ══════════════════════════════════════════
+   FEATURE 6 — DARK PDF OVERLAY (NIGHT MODE)
+══════════════════════════════════════════ */
+let pdfDarkMode = false;
+function togglePdfDark() {
+  pdfDarkMode = !pdfDarkMode;
+  document.getElementById('pdf-dark-btn').classList.toggle('active', pdfDarkMode);
+  // Apply dark canvas filter to all PDF canvases
+  document.querySelectorAll('.pdf-canvas').forEach(c => {
+    c.style.filter = pdfDarkMode ? 'invert(1) hue-rotate(180deg)' : '';
+  });
+  toast(pdfDarkMode ? '🌙 Night mode on' : '☀️ Night mode off');
+}
+
+/* ══════════════════════════════════════════
+   FEATURE 7 — ABOUT + SHORTCUTS PANELS
+══════════════════════════════════════════ */
+function openAbout() { document.getElementById('about-panel').classList.add('open'); }
+function closeAbout() { document.getElementById('about-panel').classList.remove('open'); }
+function openShortcuts() { document.getElementById('shortcuts-panel').classList.add('open'); }
+function closeShortcuts() { document.getElementById('shortcuts-panel').classList.remove('open'); }
+
+/* ══════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+══════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement.tagName.toLowerCase();
+  const inInput = ['input','textarea'].includes(tag);
+
+  // ? key — shortcuts panel
+  if (e.key === '?' && !inInput) { openShortcuts(); return; }
+
+  // Escape
+  if (e.key === 'Escape') {
+    closeAbout(); closeShortcuts(); closeSearch();
+    document.getElementById('pdf-text-input-wrap').style.display = 'none';
+    document.getElementById('merge-dialog').style.display = 'none';
+    document.getElementById('split-dialog').style.display = 'none';
+    return;
+  }
+
+  if (!e.ctrlKey && !e.metaKey) return;
+
+  switch(e.key.toLowerCase()) {
+    case 'f':
+      if (!inInput) { e.preventDefault(); toggleSearch(); }
+      break;
+    case 'b':
+      e.preventDefault(); toggleSidebar();
+      break;
+    case 'd':
+      e.preventDefault(); toggleTheme();
+      break;
+    case 'm':
+      e.preventDefault(); addBookmark();
+      break;
+    case '=':
+    case '+':
+      if (document.getElementById('pdf-viewer').classList.contains('visible')) {
+        e.preventDefault(); pdfZoomIn();
+      }
+      break;
+    case '-':
+      if (document.getElementById('pdf-viewer').classList.contains('visible')) {
+        e.preventDefault(); pdfZoomOut();
+      }
+      break;
+    case 'f':
+      if (e.shiftKey) { e.preventDefault(); toggleFocusMode(); }
+      break;
+  }
+});
+
+// Arrow keys for PDF navigation
+document.addEventListener('keydown', e => {
+  const isPdf = document.getElementById('pdf-viewer').classList.contains('visible');
+  if (!isPdf) return;
+  const inInput = ['input','textarea'].includes(document.activeElement.tagName.toLowerCase());
+  if (inInput) return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') pdfNextPage();
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') pdfPrevPage();
+});
+
+/* ── Patch renderDoc to use new features ── */
+const _origRenderDoc = renderDoc;
+renderDoc = function() {
+  _origRenderDoc();
+  addCopyButtons('md-body');
+  checkResumeHint();
+  renderBookmarks();
+};
+
 </script>
 </body>
 </html>
