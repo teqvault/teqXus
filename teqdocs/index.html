@@ -287,26 +287,200 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 .anno-page { font-size: 0.65rem; color: var(--ink3); margin-top: 4px; font-family: var(--font-ui); }
 .anno-empty { font-size: 0.8rem; color: var(--ink3); text-align: center; padding: 2rem 1rem; font-style: italic; }
 
-/* ── EDITOR ── */
+/* ── EDITOR — Premium ── */
 #editor-screen { display: none; flex-direction: column; height: 100%; }
 #editor-screen.visible { display: flex; }
-.editor-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--parchment2); border-bottom: 1px solid var(--parchment3); flex-shrink: 0; }
-.editor-back { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 1.1rem; padding: 4px; line-height: 1; flex-shrink: 0; font-family: var(--font-ui); }
-.editor-title-input { flex: 1; background: transparent; border: none; color: var(--ink); font-size: 0.9rem; font-weight: 700; font-family: var(--font-serif); outline: none; min-width: 0; }
-.editor-title-input::placeholder { color: var(--ink3); }
-.editor-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; }
-.editor-dl-btn { background: none; border: 1px solid var(--parchment3); border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; color: var(--ink3); font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; }
-.fmt-bar { display: flex; gap: 2px; padding: 6px 10px; background: var(--parchment2); border-bottom: 1px solid var(--parchment3); overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
+
+.editor-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  background: var(--parchment2);
+  border-bottom: 1px solid var(--parchment3);
+  flex-shrink: 0;
+}
+.editor-back { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 1.1rem; padding: 4px; line-height: 1; flex-shrink: 0; font-family: var(--font-ui); transition: opacity 0.15s; }
+.editor-back:hover { opacity: 0.7; }
+.editor-title-input { flex: 1; background: transparent; border: none; color: var(--ink); font-size: 1rem; font-weight: 700; font-family: var(--font-serif); outline: none; min-width: 0; letter-spacing: -0.01em; }
+.editor-title-input::placeholder { color: var(--ink3); font-style: italic; }
+.editor-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: opacity 0.15s, transform 0.1s; }
+.editor-save-btn:hover { opacity: 0.9; }
+.editor-save-btn:active { transform: scale(0.96); }
+.editor-dl-btn { background: none; border: 1px solid var(--parchment3); border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; color: var(--ink3); font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
+.editor-dl-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Floating format toolbar */
+.fmt-bar {
+  display: flex; gap: 2px; padding: 6px 12px;
+  background: var(--parchment2);
+  border-bottom: 1px solid var(--parchment3);
+  overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
+  align-items: center;
+}
 .fmt-bar::-webkit-scrollbar { display: none; }
-.fmt-btn { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 0.8rem; font-weight: 700; font-family: var(--font-ui); padding: 5px 8px; border-radius: 6px; white-space: nowrap; line-height: 1; transition: background 0.12s, color 0.12s; }
-.fmt-btn:hover { background: var(--parchment3); color: var(--ink); }
-.preview-toggle { display: flex; border-top: 1px solid var(--parchment3); flex-shrink: 0; }
+.fmt-group { display: flex; gap: 1px; }
+.fmt-divider { width: 1px; height: 18px; background: var(--parchment3); margin: 0 6px; flex-shrink: 0; }
+.fmt-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--ink3); font-size: 0.8rem; font-weight: 700;
+  font-family: var(--font-ui); padding: 5px 9px; border-radius: 6px;
+  white-space: nowrap; line-height: 1;
+  transition: background 0.12s, color 0.12s;
+  display: flex; align-items: center; gap: 3px;
+}
+.fmt-btn:hover { background: var(--parchment3); color: var(--accent); }
+.fmt-btn:active { background: var(--accent-light); color: var(--accent); }
+
+/* Split pane editor */
+.editor-panes {
+  display: flex; flex: 1; overflow: hidden; min-height: 0;
+}
+.editor-pane-write {
+  flex: 1; display: flex; flex-direction: column;
+  border-right: 1px solid var(--parchment3);
+  min-width: 0;
+  position: relative;
+}
+.editor-pane-preview {
+  flex: 1; overflow-y: auto; min-width: 0;
+  display: none;
+}
+.editor-pane-preview.visible { display: block; }
+.editor-pane-label {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink3);
+  padding: 5px 14px; background: var(--parchment2);
+  border-bottom: 1px solid var(--parchment3);
+  flex-shrink: 0;
+}
+
+/* The actual textarea */
+#md-editor {
+  flex: 1; background: var(--parchment);
+  color: var(--ink); border: none; outline: none;
+  padding: 2rem 2.5rem;
+  font-family: 'Georgia', serif;
+  font-size: 1rem; line-height: 1.9;
+  resize: none; width: 100%;
+  -webkit-overflow-scrolling: touch;
+  max-width: 680px; margin: 0 auto;
+  display: block;
+}
+#md-editor::placeholder { color: var(--ink3); font-style: italic; }
+
+/* Line focus mode */
+#editor-screen.line-focus #md-editor { color: rgba(28,26,22,0.25); }
+.dark #editor-screen.line-focus #md-editor { color: rgba(232,228,218,0.2); }
+
+/* Preview toggle */
+.preview-toggle {
+  display: flex; border-bottom: 1px solid var(--parchment3);
+  flex-shrink: 0; background: var(--parchment2);
+}
 .pv-btn { flex: 1; background: none; border: none; padding: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink3); cursor: pointer; font-family: var(--font-ui); transition: color 0.15s, background 0.15s; }
-.pv-btn.active { color: var(--accent); background: var(--parchment2); }
-#md-editor { flex: 1; background: var(--parchment); color: var(--ink); border: none; outline: none; padding: 1.5rem; font-family: var(--font-mono); font-size: 0.88rem; line-height: 1.75; resize: none; width: 100%; }
-#md-editor::placeholder { color: var(--ink3); }
+.pv-btn.active { color: var(--accent); background: var(--parchment); border-bottom: 2px solid var(--accent); }
 #editor-preview { display: none; flex: 1; overflow-y: auto; }
 #editor-preview.visible { display: block; }
+
+/* ── READER PREMIUM ── */
+
+/* Drop caps */
+.md-body.drop-caps > p:first-of-type::first-letter {
+  float: left; font-size: 3.5em; line-height: 0.85;
+  font-family: var(--font-serif); font-weight: 700;
+  color: var(--accent); margin-right: 6px; margin-top: 4px;
+}
+
+/* Pull quotes */
+.md-body blockquote {
+  border-left: none !important;
+  border-top: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+  padding: 1.2rem 1.5rem !important;
+  margin: 2rem 0 !important;
+  background: none !important;
+  color: var(--ink2) !important;
+  font-size: 1.15em;
+  font-style: italic;
+  text-align: center;
+  position: relative;
+}
+.md-body blockquote::before {
+  content: '\201C';
+  font-size: 4rem; line-height: 0;
+  color: var(--gold); opacity: 0.4;
+  position: absolute; top: 1.2rem; left: 1rem;
+  font-family: Georgia, serif;
+}
+
+/* Reading progress ring */
+#reading-ring {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 44px; height: 44px;
+  z-index: 50; display: none; cursor: pointer;
+}
+#reading-ring.visible { display: block; }
+#reading-ring svg { width: 44px; height: 44px; transform: rotate(-90deg); }
+#reading-ring .ring-bg { fill: none; stroke: var(--parchment3); stroke-width: 3; }
+#reading-ring .ring-fill { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 113; stroke-dashoffset: 113; transition: stroke-dashoffset 0.3s; }
+#reading-ring .ring-text { font-size: 9px; fill: var(--ink3); font-family: var(--font-ui); font-weight: 700; transform: rotate(90deg); transform-origin: center; text-anchor: middle; dominant-baseline: middle; }
+
+/* Finish time indicator */
+.doc-finish-time {
+  font-size: 0.68rem; color: var(--ink3);
+  white-space: nowrap; font-family: var(--font-ui);
+}
+
+/* Section transitions from TOC */
+@keyframes sectionReveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.section-highlight { animation: sectionReveal 0.4s ease-out; }
+
+/* ── SIGNATURE PAD ── */
+#sig-panel {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 800; display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px);
+}
+#sig-panel.open { display: flex; }
+.sig-box {
+  background: var(--parchment2); border-radius: var(--radius);
+  padding: 1.5rem; width: 90%; max-width: 520px;
+  border: 1px solid var(--parchment3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.sig-title { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
+.sig-close { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.1rem; }
+.sig-canvas-wrap {
+  border: 2px dashed var(--parchment3); border-radius: 8px;
+  background: #fff; overflow: hidden; cursor: crosshair;
+  margin-bottom: 1rem; position: relative;
+}
+.sig-canvas-wrap::after {
+  content: 'Sign here';
+  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+  font-size: 0.72rem; color: #ccc; font-family: var(--font-ui);
+  pointer-events: none;
+}
+#sig-canvas { display: block; width: 100%; height: 160px; touch-action: none; }
+.sig-tabs { display: flex; gap: 6px; margin-bottom: 1rem; }
+.sig-tab { flex: 1; padding: 8px; background: var(--parchment3); border: none; border-radius: 7px; font-size: 0.8rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; color: var(--ink3); transition: all 0.15s; }
+.sig-tab.active { background: var(--accent); color: #fff; }
+.sig-type-wrap { display: none; margin-bottom: 1rem; }
+.sig-type-wrap.visible { display: block; }
+.sig-type-input { width: 100%; border: 1px solid var(--parchment3); border-radius: 8px; padding: 10px 14px; font-size: 1.4rem; font-family: 'Brush Script MT', cursive; color: var(--ink); background: var(--parchment); outline: none; }
+.sig-type-input:focus { border-color: var(--accent); }
+.sig-actions { display: flex; gap: 8px; }
+.sig-btn { flex: 1; padding: 10px; border-radius: 8px; font-size: 0.88rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; border: none; transition: all 0.15s; }
+.sig-btn.primary { background: var(--accent); color: #fff; }
+.sig-btn.secondary { background: var(--parchment3); color: var(--ink); }
+.sig-btn.danger { background: none; border: 1px solid #c43131; color: #c43131; flex: 0; padding: 10px 16px; }
+.sig-color-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+.sig-color { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s; }
+.sig-color.active { border-color: var(--accent); transform: scale(1.2); }
+.sig-size-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.78rem; color: var(--ink3); font-family: var(--font-ui); }
+.sig-size-row input { flex: 1; accent-color: var(--accent); }
 
 /* ── SEARCH ── */
 #search-bar { position: fixed; top: var(--header-h); left: 0; right: 0; background: var(--parchment2); border-bottom: 1px solid var(--parchment3); padding: 10px 16px; z-index: 100; display: none; align-items: center; gap: 10px; box-shadow: var(--shadow); }
@@ -591,10 +765,12 @@ mark.current { background: var(--gold); color: #000; }
           <div class="dib-meta">
             <span class="dib-readtime" id="doc-readtime"></span>
             <span id="doc-wordcount" style="font-size:0.68rem;color:var(--ink3)"></span>
+            <span class="doc-finish-time" id="doc-finish-time"></span>
           </div>
           <div class="dib-actions">
             <button class="dib-btn" id="doc-edit-btn" onclick="openEditorFromReader()" style="display:none">✏️ Edit</button>
             <button class="dib-btn" onclick="addBookmark()" title="Add bookmark (Ctrl+M)">🔖 Bookmark</button>
+            <button class="dib-btn" onclick="openSigPanel()" title="Add signature">✍ Sign</button>
             <button class="dib-btn" id="doc-export-btn" onclick="toggleExportMenu()">Export ▾</button>
           </div>
           <div class="export-menu" id="export-menu">
@@ -690,30 +866,55 @@ mark.current { background: var(--gold); color: #000; }
       <div id="editor-screen">
         <div class="editor-header">
           <button class="editor-back" onclick="editorBack()">← Back</button>
-          <input class="editor-title-input" id="editor-title" type="text" placeholder="Untitled.md" autocomplete="off" spellcheck="false">
-          <button class="editor-dl-btn" onclick="downloadCurrent()">⬇</button>
+          <input class="editor-title-input" id="editor-title" type="text" placeholder="Untitled document" autocomplete="off" spellcheck="false">
+          <button class="editor-dl-btn" onclick="downloadCurrent()" title="Download">⬇</button>
           <button class="editor-save-btn" onclick="saveFile()">Save</button>
         </div>
-        <div class="fmt-bar">
-          <button class="fmt-btn" onclick="fmt('# ')">H1</button>
-          <button class="fmt-btn" onclick="fmt('## ')">H2</button>
-          <button class="fmt-btn" onclick="fmt('### ')">H3</button>
-          <button class="fmt-btn" onclick="fmtWrap('**','**')"><b>B</b></button>
-          <button class="fmt-btn" onclick="fmtWrap('*','*')"><i>I</i></button>
-          <button class="fmt-btn" onclick="fmtWrap('`','`')">Code</button>
-          <button class="fmt-btn" onclick="fmt('- ')">List</button>
-          <button class="fmt-btn" onclick="fmt('1. ')">1.</button>
-          <button class="fmt-btn" onclick="fmt('> ')">Quote</button>
-          <button class="fmt-btn" onclick="fmtBlock('```\n','\n```')">Block</button>
-          <button class="fmt-btn" onclick="fmt('- [ ] ')">☐</button>
-          <button class="fmt-btn" onclick="insertHr()">HR</button>
-        </div>
         <div class="preview-toggle">
-          <button class="pv-btn active" id="pv-write" onclick="setMode('write')">Write</button>
-          <button class="pv-btn" id="pv-preview" onclick="setMode('preview')">Preview</button>
+          <button class="pv-btn active" id="pv-write" onclick="setMode('write')">✏ Write</button>
+          <button class="pv-btn" id="pv-split" onclick="setMode('split')">⊡ Split</button>
+          <button class="pv-btn" id="pv-preview" onclick="setMode('preview')">👁 Preview</button>
+          <button class="pv-btn" id="pv-focus" onclick="toggleLineFocus()" style="margin-left:auto">⊙ Focus</button>
         </div>
-        <textarea id="md-editor" placeholder="Start writing Markdown...&#10;&#10;# My Document&#10;&#10;Hello world!"></textarea>
-        <div id="editor-preview"><div class="md-body" id="editor-preview-body"></div></div>
+        <div class="fmt-bar">
+          <div class="fmt-group">
+            <button class="fmt-btn" onclick="fmt('# ')" title="Heading 1">H1</button>
+            <button class="fmt-btn" onclick="fmt('## ')" title="Heading 2">H2</button>
+            <button class="fmt-btn" onclick="fmt('### ')" title="Heading 3">H3</button>
+          </div>
+          <div class="fmt-divider"></div>
+          <div class="fmt-group">
+            <button class="fmt-btn" onclick="fmtWrap('**','**')" title="Bold"><b>B</b></button>
+            <button class="fmt-btn" onclick="fmtWrap('*','*')" title="Italic"><i>I</i></button>
+            <button class="fmt-btn" onclick="fmtWrap('~~','~~')" title="Strikethrough"><s>S</s></button>
+          </div>
+          <div class="fmt-divider"></div>
+          <div class="fmt-group">
+            <button class="fmt-btn" onclick="fmtWrap('`','`')" title="Inline code">Code</button>
+            <button class="fmt-btn" onclick="fmtBlock('```\n','\n```')" title="Code block">{ }</button>
+          </div>
+          <div class="fmt-divider"></div>
+          <div class="fmt-group">
+            <button class="fmt-btn" onclick="fmt('- ')" title="Bullet list">• List</button>
+            <button class="fmt-btn" onclick="fmt('1. ')" title="Numbered list">1.</button>
+            <button class="fmt-btn" onclick="fmt('- [ ] ')" title="Task list">☐</button>
+          </div>
+          <div class="fmt-divider"></div>
+          <div class="fmt-group">
+            <button class="fmt-btn" onclick="fmt('> ')" title="Blockquote">" Quote</button>
+            <button class="fmt-btn" onclick="insertHr()" title="Horizontal rule">—</button>
+            <button class="fmt-btn" onclick="insertLink()" title="Link">🔗</button>
+          </div>
+        </div>
+        <div class="editor-panes" id="editor-panes">
+          <div class="editor-pane-write" id="editor-pane-write">
+            <textarea id="md-editor" placeholder="Start writing…&#10;&#10;# Your title here&#10;&#10;Let your words flow."></textarea>
+          </div>
+          <div class="editor-pane-preview" id="editor-pane-preview">
+            <div class="editor-pane-label">Preview</div>
+            <div id="editor-preview"><div class="md-body" id="editor-preview-body"></div></div>
+          </div>
+        </div>
         <div id="editor-status">
           <span>📝 <span id="editor-word-count">0</span> words</span>
           <span>📄 <span id="editor-char-count">0</span> chars</span>
@@ -731,6 +932,55 @@ mark.current { background: var(--gold); color: #000; }
   <input type="text" id="search-input" placeholder="Search in document…" autocomplete="off" autocorrect="off" spellcheck="false">
   <span class="search-count" id="search-count"></span>
   <button class="search-close" onclick="closeSearch()">✕</button>
+</div>
+
+<!-- Reading progress ring -->
+<div id="reading-ring" title="Reading progress">
+  <svg viewBox="0 0 44 44">
+    <circle class="ring-bg" cx="22" cy="22" r="18"/>
+    <circle class="ring-fill" id="ring-fill" cx="22" cy="22" r="18"/>
+    <text class="ring-text" x="22" y="22" id="ring-text">0%</text>
+  </svg>
+</div>
+
+<!-- Signature Panel -->
+<div id="sig-panel">
+  <div class="sig-box">
+    <div class="sig-title">
+      ✍ Add Signature
+      <button class="sig-close" onclick="closeSigPanel()">✕</button>
+    </div>
+    <div class="sig-tabs">
+      <button class="sig-tab active" id="sig-tab-draw" onclick="switchSigTab('draw')">✏ Draw</button>
+      <button class="sig-tab" id="sig-tab-type" onclick="switchSigTab('type')">T Type</button>
+    </div>
+    <div id="sig-draw-wrap">
+      <div class="sig-color-row">
+        <span style="font-size:0.75rem;color:var(--ink3);font-family:var(--font-ui);">Color:</span>
+        <div class="sig-color active" style="background:#1c1a16" data-color="#1c1a16" onclick="setSigColor(this)"></div>
+        <div class="sig-color" style="background:#8b4513" data-color="#8b4513" onclick="setSigColor(this)"></div>
+        <div class="sig-color" style="background:#1a6fb5" data-color="#1a6fb5" onclick="setSigColor(this)"></div>
+        <div class="sig-color" style="background:#2d7a3a" data-color="#2d7a3a" onclick="setSigColor(this)"></div>
+      </div>
+      <div class="sig-size-row">
+        <span>Size:</span>
+        <input type="range" id="sig-size" min="1" max="8" value="2" oninput="sigPenSize=this.value">
+        <span id="sig-size-label">2px</span>
+      </div>
+      <div class="sig-canvas-wrap">
+        <canvas id="sig-canvas" width="460" height="160"></canvas>
+      </div>
+    </div>
+    <div class="sig-type-wrap" id="sig-type-wrap">
+      <input class="sig-type-input" id="sig-type-input" type="text" placeholder="Your name here…" oninput="renderTypedSig()">
+      <canvas id="sig-type-canvas" width="460" height="100" style="display:none"></canvas>
+    </div>
+    <div class="sig-actions">
+      <button class="sig-btn danger" onclick="clearSig()">Clear</button>
+      <button class="sig-btn secondary" onclick="closeSigPanel()">Cancel</button>
+      <button class="sig-btn primary" onclick="applySig()">Insert Signature</button>
+    </div>
+  </div>
 </div>
 
 <!-- Modal -->
@@ -1550,10 +1800,7 @@ function toggleTheme(){isDark=!isDark;applyTheme();localStorage.setItem('teqdocs
 function applyTheme(){document.body.classList.toggle('dark',isDark);document.getElementById('theme-btn').textContent=isDark?'☀️':'🌙';document.querySelector('meta[name="theme-color"]').content=isDark?'#1a1814':'#f5f0e8';}
 
 /* ── Progress bar ── */
-document.getElementById('content').addEventListener('scroll',e=>{
-  const el=e.target;
-  document.getElementById('progress-bar').style.width=(el.scrollTop/(el.scrollHeight-el.clientHeight)*100)+'%';
-});
+// Handled by the unified scroll handler below
 
 /* ── Modal ── */
 let modalCallback=null;
@@ -1660,9 +1907,6 @@ function resumeReading() {
 // Save progress on scroll
 document.getElementById('content').addEventListener('scroll', () => {
   saveReadingProgress();
-  // Progress bar
-  const el = document.getElementById('content');
-  document.getElementById('progress-bar').style.width = (el.scrollTop / (el.scrollHeight - el.clientHeight) * 100) + '%';
 });
 
 // Show resume hint when opening a file with saved progress
@@ -1880,7 +2124,273 @@ renderDoc = function() {
   addCopyButtons('md-body');
   checkResumeHint();
   renderBookmarks();
+  updateReadingRing();
+  updateFinishTime();
+  applyDropCaps();
 };
+
+/* ══════════════════════════════════════════
+   PREMIUM: SPLIT PANE EDITOR
+══════════════════════════════════════════ */
+function setMode(mode) {
+  const ta = document.getElementById('md-editor');
+  const pvPane = document.getElementById('editor-pane-preview');
+  const pvBody = document.getElementById('editor-preview-body');
+  const preview = document.getElementById('editor-preview');
+  document.getElementById('pv-write').classList.toggle('active', mode==='write');
+  document.getElementById('pv-split').classList.toggle('active', mode==='split');
+  document.getElementById('pv-preview').classList.toggle('active', mode==='preview');
+
+  if (mode === 'write') {
+    pvPane.classList.remove('visible');
+    ta.style.display = 'block';
+    document.getElementById('editor-pane-write').style.flex = '1';
+  } else if (mode === 'split') {
+    pvPane.classList.add('visible');
+    ta.style.display = 'block';
+    preview.classList.add('visible');
+    document.getElementById('editor-pane-write').style.flex = '1';
+    pvBody.innerHTML = parseMd(ta.value);
+    highlightCode('editor-preview-body');
+    addCopyButtons('editor-preview-body');
+    // Live preview on input
+    ta.oninput = () => {
+      pvBody.innerHTML = parseMd(ta.value);
+      highlightCode('editor-preview-body');
+      addCopyButtons('editor-preview-body');
+    };
+  } else if (mode === 'preview') {
+    pvPane.classList.add('visible');
+    ta.style.display = 'none';
+    preview.classList.add('visible');
+    document.getElementById('editor-pane-write').style.flex = '0';
+    pvBody.innerHTML = parseMd(ta.value);
+    highlightCode('editor-preview-body');
+    addCopyButtons('editor-preview-body');
+  }
+  editorMode = mode;
+}
+
+/* ── Line focus mode ── */
+let lineFocusActive = false;
+function toggleLineFocus() {
+  lineFocusActive = !lineFocusActive;
+  document.getElementById('editor-screen').classList.toggle('line-focus', lineFocusActive);
+  document.getElementById('pv-focus').classList.toggle('active', lineFocusActive);
+  if (lineFocusActive) {
+    document.getElementById('md-editor').addEventListener('input', highlightCurrentLine);
+    document.getElementById('md-editor').addEventListener('keyup', highlightCurrentLine);
+    document.getElementById('md-editor').addEventListener('click', highlightCurrentLine);
+    highlightCurrentLine();
+  } else {
+    document.getElementById('md-editor').style.caretColor = '';
+    // Remove line highlights
+    document.querySelectorAll('.focus-line').forEach(l => l.remove());
+  }
+}
+function highlightCurrentLine() {
+  // Simple approach: just ensure caret is visible with accent color
+  document.getElementById('md-editor').style.caretColor = 'var(--accent)';
+}
+
+/* ── Insert link helper ── */
+function insertLink() {
+  const ta = document.getElementById('md-editor');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const sel = ta.value.slice(s, e) || 'link text';
+  const insert = `[${sel}](https://)`;
+  ta.value = ta.value.slice(0, s) + insert + ta.value.slice(e);
+  ta.selectionStart = s + sel.length + 3;
+  ta.selectionEnd = s + insert.length - 1;
+  ta.focus();
+}
+
+/* ══════════════════════════════════════════
+   PREMIUM: READING PROGRESS RING
+══════════════════════════════════════════ */
+function updateReadingRing() {
+  const ring = document.getElementById('reading-ring');
+  const isReading = document.getElementById('reader').classList.contains('visible');
+  ring.classList.toggle('visible', isReading);
+}
+
+/* ── Unified scroll handler (progress bar + ring + progress save) ── */
+document.getElementById('content').addEventListener('scroll', e => {
+  const el = e.target;
+  const pct = Math.min(1, el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight));
+  const pctRounded = Math.round(pct * 100);
+  // Progress bar
+  document.getElementById('progress-bar').style.width = pctRounded + '%';
+  // Reading ring
+  const circumference = 113;
+  const offset = circumference - (pct * circumference);
+  const fill = document.getElementById('ring-fill');
+  const text = document.getElementById('ring-text');
+  if (fill) fill.style.strokeDashoffset = offset;
+  if (text) text.textContent = pctRounded + '%';
+});
+
+/* ══════════════════════════════════════════
+   PREMIUM: FINISH TIME ESTIMATE
+══════════════════════════════════════════ */
+function updateFinishTime() {
+  const el = document.getElementById('doc-finish-time');
+  if (!el || !currentMd) return;
+  const words = currentMd.trim().split(/\s+/).length;
+  const mins = Math.max(1, Math.round(words / 200));
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + mins);
+  const h = now.getHours();
+  const m = now.getMinutes().toString().padStart(2, '0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  el.textContent = `Done by ${h12}:${m} ${ampm}`;
+}
+
+/* ══════════════════════════════════════════
+   PREMIUM: DROP CAPS
+══════════════════════════════════════════ */
+function applyDropCaps() {
+  const body = document.getElementById('md-body');
+  if (!body) return;
+  body.classList.add('drop-caps');
+}
+
+/* ══════════════════════════════════════════
+   PREMIUM: SIGNATURE PAD
+══════════════════════════════════════════ */
+let sigDrawing = false;
+let sigColor = '#1c1a16';
+let sigPenSize = 2;
+let sigMode = 'draw';
+let sigCanvas, sigCtx;
+
+function openSigPanel() {
+  document.getElementById('sig-panel').classList.add('open');
+  setTimeout(() => {
+    sigCanvas = document.getElementById('sig-canvas');
+    sigCtx = sigCanvas.getContext('2d');
+    sigCtx.strokeStyle = sigColor;
+    sigCtx.lineWidth = sigPenSize;
+    sigCtx.lineCap = 'round';
+    sigCtx.lineJoin = 'round';
+    setupSigCanvas();
+  }, 50);
+}
+function closeSigPanel() { document.getElementById('sig-panel').classList.remove('open'); }
+
+function switchSigTab(tab) {
+  sigMode = tab;
+  document.getElementById('sig-tab-draw').classList.toggle('active', tab === 'draw');
+  document.getElementById('sig-tab-type').classList.toggle('active', tab === 'type');
+  document.getElementById('sig-draw-wrap').style.display = tab === 'draw' ? 'block' : 'none';
+  document.getElementById('sig-type-wrap').classList.toggle('visible', tab === 'type');
+}
+
+function setSigColor(el) {
+  document.querySelectorAll('.sig-color').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  sigColor = el.dataset.color;
+  if (sigCtx) sigCtx.strokeStyle = sigColor;
+}
+
+document.getElementById('sig-size').addEventListener('input', function() {
+  sigPenSize = this.value;
+  document.getElementById('sig-size-label').textContent = sigPenSize + 'px';
+  if (sigCtx) sigCtx.lineWidth = sigPenSize;
+});
+
+function setupSigCanvas() {
+  const canvas = sigCanvas;
+  const ctx = sigCtx;
+  let drawing = false, lastX = 0, lastY = 0;
+
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / r.width;
+    const scaleY = canvas.height / r.height;
+    if (e.touches) return {
+      x: (e.touches[0].clientX - r.left) * scaleX,
+      y: (e.touches[0].clientY - r.top) * scaleY
+    };
+    return { x: (e.clientX - r.left) * scaleX, y: (e.clientY - r.top) * scaleY };
+  }
+
+  canvas.addEventListener('mousedown', e => { drawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+  canvas.addEventListener('mousemove', e => {
+    if (!drawing) return;
+    const p = getPos(e);
+    ctx.strokeStyle = sigColor; ctx.lineWidth = sigPenSize;
+    ctx.lineTo(p.x, p.y); ctx.stroke();
+    lastX = p.x; lastY = p.y;
+  });
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; ctx.beginPath(); ctx.moveTo(p.x, p.y); }, {passive: false});
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault(); if (!drawing) return;
+    const p = getPos(e);
+    ctx.strokeStyle = sigColor; ctx.lineWidth = sigPenSize;
+    ctx.lineTo(p.x, p.y); ctx.stroke();
+  }, {passive: false});
+  canvas.addEventListener('touchend', () => drawing = false);
+}
+
+function clearSig() {
+  if (sigMode === 'draw' && sigCtx) {
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  } else {
+    document.getElementById('sig-type-input').value = '';
+  }
+}
+
+function renderTypedSig() {
+  const text = document.getElementById('sig-type-input').value;
+  const canvas = document.getElementById('sig-type-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = '52px "Brush Script MT", cursive';
+  ctx.fillStyle = sigColor;
+  ctx.fillText(text, 20, 70);
+}
+
+function applySig() {
+  let dataUrl;
+  if (sigMode === 'draw') {
+    // Check if canvas has content
+    const blank = document.createElement('canvas');
+    blank.width = sigCanvas.width; blank.height = sigCanvas.height;
+    if (sigCanvas.toDataURL() === blank.toDataURL()) { toast('Please draw your signature first'); return; }
+    dataUrl = sigCanvas.toDataURL('image/png');
+  } else {
+    const text = document.getElementById('sig-type-input').value.trim();
+    if (!text) { toast('Please type your name first'); return; }
+    renderTypedSig();
+    dataUrl = document.getElementById('sig-type-canvas').toDataURL('image/png');
+  }
+
+  // Insert into MD editor if open, otherwise append to current doc view
+  const isEditor = document.getElementById('editor-screen').classList.contains('visible');
+  if (isEditor) {
+    const ta = document.getElementById('md-editor');
+    const s = ta.selectionStart;
+    const sigMd = `\n![Signature](${dataUrl})\n`;
+    ta.value = ta.value.slice(0, s) + sigMd + ta.value.slice(s);
+    ta.selectionStart = ta.selectionEnd = s + sigMd.length;
+    ta.focus();
+    toast('Signature inserted ✓');
+  } else {
+    // Append signature image to reader
+    const body = document.getElementById('md-body');
+    const img = document.createElement('img');
+    img.src = dataUrl;
+    img.style.cssText = 'max-width:280px;display:block;margin:1rem 0;border:none;box-shadow:none;border-radius:0;';
+    body.appendChild(img);
+    toast('Signature added to document ✓');
+  }
+  closeSigPanel();
+}
+
 
 </script>
 </body>
