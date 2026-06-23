@@ -257,7 +257,8 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 }
 .pdf-canvas { display: block; }
 .pdf-text-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; pointer-events: none; }
-.pdf-text-layer span { position: absolute; white-space: pre; cursor: text; }
+.pdf-text-layer.selectable { pointer-events: auto; }
+.pdf-text-layer span { position: absolute; white-space: pre; cursor: text; color: transparent; }
 .pdf-anno-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
 .pdf-highlight-rect { position: absolute; background: rgba(196,154,60,0.35); border-radius: 2px; pointer-events: none; }
 .pdf-page-label {
@@ -430,22 +431,23 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 /* PDF form fields */
 .pdf-form-field {
   position: absolute;
-  background: rgba(232,164,74,0.15);
-  border: 1.5px solid rgba(232,164,74,0.6);
+  background: rgba(255,255,255,0.92);
+  border: 1.5px solid rgba(232,164,74,0.7);
   border-radius: 3px;
   font-family: var(--font-ui);
-  font-size: 13px;
-  color: var(--ink);
-  padding: 2px 4px;
+  font-size: 12px;
+  color: #1c1a16;
+  padding: 1px 4px;
   outline: none;
   cursor: text;
   z-index: 20;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
 }
 .pdf-form-field:focus {
-  background: rgba(232,164,74,0.25);
+  background: #fff;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(232,164,74,0.2);
+  box-shadow: 0 0 0 2px rgba(232,164,74,0.25);
 }
 .pdf-form-checkbox {
   position: absolute;
@@ -835,6 +837,7 @@ mark.current { background: var(--gold); color: #000; }
           <!-- File ops -->
           <button class="pdf-tb-btn" onclick="showMergeDialog()">⊕ Merge</button>
           <button class="pdf-tb-btn" onclick="showSplitDialog()">✂ Split</button>
+          <button class="pdf-tb-btn" onclick="convertPdfToDocx()" title="Convert to editable Word document">📝 Edit as Word</button>
           <button class="pdf-tb-btn" onclick="savePdfEdits()" style="background:var(--accent);color:#fff;border-color:var(--accent)">💾 Save PDF</button>
         </div>
 
@@ -1029,13 +1032,7 @@ mark.current { background: var(--gold); color: #000; }
 <script>
 /* ── PDF.js worker ── */
 if(typeof pdfjsLib!=='undefined'){
-  // In Electron, files are served from app directory
-  // Use absolute path relative to current script location
-  if(window.electronAPI){
-    pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
-  } else {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 }
 
 /* ── State ── */
@@ -1420,8 +1417,34 @@ async function renderSinglePage(pageNum,wrap) {
   container.appendChild(canvas);
   await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
   if(pdfDarkMode) canvas.style.filter='invert(1) hue-rotate(180deg)';
+
+  // Text layer for selection/highlighting
+  const textLayerDiv = document.createElement('div');
+  textLayerDiv.className = 'pdf-text-layer' + (pdfCurrentTool==='highlight' ? ' selectable' : '');
+  textLayerDiv.style.width = viewport.width + 'px';
+  textLayerDiv.style.height = viewport.height + 'px';
+  container.appendChild(textLayerDiv);
+  // Render text items async (don't await — let it load in background)
+  page.getTextContent().then(textContent => {
+    textContent.items.forEach(item => {
+      if (!item.str.trim()) return;
+      const tx = pdfjsLib.Util.transform(
+        pdfjsLib.Util.transform(viewport.transform, item.transform),
+        [1, 0, 0, -1, 0, 0]
+      );
+      const span = document.createElement('span');
+      span.textContent = item.str;
+      span.style.left = tx[4] + 'px';
+      span.style.top = tx[5] + 'px';
+      span.style.fontSize = Math.sqrt(tx[0]*tx[0] + tx[1]*tx[1]) + 'px';
+      span.style.fontFamily = item.fontName || 'sans-serif';
+      textLayerDiv.appendChild(span);
+    });
+  }).catch(()=>{});
+
   const annoLayer=document.createElement('div');
-  annoLayer.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;';
+  const annoPointerEvents = (pdfCurrentTool==='form'||pdfCurrentTool==='addtext') ? 'auto' : 'none';
+  annoLayer.style.cssText=`position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:${annoPointerEvents};`;
   container.appendChild(annoLayer);
   const saved=JSON.parse(localStorage.getItem('teqdocs-pdf-highlights')||'[]');
   saved.filter(h=>h.file===pdfCurrentFilename&&h.page===pageNum).forEach(h=>{
@@ -1623,6 +1646,12 @@ function setPdfTool(tool){
   document.getElementById('pdf-highlight-btn').classList.toggle('active',pdfCurrentTool==='highlight');
   document.getElementById('pdf-addtext-btn').classList.toggle('active',pdfCurrentTool==='addtext');
   document.getElementById('pdf-form-btn').classList.toggle('active',pdfCurrentTool==='form');
+
+  // Toggle text layer selectability
+  document.querySelectorAll('.pdf-text-layer').forEach(l => {
+    l.classList.toggle('selectable', pdfCurrentTool==='highlight');
+  });
+
   if(pdfCurrentTool==='highlight') toast('Highlight mode — select text on the page');
   else if(pdfCurrentTool==='addtext') toast('Add Text mode — click anywhere on the page');
   else if(pdfCurrentTool==='form') { toast('Form Fill mode — click fields to type'); renderAllPages(); }
@@ -1648,81 +1677,280 @@ async function renderFormFields(pageNum, annoLayer, viewport) {
     if (!fields.length) return;
 
     fields.forEach(field => {
-      const [x1, y1, x2, y2] = field.rect;
-      // Convert PDF coords to screen coords
-      const vbW = viewport.viewBox[2] - viewport.viewBox[0];
-      const vbH = viewport.viewBox[3] - viewport.viewBox[1];
-      const scX = viewport.width / vbW;
-      const scY = viewport.height / vbH;
-      const left = x1 * scX;
-      const top = viewport.height - (y2 * scY);
-      const w = (x2 - x1) * scX;
-      const h = (y2 - y1) * scY;
+      // Use PDF.js viewport to properly transform rect coordinates
+      const rect = pdfjsLib.Util.normalizeRect([
+        field.rect[0], field.rect[1],
+        field.rect[2], field.rect[3]
+      ]);
 
-      if(field.fieldType === 'Tx') {
+      // Transform from PDF space to screen space
+      const topLeft = pdfjsLib.Util.applyTransform([rect[0], rect[3]], viewport.transform);
+      const bottomRight = pdfjsLib.Util.applyTransform([rect[2], rect[1]], viewport.transform);
+
+      const left = Math.min(topLeft[0], bottomRight[0]);
+      const top = Math.min(topLeft[1], bottomRight[1]);
+      const width = Math.abs(bottomRight[0] - topLeft[0]);
+      const height = Math.abs(bottomRight[1] - topLeft[1]);
+
+      if (field.fieldType === 'Tx') {
         const inp = document.createElement('input');
         inp.type = 'text';
         inp.className = 'pdf-form-field';
-        inp.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:${w}px;height:${h}px;`;
-        inp.placeholder = field.fieldName || '';
+        inp.style.left = left + 'px';
+        inp.style.top = top + 'px';
+        inp.style.width = width + 'px';
+        inp.style.height = height + 'px';
         inp.value = field.fieldValue || '';
+        inp.placeholder = '';
         inp.title = field.fieldName || '';
+        // Match PDF font size
+        inp.style.fontSize = Math.max(8, height * 0.6) + 'px';
         annoLayer.appendChild(inp);
-      } else if(field.fieldType === 'Btn') {
+      } else if (field.fieldType === 'Btn' && !field.radioButton) {
         const cb = document.createElement('input');
         cb.type = 'checkbox';
         cb.className = 'pdf-form-checkbox';
-        cb.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:${Math.min(w,20)}px;height:${Math.min(h,20)}px;`;
+        cb.style.left = left + 'px';
+        cb.style.top = top + 'px';
+        cb.style.width = Math.min(width, height) + 'px';
+        cb.style.height = Math.min(width, height) + 'px';
         cb.checked = field.fieldValue === 'Yes' || field.fieldValue === true;
         annoLayer.appendChild(cb);
-      } else if(field.fieldType === 'Ch') {
+      } else if (field.fieldType === 'Ch') {
         const sel = document.createElement('select');
         sel.className = 'pdf-form-field';
-        sel.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:${w}px;height:${h}px;`;
+        sel.style.left = left + 'px';
+        sel.style.top = top + 'px';
+        sel.style.width = width + 'px';
+        sel.style.height = height + 'px';
+        sel.style.fontSize = Math.max(8, height * 0.6) + 'px';
         (field.options || []).forEach(opt => {
           const o = document.createElement('option');
           o.value = opt.exportValue || opt;
           o.textContent = opt.displayValue || opt;
-          if((field.fieldValue || '') === o.value) o.selected = true;
+          if ((field.fieldValue || '') === o.value) o.selected = true;
           sel.appendChild(o);
         });
         annoLayer.appendChild(sel);
       }
     });
-  } catch(e) { /* no form fields */ }
+  } catch(e) { console.warn('Form fields:', e); }
 }
 
 /* ── Save PDF ── */
 async function savePdfEdits(){
   if(!pdfRawBytes){toast('No PDF loaded');return;}
   if(typeof PDFLib==='undefined'){toast('pdf-lib not loaded');return;}
-  toast('Saving PDF…');
+  toast('Preparing PDF…');
   try{
-    const {PDFDocument,rgb,StandardFonts}=PDFLib;
-    const pdfLibDoc=await PDFDocument.load(pdfRawBytes);
-    const font=await pdfLibDoc.embedFont(StandardFonts.Helvetica);
-    const pages=pdfLibDoc.getPages();
-    pdfTextAnnotations.forEach(a=>{
-      const page=pages[a.page-1];if(!page)return;
-      const {height}=page.getSize();
-      page.drawText(a.text,{x:a.pdfX,y:height-a.pdfY,size:12,font,color:rgb(0,0,0)});
+    const {PDFDocument, rgb, StandardFonts, PDFName, PDFDict, PDFArray, PDFString, PDFNumber, degrees} = PDFLib;
+    const pdfLibDoc = await PDFDocument.load(pdfRawBytes, {ignoreEncryption: true});
+    const pages = pdfLibDoc.getPages();
+    const helvetica = await pdfLibDoc.embedFont(StandardFonts.Helvetica);
+    const helveticaBold = await pdfLibDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // ── 1. Save form field values ──
+    const wrap = document.getElementById('pdf-canvas-wrap');
+    const pageWrappers = wrap.querySelectorAll('.pdf-page-wrapper');
+
+    // Get filled form values from HTML inputs
+    const formData = {};
+    pageWrappers.forEach(pw => {
+      const pageNum = parseInt(pw.dataset.page);
+      const inputs = pw.querySelectorAll('.pdf-form-field, .pdf-form-checkbox');
+      inputs.forEach((inp, idx) => {
+        if (!formData[pageNum]) formData[pageNum] = [];
+        formData[pageNum].push({
+          index: idx,
+          value: inp.type === 'checkbox' ? (inp.checked ? 'Yes' : 'Off') : inp.value,
+          type: inp.type,
+          left: parseFloat(inp.style.left),
+          top: parseFloat(inp.style.top),
+          width: parseFloat(inp.style.width),
+          height: parseFloat(inp.style.height),
+          fontSize: parseFloat(inp.style.fontSize) || 11,
+        });
+      });
     });
-    const pdfBytes=await pdfLibDoc.save();
-    const blob=new Blob([pdfBytes],{type:'application/pdf'});
-    const fname=pdfCurrentFilename.replace(/\.pdf$/i,'')+'_edited.pdf';
-    if(window.electronAPI){
-      const result=await window.electronAPI.showSaveDialog(fname,'');
-      if(result.success)toast('PDF saved ✓');
-    } else {
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');a.href=url;a.download=fname;
-      document.body.appendChild(a);a.click();document.body.removeChild(a);
-      URL.revokeObjectURL(url);toast('PDF downloaded ✓');
+
+    // Write form values as text drawn over field positions
+    for (const [pageNum, fields] of Object.entries(formData)) {
+      const page = pages[parseInt(pageNum) - 1];
+      if (!page) continue;
+      const {width: pageW, height: pageH} = page.getSize();
+
+      // Get the viewport for this page to do coordinate conversion
+      const pdfPage = await pdfDoc.getPage(parseInt(pageNum));
+      const rotation = (pdfPage.rotate + (pdfRotations[parseInt(pageNum)] || 0)) % 360;
+      const viewport = pdfPage.getViewport({scale: pdfScale, rotation});
+
+      fields.forEach(f => {
+        if (f.type === 'checkbox') return; // handle separately
+        if (!f.value.trim()) return;
+
+        // Convert screen coords back to PDF coords using inverse transform
+        const invTransform = pdfjsLib.Util.inverseTransform(viewport.transform);
+        const pdfPoint = pdfjsLib.Util.applyTransform([f.left, f.top + f.height * 0.75], invTransform);
+
+        const x = pdfPoint[0];
+        const y = pdfPoint[1];
+
+        // Draw white rectangle to clear existing field content
+        page.drawRectangle({
+          x: x - 1,
+          y: y - f.height * 0.3,
+          width: f.width / pdfScale + 2,
+          height: f.height / pdfScale + 2,
+          color: rgb(1, 1, 1),
+          opacity: 0.9,
+        });
+
+        // Draw the text value
+        page.drawText(f.value, {
+          x: x + 1,
+          y: y - 2,
+          size: Math.max(7, f.fontSize / pdfScale),
+          font: helvetica,
+          color: rgb(0, 0, 0),
+          maxWidth: f.width / pdfScale,
+        });
+      });
     }
-  }catch(e){toast('Error: '+e.message);}
+
+    // ── 2. Save text annotations (added text) ──
+    for (const a of pdfTextAnnotations) {
+      const page = pages[a.page - 1];
+      if (!page) continue;
+      const {height: pageH} = page.getSize();
+      const pdfPage = await pdfDoc.getPage(a.page);
+      const viewport = pdfPage.getViewport({scale: pdfScale});
+      const invTransform = pdfjsLib.Util.inverseTransform(viewport.transform);
+      const pdfPoint = pdfjsLib.Util.applyTransform([a.x, a.y], invTransform);
+
+      // Draw highlight background for visibility
+      page.drawRectangle({
+        x: pdfPoint[0] - 1,
+        y: pdfPoint[1] - 2,
+        width: a.text.length * 6 + 4,
+        height: 14,
+        color: rgb(1, 1, 0.7),
+        opacity: 0.7,
+      });
+
+      page.drawText(a.text, {
+        x: pdfPoint[0],
+        y: pdfPoint[1],
+        size: 11,
+        font: helvetica,
+        color: rgb(0, 0, 0),
+      });
+    }
+
+    // ── 3. Save highlights as PDF highlight annotations ──
+    const savedHighlights = JSON.parse(localStorage.getItem('teqdocs-pdf-highlights') || '[]')
+      .filter(h => h.file === pdfCurrentFilename);
+
+    for (const hl of savedHighlights) {
+      const page = pages[hl.page - 1];
+      if (!page) continue;
+      const {height: pageH} = page.getSize();
+      const pdfPage = await pdfDoc.getPage(hl.page);
+      const viewport = pdfPage.getViewport({scale: pdfScale});
+      const invTransform = pdfjsLib.Util.inverseTransform(viewport.transform);
+      const topLeft = pdfjsLib.Util.applyTransform([hl.x, hl.y], invTransform);
+      const bottomRight = pdfjsLib.Util.applyTransform([hl.x + hl.w, hl.y + hl.h], invTransform);
+
+      page.drawRectangle({
+        x: Math.min(topLeft[0], bottomRight[0]),
+        y: Math.min(topLeft[1], bottomRight[1]),
+        width: Math.abs(bottomRight[0] - topLeft[0]),
+        height: Math.abs(bottomRight[1] - topLeft[1]),
+        color: rgb(1, 0.9, 0.2),
+        opacity: 0.4,
+      });
+    }
+
+    // ── 4. Save signatures embedded as images ──
+    const sigImages = document.querySelectorAll('#md-body img[src^="data:image/png"]');
+    // (Signatures in PDF viewer are handled separately via annoLayer — skip here)
+
+    // ── 5. Save with proper flags ──
+    const pdfBytes = await pdfLibDoc.save({
+      addDefaultPage: false,
+      useObjectStreams: false,
+    });
+
+    const blob = new Blob([pdfBytes], {type: 'application/pdf'});
+    const fname = pdfCurrentFilename.replace(/\.pdf$/i, '') + '_edited.pdf';
+
+    if (window.electronAPI) {
+      // In Electron — use native save dialog with binary
+      const arr = Array.from(pdfBytes);
+      const result = await window.electronAPI.showSaveDialog(fname, JSON.stringify(arr));
+      if (result.success) toast('PDF saved to disk ✓');
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fname;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast('PDF downloaded ✓');
+    }
+  } catch(e) {
+    console.error('PDF save error:', e);
+    toast('Save error: ' + e.message);
+  }
 }
 
-/* ── Merge PDFs ── */
+/* ── Convert PDF to editable DOCX ── */
+async function convertPdfToDocx() {
+  if (!pdfRawBytes) { toast('No PDF loaded'); return; }
+  toast('Converting PDF to Word document…');
+
+  try {
+    const blob = new Blob([pdfRawBytes], { type: 'application/pdf' });
+    const formData = new FormData();
+    formData.append('file', blob, pdfCurrentFilename);
+
+    const res = await fetch('https://teqxus-backend.onrender.com/convert-pdf', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      toast('Conversion failed: ' + (err.message || err.error));
+      return;
+    }
+
+    const docxBlob = await res.blob();
+    const docxFilename = pdfCurrentFilename.replace(/\.pdf$/i, '.docx');
+
+    if (window.electronAPI) {
+      // In Electron — save to disk then open in editor
+      const arr = Array.from(new Uint8Array(await docxBlob.arrayBuffer()));
+      const result = await window.electronAPI.showSaveDialog(docxFilename, JSON.stringify(arr));
+      if (result.success) {
+        toast('Word document saved — open it from My Files to edit ✓');
+      }
+    } else {
+      // In browser — download it
+      const url = URL.createObjectURL(docxBlob);
+      const a = document.createElement('a');
+      a.href = url; a.download = docxFilename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast('Word document downloaded — open it in TeqDocs to edit ✓');
+    }
+  } catch(e) {
+    console.error('Convert error:', e);
+    toast('Conversion error: ' + e.message);
+  }
+}
+
+
 function showMergeDialog(){mergeFiles=[];document.getElementById('merge-file-list').textContent='No files selected';document.getElementById('merge-dialog').style.display='flex';}
 function closeMergeDialog(){document.getElementById('merge-dialog').style.display='none';}
 document.getElementById('merge-input').addEventListener('change',e=>{mergeFiles=Array.from(e.target.files);document.getElementById('merge-file-list').textContent=mergeFiles.map(f=>f.name).join(', ');});
@@ -2510,10 +2738,11 @@ function renderTypedSig() {
   ctx.fillText(text, 20, 70);
 }
 
+let pendingSigDataUrl = null;
+
 function applySig() {
   let dataUrl;
   if (sigMode === 'draw') {
-    // Check if canvas has content
     const blank = document.createElement('canvas');
     blank.width = sigCanvas.width; blank.height = sigCanvas.height;
     if (sigCanvas.toDataURL() === blank.toDataURL()) { toast('Please draw your signature first'); return; }
@@ -2525,9 +2754,9 @@ function applySig() {
     dataUrl = document.getElementById('sig-type-canvas').toDataURL('image/png');
   }
 
-  // Insert into MD editor if open, otherwise append to current doc view
   const isEditor = document.getElementById('editor-screen').classList.contains('visible');
   if (isEditor) {
+    // In editor — insert at cursor position
     const ta = document.getElementById('md-editor');
     const s = ta.selectionStart;
     const sigMd = `\n![Signature](${dataUrl})\n`;
@@ -2535,16 +2764,50 @@ function applySig() {
     ta.selectionStart = ta.selectionEnd = s + sigMd.length;
     ta.focus();
     toast('Signature inserted ✓');
+    closeSigPanel();
   } else {
-    // Append signature image to reader
-    const body = document.getElementById('md-body');
-    const img = document.createElement('img');
-    img.src = dataUrl;
-    img.style.cssText = 'max-width:280px;display:block;margin:1rem 0;border:none;box-shadow:none;border-radius:0;';
-    body.appendChild(img);
-    toast('Signature added to document ✓');
+    // In reader — enter placement mode
+    pendingSigDataUrl = dataUrl;
+    closeSigPanel();
+    enterSigPlacementMode();
   }
-  closeSigPanel();
+}
+
+function enterSigPlacementMode() {
+  toast('Click anywhere in the document to place your signature');
+  const body = document.getElementById('md-body');
+  body.style.cursor = 'crosshair';
+
+  function placeSig(e) {
+    if (!pendingSigDataUrl) return;
+    // Create a draggable signature image
+    const img = document.createElement('img');
+    img.src = pendingSigDataUrl;
+    img.style.cssText = `
+      max-width: 200px; display: block;
+      border: none; box-shadow: none; border-radius: 0;
+      position: relative;
+      cursor: move;
+      margin: 0.5rem 0;
+    `;
+    img.title = 'Drag to reposition · Double-click to remove';
+    img.addEventListener('dblclick', () => {
+      if (confirm('Remove signature?')) img.remove();
+    });
+
+    // Insert at click position — find nearest element
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const target = el?.closest('p,h1,h2,h3,h4,blockquote,li') || body;
+    target.after(img);
+
+    // Cleanup
+    pendingSigDataUrl = null;
+    body.style.cursor = '';
+    body.removeEventListener('click', placeSig);
+    toast('Signature placed ✓ — drag to reposition, double-click to remove');
+  }
+
+  body.addEventListener('click', placeSig);
 }
 
 
