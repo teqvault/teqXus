@@ -128,14 +128,12 @@ body { background: var(--parchment); color: var(--ink); font-family: var(--font-
 .toc-empty { font-size: 0.8rem; color: var(--ink3); text-align: center; padding: 1.5rem 1rem; }
 
 /* ── CONTENT AREA ── */
-#content { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; }
+#content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; min-height: 0; }
+#welcome { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 2rem; text-align: center; gap: 1.5rem; }
+#reader { display: none; flex: 1; overflow-y: auto; padding-bottom: 4rem; }
+#reader.visible { display: block; }
 
 /* ── WELCOME ── */
-#welcome {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 100%; padding: 3rem 2rem;
-  text-align: center; gap: 1.5rem;
-}
 .welcome-book { font-size: 4rem; line-height: 1; }
 .welcome-title { font-family: var(--font-serif); font-size: 2rem; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; }
 .welcome-title span { color: var(--accent); }
@@ -150,8 +148,7 @@ body { background: var(--parchment); color: var(--ink); font-family: var(--font-
 .wf-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; border: 1px solid var(--parchment3); color: var(--ink3); font-family: var(--font-ui); }
 
 /* ── READER ── */
-#reader { display: none; padding-bottom: 4rem; }
-#reader.visible { display: block; }
+#reader.visible { display: block; overflow-y: auto; flex: 1; }
 
 /* Doc info bar */
 .doc-info-bar {
@@ -288,7 +285,7 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 .anno-empty { font-size: 0.8rem; color: var(--ink3); text-align: center; padding: 2rem 1rem; font-style: italic; }
 
 /* ── EDITOR — Premium ── */
-#editor-screen { display: none; flex-direction: column; height: 100%; }
+#editor-screen { display: none; flex-direction: column; flex: 1; min-height: 0; }
 #editor-screen.visible { display: flex; }
 
 .editor-header {
@@ -430,12 +427,40 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
   white-space: nowrap; font-family: var(--font-ui);
 }
 
-/* Section transitions from TOC */
-@keyframes sectionReveal {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+/* PDF form fields */
+.pdf-form-field {
+  position: absolute;
+  background: rgba(232,164,74,0.15);
+  border: 1.5px solid rgba(232,164,74,0.6);
+  border-radius: 3px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--ink);
+  padding: 2px 4px;
+  outline: none;
+  cursor: text;
+  z-index: 20;
+  transition: border-color 0.15s, background 0.15s;
 }
-.section-highlight { animation: sectionReveal 0.4s ease-out; }
+.pdf-form-field:focus {
+  background: rgba(232,164,74,0.25);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(232,164,74,0.2);
+}
+.pdf-form-checkbox {
+  position: absolute;
+  accent-color: var(--accent);
+  width: 16px; height: 16px;
+  cursor: pointer;
+  z-index: 20;
+}
+
+/* Section highlight on TOC jump */
+@keyframes sectionJump {
+  0% { background: rgba(139,69,19,0.15); }
+  100% { background: transparent; }
+}
+.section-jumped { animation: sectionJump 1.5s ease-out; }
 
 /* ── SIGNATURE PAD ── */
 #sig-panel {
@@ -801,6 +826,9 @@ mark.current { background: var(--gold); color: #000; }
           <!-- Edit tools -->
           <button class="pdf-tb-btn" id="pdf-highlight-btn" onclick="setPdfTool('highlight')">🖊 Highlight</button>
           <button class="pdf-tb-btn" id="pdf-addtext-btn" onclick="setPdfTool('addtext')">T+ Add Text</button>
+          <button class="pdf-tb-btn" id="pdf-form-btn" onclick="setPdfTool('form')">📋 Fill Form</button>
+          <button class="pdf-tb-btn" onclick="rotatePage(-90)" title="Rotate left">↺</button>
+          <button class="pdf-tb-btn" onclick="rotatePage(90)" title="Rotate right">↻</button>
           <button class="pdf-tb-btn" id="pdf-dark-btn" onclick="togglePdfDark()">🌙 Night</button>
           <button class="pdf-tb-btn" onclick="toggleAnnoPanel()">📝 Notes</button>
           <div style="width:1px;height:20px;background:var(--parchment3);margin:0 4px;flex-shrink:0"></div>
@@ -1001,10 +1029,13 @@ mark.current { background: var(--gold); color: #000; }
 <script>
 /* ── PDF.js worker ── */
 if(typeof pdfjsLib!=='undefined'){
-  const workerSrc = window.electronAPI
-    ? new URL('pdf.worker.min.js', document.baseURI).href
-    : 'pdf.worker.min.js';
-  pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+  // In Electron, files are served from app directory
+  // Use absolute path relative to current script location
+  if(window.electronAPI){
+    pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
+  } else {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  }
 }
 
 /* ── State ── */
@@ -1373,7 +1404,8 @@ async function renderAllPages() {
 
 async function renderSinglePage(pageNum,wrap) {
   const page=await pdfDoc.getPage(pageNum);
-  const viewport=page.getViewport({scale:pdfScale});
+  const rotation = (page.rotate + (pdfRotations[pageNum] || 0)) % 360;
+  const viewport=page.getViewport({scale:pdfScale, rotation});
   const wrapper=document.createElement('div');
   wrapper.className='pdf-page-wrapper';
   wrapper.dataset.page=pageNum;
@@ -1398,6 +1430,8 @@ async function renderSinglePage(pageNum,wrap) {
     annoLayer.appendChild(rect);
   });
   pdfTextAnnotations.filter(a=>a.page===pageNum).forEach(a=>annoLayer.appendChild(createTextAnnotEl(a,annoLayer)));
+  // Render form fields if in form mode
+  await renderFormFields(pageNum, annoLayer, viewport);
   canvas.addEventListener('click',e=>{
     if(pdfCurrentTool!=='addtext')return;
     const r=canvas.getBoundingClientRect();
@@ -1472,42 +1506,75 @@ function scrollToPage(pageNum,flipDir){
 }
 
 /* ── Zoom ── */
-async function pdfZoomIn(){pdfScale=Math.min(3,pdfScale+0.25);await renderAllPages();}
-async function pdfZoomOut(){pdfScale=Math.max(0.5,pdfScale-0.25);await renderAllPages();}
+async function pdfZoomIn(){
+  pdfScale=Math.min(3,+(pdfScale+0.25).toFixed(2));
+  document.getElementById('pdf-zoom-label').textContent=Math.round(pdfScale*100)+'%';
+  await renderAllPages();
+}
+async function pdfZoomOut(){
+  pdfScale=Math.max(0.5,+(pdfScale-0.25).toFixed(2));
+  document.getElementById('pdf-zoom-label').textContent=Math.round(pdfScale*100)+'%';
+  await renderAllPages();
+}
 async function pdfZoomFit(){
   const wrap=document.getElementById('pdf-canvas-wrap');
   if(!pdfDoc)return;
   const page=await pdfDoc.getPage(1);
   const vp=page.getViewport({scale:1});
-  pdfScale=Math.max(0.5,(wrap.clientWidth-64)/vp.width);
+  pdfScale=Math.max(0.5,+((wrap.clientWidth-64)/vp.width).toFixed(2));
   await renderAllPages();
 }
 
-/* ── Pinch/scroll zoom setup ── */
+/* ── Debounced zoom setup ── */
+let zoomDebounceTimer=null;
 function setupPdfZoom(){
   const wrap=document.getElementById('pdf-canvas-wrap');
-  wrap.addEventListener('wheel',async e=>{
-    if(!e.ctrlKey&&!e.metaKey)return;
+
+  // Ctrl+scroll — debounced so it doesn't fire on every pixel
+  wrap.addEventListener('wheel', e=>{
+    if(!e.ctrlKey&&!e.metaKey) return;
     e.preventDefault();
-    pdfScale=e.deltaY<0?Math.min(3,pdfScale+0.1):Math.max(0.5,pdfScale-0.1);
-    await renderAllPages();
+    clearTimeout(zoomDebounceTimer);
+    // Update scale immediately for feedback
+    pdfScale = e.deltaY < 0
+      ? Math.min(3, +(pdfScale+0.1).toFixed(2))
+      : Math.max(0.5, +(pdfScale-0.1).toFixed(2));
+    document.getElementById('pdf-zoom-label').textContent = Math.round(pdfScale*100)+'%';
+    // Only re-render after user stops scrolling for 300ms
+    zoomDebounceTimer = setTimeout(async () => {
+      await renderAllPages();
+    }, 300);
   },{passive:false});
+
+  // Touch pinch — debounced
   let lastDist=0;
   wrap.addEventListener('touchstart',e=>{
     if(e.touches.length===2) lastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
   },{passive:true});
-  wrap.addEventListener('touchmove',async e=>{
+  wrap.addEventListener('touchmove',e=>{
     if(e.touches.length!==2)return;
     const dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
     if(lastDist>0){
       const delta=dist-lastDist;
-      if(Math.abs(delta)>5){pdfScale=Math.min(3,Math.max(0.5,pdfScale+delta*0.005));lastDist=dist;await renderAllPages();}
+      if(Math.abs(delta)>8){
+        pdfScale=Math.min(3,Math.max(0.5,+(pdfScale+delta*0.004).toFixed(2)));
+        document.getElementById('pdf-zoom-label').textContent=Math.round(pdfScale*100)+'%';
+        lastDist=dist;
+        clearTimeout(zoomDebounceTimer);
+        zoomDebounceTimer=setTimeout(async()=>{await renderAllPages();},400);
+      }
     }
     lastDist=dist;
   },{passive:true});
   wrap.addEventListener('touchend',()=>{lastDist=0;},{passive:true});
+
+  // Double-click to reset
   wrap.addEventListener('dblclick',async e=>{
-    if(e.target.closest('.pdf-page-container')){pdfScale=1.5;await renderAllPages();toast('Zoom reset');}
+    if(e.target.closest('.pdf-page-container')){
+      pdfScale=1.5;
+      await renderAllPages();
+      toast('Zoom reset');
+    }
   });
 }
 
@@ -1531,7 +1598,17 @@ function confirmAddText(){
   const text=document.getElementById('pdf-text-input').value.trim();
   if(!text||!pendingTextPos){cancelAddText();return;}
   pdfTextAnnotations.push({...pendingTextPos,text});
-  renderAllPages();
+  // Only re-render the current page, not all pages
+  const wrap=document.getElementById('pdf-canvas-wrap');
+  const target=wrap.querySelector(`.pdf-page-wrapper[data-page="${pendingTextPos.pageNum}"]`);
+  if(target){
+    const container=target.querySelector('.pdf-page-container');
+    const annoLayer=target.querySelector('.pdf-anno-layer')||container.querySelector('div:last-child');
+    if(annoLayer){
+      const el=createTextAnnotEl({...pendingTextPos,text},annoLayer);
+      annoLayer.appendChild(el);
+    }
+  }
   savePdfAnnotation(text+' [added text]',pendingTextPos.pageNum);
   cancelAddText();toast('Text added ✓');
 }
@@ -1539,13 +1616,80 @@ function cancelAddText(){document.getElementById('pdf-text-input-wrap').style.di
 document.getElementById('pdf-text-input').addEventListener('keydown',e=>{if(e.key==='Enter')confirmAddText();if(e.key==='Escape')cancelAddText();});
 
 /* ── Tool switcher ── */
+let pdfRotations = {};
+
 function setPdfTool(tool){
   pdfCurrentTool=pdfCurrentTool===tool?'none':tool;
   document.getElementById('pdf-highlight-btn').classList.toggle('active',pdfCurrentTool==='highlight');
   document.getElementById('pdf-addtext-btn').classList.toggle('active',pdfCurrentTool==='addtext');
-  if(pdfCurrentTool==='highlight')toast('Highlight mode — select text on the page');
-  else if(pdfCurrentTool==='addtext')toast('Add Text mode — click anywhere on the page');
+  document.getElementById('pdf-form-btn').classList.toggle('active',pdfCurrentTool==='form');
+  if(pdfCurrentTool==='highlight') toast('Highlight mode — select text on the page');
+  else if(pdfCurrentTool==='addtext') toast('Add Text mode — click anywhere on the page');
+  else if(pdfCurrentTool==='form') { toast('Form Fill mode — click fields to type'); renderAllPages(); }
   else toast('Tool deactivated');
+}
+
+/* ── Page Rotation ── */
+async function rotatePage(degrees) {
+  if(!pdfDoc) return;
+  const current = pdfRotations[pdfCurrentPage] || 0;
+  pdfRotations[pdfCurrentPage] = (current + degrees + 360) % 360;
+  await renderAllPages();
+  toast(`Page ${pdfCurrentPage} rotated ${degrees > 0 ? '↻' : '↺'}`);
+}
+
+/* ── PDF Form Fields ── */
+async function renderFormFields(pageNum, annoLayer, viewport) {
+  if(pdfCurrentTool !== 'form') return;
+  try {
+    const page = await pdfDoc.getPage(pageNum);
+    const annotations = await page.getAnnotations();
+    const fields = annotations.filter(a => a.subtype === 'Widget');
+    if (!fields.length) return;
+
+    fields.forEach(field => {
+      const [x1, y1, x2, y2] = field.rect;
+      // Convert PDF coords to screen coords
+      const vbW = viewport.viewBox[2] - viewport.viewBox[0];
+      const vbH = viewport.viewBox[3] - viewport.viewBox[1];
+      const scX = viewport.width / vbW;
+      const scY = viewport.height / vbH;
+      const left = x1 * scX;
+      const top = viewport.height - (y2 * scY);
+      const w = (x2 - x1) * scX;
+      const h = (y2 - y1) * scY;
+
+      if(field.fieldType === 'Tx') {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'pdf-form-field';
+        inp.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:${w}px;height:${h}px;`;
+        inp.placeholder = field.fieldName || '';
+        inp.value = field.fieldValue || '';
+        inp.title = field.fieldName || '';
+        annoLayer.appendChild(inp);
+      } else if(field.fieldType === 'Btn') {
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'pdf-form-checkbox';
+        cb.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:${Math.min(w,20)}px;height:${Math.min(h,20)}px;`;
+        cb.checked = field.fieldValue === 'Yes' || field.fieldValue === true;
+        annoLayer.appendChild(cb);
+      } else if(field.fieldType === 'Ch') {
+        const sel = document.createElement('select');
+        sel.className = 'pdf-form-field';
+        sel.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:${w}px;height:${h}px;`;
+        (field.options || []).forEach(opt => {
+          const o = document.createElement('option');
+          o.value = opt.exportValue || opt;
+          o.textContent = opt.displayValue || opt;
+          if((field.fieldValue || '') === o.value) o.selected = true;
+          sel.appendChild(o);
+        });
+        annoLayer.appendChild(sel);
+      }
+    });
+  } catch(e) { /* no form fields */ }
 }
 
 /* ── Save PDF ── */
@@ -1749,7 +1893,19 @@ function buildToc(){
     const level=parseInt(h.tagName[1]);
     const item=document.createElement('div');item.className='toc-item';item.dataset.level=level;
     item.textContent=h.textContent;
-    item.onclick=()=>{h.scrollIntoView({behavior:'smooth',block:'start'});switchSbTab('contents');};
+    item.onclick=()=>{
+      // Smooth scroll to heading
+      h.scrollIntoView({behavior:'smooth',block:'start'});
+      // Flash highlight on the heading
+      h.classList.remove('section-jumped');
+      void h.offsetWidth;
+      h.classList.add('section-jumped');
+      setTimeout(()=>h.classList.remove('section-jumped'),1500);
+      // Mark active in TOC
+      list.querySelectorAll('.toc-item').forEach(i=>i.classList.remove('active'));
+      item.classList.add('active');
+      switchSbTab('contents');
+    };
     list.appendChild(item);
   });
 }
