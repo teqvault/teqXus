@@ -2077,54 +2077,122 @@ async function doCACSigning() {
 
     if (!result.success) throw new Error(result.error || 'Signing failed');
 
-    // Embed visual signature appearance into PDF using pdf-lib (renderer has it loaded)
+    // Close panel and enter placement mode
+    closeCACPanel();
+    toast('PIN accepted ✓ — click where you want to place your signature');
+    enterCACPlacementMode(result, reason);
+
+  } catch(e) {
+    console.error('CAC signing error:', e);
+    document.getElementById('cac-status').textContent = 'Signing failed: ' + e.message;
+    toast('CAC signing failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🪪 Sign with CAC';
+  }
+}
+
+async function enterCACPlacementMode(result, reason) {
+  const wrap = document.getElementById('pdf-canvas-wrap');
+  wrap.style.cursor = 'crosshair';
+
+  // Show placement hint overlay
+  const hint = document.createElement('div');
+  hint.id = 'cac-placement-hint';
+  hint.style.cssText = `
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+    background: #1e3c78; color: #fff; padding: 10px 20px;
+    border-radius: 20px; font-size: 0.85rem; font-family: var(--font-ui);
+    font-weight: 700; z-index: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    pointer-events: none;
+  `;
+  hint.textContent = '🪪 Click anywhere to place your CAC signature — Esc to cancel';
+  document.body.appendChild(hint);
+
+  function cleanup() {
+    wrap.style.cursor = '';
+    const h = document.getElementById('cac-placement-hint');
+    if (h) h.remove();
+    wrap.removeEventListener('click', onPlace);
+    document.removeEventListener('keydown', onEsc);
+  }
+
+  function onEsc(e) {
+    if (e.key === 'Escape') { cleanup(); toast('Signature placement cancelled'); }
+  }
+
+  async function onPlace(e) {
+    cleanup();
+
+    // Find which page was clicked
+    const pageWrapper = e.target.closest('.pdf-page-wrapper');
+    if (!pageWrapper) { toast('Click on a PDF page to place signature'); return; }
+
+    const pageNum = parseInt(pageWrapper.dataset.page);
+    const canvas = pageWrapper.querySelector('.pdf-canvas');
+    const canvasRect = canvas.getBoundingClientRect();
+
+    // Screen coordinates relative to canvas
+    const screenX = e.clientX - canvasRect.left;
+    const screenY = e.clientY - canvasRect.top;
+
+    // Convert to PDF coordinates
+    const pdfPage = await pdfDoc.getPage(pageNum);
+    const viewport = pdfPage.getViewport({ scale: pdfScale });
+    const invTransform = pdfjsLib.Util.inverseTransform(viewport.transform);
+    const pdfPoint = pdfjsLib.Util.applyTransform([screenX, screenY], invTransform);
+
+    // Embed signature appearance at clicked position
     const { PDFDocument, rgb, StandardFonts } = PDFLib;
-    const pdfDoc = await PDFDocument.load(new Uint8Array(result.pdfBytes));
-    const pages = pdfDoc.getPages();
-    const lastPage = pages[pages.length - 1];
-    const { width, height } = lastPage.getSize();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const pdfLibDoc = await PDFDocument.load(new Uint8Array(result.pdfBytes));
+    const pages = pdfLibDoc.getPages();
+    const page = pages[pageNum - 1];
+    const { height: pageH } = page.getSize();
 
-    const sigX = 36, sigY = 36, sigW = 300, sigH = 64;
+    const font = await pdfLibDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfLibDoc.embedFont(StandardFonts.HelveticaBold);
 
-    // White background box
-    lastPage.drawRectangle({
-      x: sigX, y: sigY, width: sigW, height: sigH,
+    const sigX = pdfPoint[0];
+    const sigY = pdfPoint[1];
+    const sigW = 220;
+    const sigH = 56;
+
+    // White background
+    page.drawRectangle({
+      x: sigX, y: sigY - sigH, width: sigW, height: sigH,
       color: rgb(0.97, 0.97, 1),
       borderColor: rgb(0.1, 0.2, 0.5),
       borderWidth: 1.5,
     });
 
-    lastPage.drawText('✦ DIGITALLY SIGNED — DoD CAC/PIV', {
-      x: sigX + 8, y: sigY + 47, size: 7.5,
+    page.drawText('✦ DIGITALLY SIGNED — DoD CAC/PIV', {
+      x: sigX + 6, y: sigY - 14, size: 7,
       font: boldFont, color: rgb(0.1, 0.2, 0.5),
     });
-    lastPage.drawText(result.signerName || selectedCACName, {
-      x: sigX + 8, y: sigY + 33, size: 11,
+    page.drawText(result.signerName || selectedCACName || '', {
+      x: sigX + 6, y: sigY - 26, size: 10,
       font: boldFont, color: rgb(0, 0, 0),
     });
     const dt = new Date(result.timestamp);
-    const dateStr = dt.toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'});
-    const timeStr = dt.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
-    lastPage.drawText(`Signed: ${dateStr} at ${timeStr}`, {
-      x: sigX + 8, y: sigY + 19, size: 7.5,
+    const dateStr = dt.toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'});
+    const timeStr = dt.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+    page.drawText(`Signed: ${dateStr} ${timeStr}`, {
+      x: sigX + 6, y: sigY - 38, size: 7,
       font, color: rgb(0.3, 0.3, 0.3),
     });
     if (reason) {
-      lastPage.drawText(`Reason: ${reason}`, {
-        x: sigX + 8, y: sigY + 8, size: 7,
+      page.drawText(`Reason: ${reason}`, {
+        x: sigX + 6, y: sigY - 49, size: 6.5,
         font, color: rgb(0.4, 0.4, 0.4),
       });
     }
-    // Signature fingerprint
-    const sigHex = result.sigBytes.slice(0, 8).map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
-    lastPage.drawText(`CMS: ${sigHex}…`, {
-      x: sigX + sigW - 90, y: sigY + 8, size: 6,
-      font, color: rgb(0.5, 0.5, 0.5),
+    const sigHex = result.sigBytes.slice(0, 6).map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
+    page.drawText(`CMS: ${sigHex}…`, {
+      x: sigX + sigW - 80, y: sigY - 49, size: 5.5,
+      font, color: rgb(0.6, 0.6, 0.6),
     });
 
-    const signedPdfBytes = await pdfDoc.save();
+    const signedPdfBytes = await pdfLibDoc.save();
 
     // Save to disk
     const fname = pdfCurrentFilename.replace(/\.pdf$/i, '_signed.pdf');
@@ -2135,20 +2203,13 @@ async function doCACSigning() {
 
     if (saveResult.success) {
       toast('✅ PDF digitally signed and saved ✓');
-      closeCACPanel();
-      // Reload the signed PDF in viewer
       pdfRawBytes = signedPdfBytes.buffer;
       await renderAllPages();
     }
-
-  } catch(e) {
-    console.error('CAC signing error:', e);
-    document.getElementById('cac-status').textContent = 'Signing failed: ' + e.message;
-    toast('CAC signing failed: ' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🪪 Sign with CAC';
   }
+
+  wrap.addEventListener('click', onPlace);
+  document.addEventListener('keydown', onEsc);
 }
 
 async function convertPdfToDocx() {
