@@ -2160,7 +2160,7 @@ async function convertPdfToDocx() {
     const formData = new FormData();
     formData.append('file', blob, pdfCurrentFilename);
 
-    const res = await fetch('https://teqxus-backend.onrender.com/convert-pdf', {
+    const res = await fetch('https://teqxus-backend-zszr.onrender.com/convert-pdf', {
       method: 'POST',
       body: formData
     });
