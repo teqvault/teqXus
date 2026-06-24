@@ -1115,6 +1115,7 @@ mark.current { background: var(--gold); color: #000; }
 
 <script>
 /* ── PDF.js worker ── */
+let pdfWorkerReady = false;
 if(typeof pdfjsLib!=='undefined'){
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
   pdfWorkerReady = true;
@@ -1130,7 +1131,6 @@ let activeTab='open';
 
 /* PDF state */
 let pdfDoc=null, pdfCurrentPage=1, pdfTotalPages=0, pdfScale=1.5;
-let pdfWorkerReady = !window.electronAPI; // PWA worker is set synchronously
 let pdfHighlightMode=false, pdfHighlights=[], pdfCurrentFilename='';
 let annoPanelOpen=false;
 
