@@ -464,7 +464,58 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 }
 .section-jumped { animation: sectionJump 1.5s ease-out; }
 
-/* ── SIGNATURE PAD ── */
+/* ── CAC SIGNING PANEL ── */
+#cac-panel {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 800; display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px);
+}
+#cac-panel.open { display: flex; }
+.cac-box {
+  background: var(--parchment2); border-radius: var(--radius);
+  padding: 1.5rem; width: 90%; max-width: 480px;
+  border: 1px solid rgba(30,60,120,0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.cac-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.cac-title {
+  font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700;
+  color: #1e3c78; display: flex; align-items: center; gap: 8px;
+}
+.cac-close { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.1rem; }
+.cac-badge {
+  background: rgba(30,60,120,0.1); border: 1px solid rgba(30,60,120,0.2);
+  border-radius: 8px; padding: 8px 12px; font-size: 0.78rem;
+  color: #1e3c78; font-family: var(--font-ui); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.cac-cert-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem; max-height: 200px; overflow-y: auto; }
+.cac-cert-item {
+  background: var(--parchment); border: 1px solid var(--parchment3);
+  border-radius: 8px; padding: 10px 12px; cursor: pointer;
+  transition: border-color 0.15s;
+}
+.cac-cert-item:hover { border-color: #1e3c78; }
+.cac-cert-item.selected { border-color: #1e3c78; background: rgba(30,60,120,0.08); }
+.cac-cert-name { font-size: 0.88rem; font-weight: 700; color: var(--ink); }
+.cac-cert-meta { font-size: 0.72rem; color: var(--ink3); margin-top: 2px; }
+.cac-field { margin-bottom: 10px; }
+.cac-field label { font-size: 0.75rem; font-weight: 700; color: var(--ink3); font-family: var(--font-ui); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 4px; }
+.cac-field input, .cac-field select {
+  width: 100%; background: var(--parchment); border: 1px solid var(--parchment3);
+  border-radius: 8px; color: var(--ink); font-size: 0.9rem;
+  font-family: var(--font-ui); padding: 8px 12px; outline: none;
+}
+.cac-field input:focus, .cac-field select:focus { border-color: #1e3c78; }
+.cac-actions { display: flex; gap: 8px; margin-top: 1rem; }
+.cac-btn { flex: 1; padding: 11px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; border: none; transition: all 0.15s; }
+.cac-btn.primary { background: #1e3c78; color: #fff; }
+.cac-btn.primary:hover { background: #162d5c; }
+.cac-btn.secondary { background: var(--parchment3); color: var(--ink); }
+.cac-status { font-size: 0.82rem; color: var(--ink3); font-family: var(--font-ui); text-align: center; padding: 8px; }
 #sig-panel {
   position: fixed; inset: 0; background: rgba(0,0,0,0.6);
   z-index: 800; display: none; align-items: center; justify-content: center;
@@ -838,6 +889,7 @@ mark.current { background: var(--gold); color: #000; }
           <button class="pdf-tb-btn" onclick="showMergeDialog()">⊕ Merge</button>
           <button class="pdf-tb-btn" onclick="showSplitDialog()">✂ Split</button>
           <button class="pdf-tb-btn" onclick="convertPdfToDocx()" title="Convert to editable Word document">📝 Edit as Word</button>
+          <button class="pdf-tb-btn" onclick="openCACSignPanel()" title="Sign with CAC card" style="background:rgba(30,60,120,0.15);border-color:rgba(30,60,120,0.4);color:#1e3c78;">🪪 CAC Sign</button>
           <button class="pdf-tb-btn" onclick="savePdfEdits()" style="background:var(--accent);color:#fff;border-color:var(--accent)">💾 Save PDF</button>
         </div>
 
@@ -974,6 +1026,38 @@ mark.current { background: var(--gold); color: #000; }
   </svg>
 </div>
 
+<!-- CAC Signing Panel -->
+<div id="cac-panel">
+  <div class="cac-box">
+    <div class="cac-header">
+      <div class="cac-title">🪪 CAC Digital Signature</div>
+      <button class="cac-close" onclick="closeCACPanel()">✕</button>
+    </div>
+    <div class="cac-badge">
+      🔒 Cryptographically signed using DoD CAC/PIV certificate. Requires card reader and PIN.
+    </div>
+    <div class="cac-status" id="cac-status">Detecting certificates…</div>
+    <div class="cac-cert-list" id="cac-cert-list"></div>
+    <div class="cac-field">
+      <label>Reason for signing</label>
+      <select id="cac-reason">
+        <option value="I approve this document">I approve this document</option>
+        <option value="I have reviewed this document">I have reviewed this document</option>
+        <option value="I am the author of this document">I am the author of this document</option>
+        <option value="I certify this document">I certify this document</option>
+      </select>
+    </div>
+    <div class="cac-field">
+      <label>Location (optional)</label>
+      <input type="text" id="cac-location" placeholder="e.g. Fort Johnson, LA">
+    </div>
+    <div class="cac-actions">
+      <button class="cac-btn secondary" onclick="closeCACPanel()">Cancel</button>
+      <button class="cac-btn primary" onclick="doCACSigning()" id="cac-sign-btn" disabled>🪪 Sign with CAC</button>
+    </div>
+  </div>
+</div>
+
 <!-- Signature Panel -->
 <div id="sig-panel">
   <div class="sig-box">
@@ -1033,6 +1117,7 @@ mark.current { background: var(--gold); color: #000; }
 /* ── PDF.js worker ── */
 if(typeof pdfjsLib!=='undefined'){
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  pdfWorkerReady = true;
 }
 
 /* ── State ── */
@@ -1045,6 +1130,7 @@ let activeTab='open';
 
 /* PDF state */
 let pdfDoc=null, pdfCurrentPage=1, pdfTotalPages=0, pdfScale=1.5;
+let pdfWorkerReady = !window.electronAPI; // PWA worker is set synchronously
 let pdfHighlightMode=false, pdfHighlights=[], pdfCurrentFilename='';
 let annoPanelOpen=false;
 
@@ -1368,6 +1454,12 @@ let mergeFiles=[];
 /* ── PDF Load ── */
 async function loadPDF(file) {
   if(typeof pdfjsLib==='undefined'){toast('PDF.js not loaded — check your connection');return;}
+  // Wait for worker to be ready (Electron loads it async)
+  let waited = 0;
+  while(!pdfWorkerReady && waited < 5000) {
+    await new Promise(r => setTimeout(r, 100));
+    waited += 100;
+  }
   hideAll();
   pdfCurrentFilename=file.name;
   pdfTextAnnotations=[];
@@ -1903,7 +1995,162 @@ async function savePdfEdits(){
   }
 }
 
-/* ── Convert PDF to editable DOCX ── */
+/* ══════════════════════════════════════════
+   CAC DIGITAL SIGNING
+══════════════════════════════════════════ */
+let selectedCACThumbprint = null;
+let selectedCACName = null;
+
+async function openCACSignPanel() {
+  if (!pdfRawBytes) { toast('Open a PDF first'); return; }
+  if (!window.electronAPI) { toast('CAC signing requires the desktop app'); return; }
+
+  document.getElementById('cac-panel').classList.add('open');
+  document.getElementById('cac-status').textContent = 'Detecting CAC certificates…';
+  document.getElementById('cac-cert-list').innerHTML = '';
+  document.getElementById('cac-sign-btn').disabled = true;
+  selectedCACThumbprint = null;
+
+  try {
+    const result = await window.electronAPI.listCACCerts();
+    const list = document.getElementById('cac-cert-list');
+
+    if (!result.success || !result.certs || result.certs.length === 0) {
+      document.getElementById('cac-status').textContent = 'No certificates found. Insert your CAC card and try again.';
+      return;
+    }
+
+    document.getElementById('cac-status').textContent = `Found ${result.certs.length} certificate(s). Select one to sign.`;
+
+    result.certs.forEach(cert => {
+      const el = document.createElement('div');
+      el.className = 'cac-cert-item';
+
+      // Parse CN from subject
+      const cn = (cert.Subject || '').match(/CN=([^,]+)/)?.[1] || cert.Subject || 'Unknown';
+      const issuer = (cert.Issuer || '').match(/CN=([^,]+)/)?.[1] || cert.Issuer || '';
+
+      el.innerHTML = `
+        <div class="cac-cert-name">${cn}</div>
+        <div class="cac-cert-meta">Issuer: ${issuer} · Expires: ${cert.NotAfter}</div>
+      `;
+      el.onclick = () => {
+        document.querySelectorAll('.cac-cert-item').forEach(i => i.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedCACThumbprint = cert.Thumbprint;
+        selectedCACName = cn;
+        document.getElementById('cac-sign-btn').disabled = false;
+      };
+      list.appendChild(el);
+    });
+
+  } catch(e) {
+    document.getElementById('cac-status').textContent = 'Error: ' + e.message;
+  }
+}
+
+function closeCACPanel() {
+  document.getElementById('cac-panel').classList.remove('open');
+  selectedCACThumbprint = null;
+}
+
+async function doCACSigning() {
+  if (!selectedCACThumbprint) { toast('Select a certificate first'); return; }
+  if (!pdfRawBytes) { toast('No PDF loaded'); return; }
+
+  const btn = document.getElementById('cac-sign-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Signing… Enter PIN when prompted';
+  document.getElementById('cac-status').textContent = 'Windows will prompt for your CAC PIN…';
+
+  try {
+    const reason = document.getElementById('cac-reason').value;
+    const location = document.getElementById('cac-location').value;
+
+    const result = await window.electronAPI.signPDFWithCAC({
+      pdfBytesArray: Array.from(new Uint8Array(pdfRawBytes)),
+      thumbprint: selectedCACThumbprint,
+      signerName: selectedCACName,
+      reason,
+      location
+    });
+
+    if (!result.success) throw new Error(result.error || 'Signing failed');
+
+    // Embed visual signature appearance into PDF using pdf-lib (renderer has it loaded)
+    const { PDFDocument, rgb, StandardFonts } = PDFLib;
+    const pdfDoc = await PDFDocument.load(new Uint8Array(result.pdfBytes));
+    const pages = pdfDoc.getPages();
+    const lastPage = pages[pages.length - 1];
+    const { width, height } = lastPage.getSize();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    const sigX = 36, sigY = 36, sigW = 300, sigH = 64;
+
+    // White background box
+    lastPage.drawRectangle({
+      x: sigX, y: sigY, width: sigW, height: sigH,
+      color: rgb(0.97, 0.97, 1),
+      borderColor: rgb(0.1, 0.2, 0.5),
+      borderWidth: 1.5,
+    });
+
+    lastPage.drawText('✦ DIGITALLY SIGNED — DoD CAC/PIV', {
+      x: sigX + 8, y: sigY + 47, size: 7.5,
+      font: boldFont, color: rgb(0.1, 0.2, 0.5),
+    });
+    lastPage.drawText(result.signerName || selectedCACName, {
+      x: sigX + 8, y: sigY + 33, size: 11,
+      font: boldFont, color: rgb(0, 0, 0),
+    });
+    const dt = new Date(result.timestamp);
+    const dateStr = dt.toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'});
+    const timeStr = dt.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+    lastPage.drawText(`Signed: ${dateStr} at ${timeStr}`, {
+      x: sigX + 8, y: sigY + 19, size: 7.5,
+      font, color: rgb(0.3, 0.3, 0.3),
+    });
+    if (reason) {
+      lastPage.drawText(`Reason: ${reason}`, {
+        x: sigX + 8, y: sigY + 8, size: 7,
+        font, color: rgb(0.4, 0.4, 0.4),
+      });
+    }
+    // Signature fingerprint
+    const sigHex = result.sigBytes.slice(0, 8).map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
+    lastPage.drawText(`CMS: ${sigHex}…`, {
+      x: sigX + sigW - 90, y: sigY + 8, size: 6,
+      font, color: rgb(0.5, 0.5, 0.5),
+    });
+
+    const signedPdfBytes = await pdfDoc.save();
+
+    // Save to disk
+    const fname = pdfCurrentFilename.replace(/\.pdf$/i, '_signed.pdf');
+    const saveResult = await window.electronAPI.showSaveDialog(
+      fname,
+      JSON.stringify(Array.from(signedPdfBytes))
+    );
+
+    if (saveResult.success) {
+      toast('✅ PDF digitally signed and saved ✓');
+      closeCACPanel();
+      // Reload the signed PDF in viewer
+      pdfRawBytes = signedPdfBytes.buffer;
+      await renderAllPages();
+    }
+
+  } catch(e) {
+    console.error('CAC signing error:', e);
+    document.getElementById('cac-status').textContent = 'Signing failed: ' + e.message;
+    toast('CAC signing failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🪪 Sign with CAC';
+  }
+}
+
 async function convertPdfToDocx() {
   if (!pdfRawBytes) { toast('No PDF loaded'); return; }
   toast('Converting PDF to Word document…');
