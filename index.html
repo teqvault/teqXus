@@ -572,7 +572,7 @@
     conversationHistory.push({ role: 'user', content: userMsg });
     if (conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
 
-    const res = await fetch(BACKEND + '/chat', {
+    const res = await fetch(BACKEND + '/chat/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -584,23 +584,68 @@
       })
     });
 
-    // Handle limit reached
     if (res.status === 429) {
       const e = await res.json();
       showUpgrade();
       throw new Error(e.message || 'Message limit reached');
     }
-
     if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Server error'); }
 
-    const data = await res.json();
+    // Create streaming bubble
+    const area = document.getElementById('chat-area');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ai';
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'bubble-content';
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'bubble-meta';
+    metaDiv.textContent = modelName + ' · ' + langName;
+    bubble.appendChild(contentDiv);
+    bubble.appendChild(metaDiv);
+    area.appendChild(bubble);
+    area.scrollTop = area.scrollHeight;
 
-    // Update remaining count from response body
-    if (data.remaining !== null && data.remaining !== undefined) {
-      updateLimitBar(data.remaining, isPro() ? 500 : 30);
+    let fullText = '';
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6);
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.type === 'meta' && parsed.remaining != null) {
+            updateLimitBar(parsed.remaining, isPro() ? 500 : 30);
+          } else if (parsed.type === 'done') {
+            break;
+          } else if (parsed.type === 'error') {
+            throw new Error(parsed.message);
+          } else if (parsed.text) {
+            fullText += parsed.text;
+            contentDiv.textContent = fullText;
+            // Set full text on bubble for copy/share
+            bubble.dataset.text = fullText;
+            area.scrollTop = area.scrollHeight;
+          }
+        } catch(e) {}
+      }
     }
-    conversationHistory.push({ role: 'assistant', content: data.reply });
-    return data.reply;
+
+    // Add action buttons after streaming completes
+    const actions = document.createElement('div');
+    actions.className = 'bubble-actions';
+    actions.innerHTML = `<button onclick="copyText(this)">Copy</button><button onclick="shareText(this)">Share</button>`;
+    bubble.appendChild(actions);
+
+    conversationHistory.push({ role: 'assistant', content: fullText });
+    return fullText;
   }
 
   function resetConversation() {
@@ -611,8 +656,6 @@
     const input = document.getElementById('msg');
     const text = input.value.trim();
     if (!text) return;
-
-
 
     input.value = '';
     input.style.height = 'auto';
@@ -629,11 +672,9 @@
     document.getElementById('send-btn').disabled = true;
 
     try {
-      const reply = await callAI(text);
       typing.remove();
-      addBubble(reply, 'ai', modelName + ' · ' + langName);
+      const reply = await callAI(text);
       saveToHistory(text, reply);
-
     } catch(err) {
       typing.remove();
       addBubble('⚠️ ' + err.message, 'ai', 'Error');
