@@ -1,5 +1,5 @@
-const CACHE = 'teqxus-v4';
-const ASSETS = ['/', '/index.html', '/manifest.json', '/admin.html'];
+const CACHE = 'teqxus-v5';
+const ASSETS = ['/', '/index.html', '/manifest.json', '/admin.html', '/teqdocs/', '/teqdocs/index.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -24,6 +24,8 @@ self.addEventListener('fetch', e => {
   if (e.request.url.includes('openrouter.ai')) return;
   if (e.request.url.includes('anthropic.com')) return;
   if (e.request.url.includes('chrome-extension')) return;
+  if (e.request.url.includes('cdnjs.cloudflare.com')) return;
+  if (e.request.url.includes('googlesyndication.com')) return;
 
   e.respondWith(
     fetch(e.request)

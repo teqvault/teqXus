@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<meta name="theme-color" content="#0d0d14">
+<meta name="theme-color" content="#f5f0e8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="TeqDocs">
 <title>TeqDocs</title>
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -16,53 +17,6 @@
 
 <style>
 :root {
-  /* ── Dark theme (default) ── */
-  --parchment: #0d0d14;
-  --parchment2: #13131f;
-  --parchment3: #1a1a2e;
-  --ink: #e8e6f0;
-  --ink2: #9b99b0;
-  --ink3: #6b6880;
-  --accent: #7c5cfc;
-  --accent2: #5a3fd4;
-  --accent-light: rgba(124,92,252,0.15);
-  --teal: #3ecfa0;
-  --teal-glow: rgba(62,207,160,0.12);
-  --coral: #ff6b6b;
-  --coral-glow: rgba(255,107,107,0.12);
-  --amber: #f5a623;
-  --amber-glow: rgba(245,166,35,0.12);
-  --gold: #f5a623;
-  --sidebar-w: 260px;
-  --header-h: 52px;
-  --radius: 10px;
-  --shadow: 0 2px 16px rgba(0,0,0,0.4);
-  --page-shadow: 2px 0 12px rgba(0,0,0,0.3);
-  --font-serif: 'Georgia','Times New Roman',serif;
-  --font-ui: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  --font-mono: 'Fira Code','Consolas',monospace;
-  --font-size: 18px;
-  --line-height: 1.85;
-  --max-width: 680px;
-}
-/* ── Light theme (future toggle) ── */
-.light {
-  --parchment: #f5f0e8;
-  --parchment2: #ede8df;
-  --parchment3: #e0d9cc;
-  --ink: #1c1a16;
-  --ink2: #3d3a33;
-  --ink3: #6b6760;
-  --accent: #7c5cfc;
-  --accent2: #5a3fd4;
-  --accent-light: rgba(124,92,252,0.15);
-  --teal: #2aab7e;
-  --gold: #c49a3c;
-  --shadow: 0 2px 16px rgba(0,0,0,0.10);
-  --page-shadow: 2px 0 12px rgba(0,0,0,0.08);
-}
-/* ── Parchment theme (future toggle) ── */
-.parchment-theme {
   --parchment: #f5f0e8;
   --parchment2: #ede8df;
   --parchment3: #e0d9cc;
@@ -72,10 +26,32 @@
   --accent: #8b4513;
   --accent2: #a0522d;
   --accent-light: rgba(139,69,19,0.12);
-  --teal: #2a7a5a;
   --gold: #c49a3c;
+  --sidebar-w: 260px;
+  --header-h: 52px;
+  --radius: 10px;
   --shadow: 0 2px 16px rgba(0,0,0,0.10);
   --page-shadow: 2px 0 12px rgba(0,0,0,0.08);
+  --font-serif: 'Georgia','Times New Roman',serif;
+  --font-ui: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-mono: 'Fira Code','Consolas',monospace;
+  --font-size: 18px;
+  --line-height: 1.85;
+  --max-width: 680px;
+}
+.dark {
+  --parchment: #1a1814;
+  --parchment2: #221f1a;
+  --parchment3: #2d2a24;
+  --ink: #e8e4da;
+  --ink2: #c8c4ba;
+  --ink3: #8a867e;
+  --accent: #d4894a;
+  --accent2: #c47a3a;
+  --accent-light: rgba(212,137,74,0.12);
+  --gold: #d4a84b;
+  --shadow: 0 2px 16px rgba(0,0,0,0.4);
+  --page-shadow: 2px 0 12px rgba(0,0,0,0.3);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: var(--font-size); scroll-behavior: smooth; }
@@ -104,8 +80,7 @@ body { background: var(--parchment); color: var(--ink); font-family: var(--font-
 .hdr-btn.active { color: var(--accent); }
 
 /* ── BODY (sidebar + content) ── */
-#body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
-#content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+#body { display: flex; flex: 1; overflow: hidden; }
 
 /* ── SIDEBAR ── */
 #sidebar {
@@ -153,6 +128,7 @@ body { background: var(--parchment); color: var(--ink); font-family: var(--font-
 .toc-empty { font-size: 0.8rem; color: var(--ink3); text-align: center; padding: 1.5rem 1rem; }
 
 /* ── CONTENT AREA ── */
+#content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; min-height: 0; }
 #welcome { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 2rem; text-align: center; gap: 1.5rem; }
 #reader { display: none; flex: 1; overflow-y: auto; padding-bottom: 4rem; }
 #reader.visible { display: block; }
@@ -715,53 +691,6 @@ mark.current { background: var(--gold); color: #000; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--parchment3); border-radius: 4px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-
-/* ── IS_STUDENT overrides ── */
-body.student .cac-only { display: none !important; }
-
-/* ── BOTTOM STATUS BAR ── */
-#status-bar {
-  height: 36px; flex-shrink: 0;
-  background: var(--parchment2);
-  border-top: 1px solid var(--parchment3);
-  display: flex; align-items: center;
-  padding: 0 16px; gap: 14px;
-  font-size: 0.72rem; font-family: var(--font-ui);
-  color: var(--ink3); z-index: 30;
-}
-.sb-stat { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-.sb-stat strong { color: var(--ink2); font-weight: 700; }
-.sb-bar-divider { width: 1px; height: 16px; background: var(--parchment3); flex-shrink: 0; }
-.sb-greeting { flex: 1; text-align: center; font-family: var(--font-serif); font-style: italic; color: var(--accent); font-size: 0.78rem; font-weight: 600; }
-.sb-mode-btn { background: none; border: 1px solid var(--parchment3); border-radius: 6px; padding: 3px 10px; font-size: 0.7rem; font-weight: 700; font-family: var(--font-ui); color: var(--ink3); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-.sb-mode-btn:hover { border-color: var(--accent); color: var(--accent); }
-.sb-mode-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
-.sb-ring-wrap { position: relative; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; flex-shrink: 0; }
-.sb-ring-wrap svg { width: 26px; height: 26px; transform: rotate(-90deg); }
-.sb-ring-bg { fill: none; stroke: var(--parchment3); stroke-width: 3; }
-.sb-ring-fill { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 63; stroke-dashoffset: 63; transition: stroke-dashoffset 0.4s; }
-.sb-ring-pct { position: absolute; font-size: 0.5rem; font-weight: 700; color: var(--accent); }
-
-/* ── RIGHT STATS PANEL ── */
-#stats-panel { width: 220px; flex-shrink: 0; background: var(--parchment2); border-left: 1px solid var(--parchment3); display: none; flex-direction: column; overflow-y: auto; padding: 14px 12px; gap: 10px; }
-#stats-panel.open { display: flex; }
-.sp-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink3); margin-bottom: 4px; }
-.sp-card { background: var(--parchment); border: 1px solid var(--parchment3); border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
-.sp-card-title { font-size: 0.65rem; color: var(--ink3); font-family: var(--font-ui); margin-bottom: 3px; }
-.sp-card-value { font-size: 1.15rem; font-weight: 700; color: var(--ink); font-family: var(--font-serif); }
-.sp-card-sub { font-size: 0.62rem; color: var(--ink3); margin-top: 2px; }
-.sp-ring-container { position: relative; display: flex; align-items: center; justify-content: center; padding: 8px 0; }
-.sp-ring-container svg { width: 84px; height: 84px; transform: rotate(-90deg); }
-.sp-ring-bg { fill: none; stroke: var(--parchment3); stroke-width: 7; }
-.sp-ring-fill { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 0.4s; }
-.sp-ring-label { position: absolute; font-size: 0.9rem; font-weight: 700; color: var(--accent); font-family: var(--font-ui); }
-
-/* Colored status tags on file cards */
-.fc-status { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 10px; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
-.fc-status.to-read { background: rgba(62,160,207,0.15); color: #3ea0cf; border: 1px solid rgba(62,160,207,0.3); }
-.fc-status.drafting { background: rgba(245,166,35,0.15); color: #c89020; border: 1px solid rgba(245,166,35,0.3); }
-.fc-status.review { background: rgba(196,49,49,0.15); color: #c43131; border: 1px solid rgba(196,49,49,0.3); }
-.fc-status.done { background: rgba(46,160,67,0.15); color: #2ea043; border: 1px solid rgba(46,160,67,0.3); }
 </style>
 </head>
 <body>
@@ -837,7 +766,6 @@ body.student .cac-only { display: none !important; }
     <button class="hdr-btn" onclick="toggleTheme()" id="theme-btn">☀️</button>
     <button class="hdr-btn" onclick="openShortcuts()" title="Keyboard shortcuts (?)">⌨</button>
     <button class="hdr-btn" onclick="openAbout()" title="About TeqDocs">ℹ</button>
-    <button class="hdr-btn" onclick="toggleStatsPanel()" id="stats-btn" title="Study Stats">📊</button>
     <a href="https://ko-fi.com/teqvault" target="_blank" title="Support TeqVault on Ko-fi" style="text-decoration:none;">
       <button class="hdr-btn" style="background:rgba(255,94,86,0.12);border:1px solid rgba(255,94,86,0.3);color:#ff5e56;font-weight:700;padding:5px 12px;border-radius:8px;">☕ Support</button>
     </a>
@@ -892,7 +820,6 @@ body.student .cac-only { display: none !important; }
     </div>
 
     <!-- CONTENT -->
-    <div id="content-area" style="display:flex;flex:1;overflow:hidden;min-height:0;">
     <div id="content">
 
       <!-- Welcome -->
@@ -964,9 +891,9 @@ body.student .cac-only { display: none !important; }
           <!-- File ops -->
           <button class="pdf-tb-btn" onclick="showMergeDialog()">⊕ Merge</button>
           <button class="pdf-tb-btn" onclick="showSplitDialog()">✂ Split</button>
-
-          <button class="pdf-tb-btn cac-only" onclick="openCACSignPanel()" title="Sign with CAC card" style="background:rgba(30,60,120,0.15);border-color:rgba(30,60,120,0.4);color:#1e3c78;">🪪 CAC Sign</button>
-          <button class="pdf-tb-btn" onclick="downloadOriginalPdf()" style="background:var(--accent);color:#fff;border-color:var(--accent)">💾 Save PDF</button>
+          <button class="pdf-tb-btn" onclick="convertPdfToDocx()" title="Convert to editable Word document">📝 Edit as Word</button>
+          <button class="pdf-tb-btn" onclick="openCACSignPanel()" title="Sign with CAC card" style="background:rgba(30,60,120,0.15);border-color:rgba(30,60,120,0.4);color:#1e3c78;">🪪 CAC Sign</button>
+          <button class="pdf-tb-btn" onclick="savePdfEdits()" style="background:var(--accent);color:#fff;border-color:var(--accent)">💾 Save PDF</button>
         </div>
 
         <!-- Add text input overlay -->
@@ -1083,53 +1010,7 @@ body.student .cac-only { display: none !important; }
 
     </div><!-- /content -->
 
-      <!-- RIGHT STATS PANEL -->
-      <div id="stats-panel">
-        <div class="sp-label">Study Progress</div>
-        <div class="sp-ring-container">
-          <svg viewBox="0 0 84 84"><circle class="sp-ring-bg" cx="42" cy="42" r="35"/><circle class="sp-ring-fill" id="sp-ring-fill" cx="42" cy="42" r="35"/></svg>
-          <div class="sp-ring-label" id="sp-ring-pct">0%</div>
-        </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Daily Word Count</div>
-          <div class="sp-card-value" id="sp-daily-words">0</div>
-          <div class="sp-card-sub">Goal: <span id="sp-goal">500</span> words</div>
-        </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Pages Read</div>
-          <div class="sp-card-value" id="sp-pages-read">0 / 0</div>
-          <div class="sp-card-sub" id="sp-pages-pct">—</div>
-        </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Session Time</div>
-          <div class="sp-card-value" id="sp-session-time">0m</div>
-          <div class="sp-card-sub">Since opening TeqDocs</div>
-        </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Current Document</div>
-          <div class="sp-card-value" style="font-size:0.82rem;word-break:break-all;" id="sp-doc-name">—</div>
-        </div>
-      </div>
-
-    </div><!-- /content-area -->
-
   </div><!-- /body -->
-
-  <!-- BOTTOM STATUS BAR -->
-  <div id="status-bar">
-    <div class="sb-ring-wrap" title="Daily goal progress">
-      <svg viewBox="0 0 26 26"><circle class="sb-ring-bg" cx="13" cy="13" r="10"/><circle class="sb-ring-fill" id="sb-ring-fill" cx="13" cy="13" r="10"/></svg>
-      <span class="sb-ring-pct" id="sb-ring-pct"></span>
-    </div>
-    <div class="sb-stat"><strong id="sb-words">0</strong> words today</div>
-    <div class="sb-bar-divider"></div>
-    <div class="sb-stat" id="sb-doc-stat" style="display:none">📄 <strong id="sb-doc-words">0</strong> words</div>
-    <div class="sb-bar-divider" id="sb-doc-div" style="display:none"></div>
-    <div class="sb-greeting" id="sb-greeting">Stay Focused!</div>
-    <button class="sb-mode-btn" id="sb-focus-btn" onclick="toggleFocusMode()">⊙ Focus Mode</button>
-    <button class="sb-mode-btn" id="sb-ambient-btn" onclick="toggleAmbientMode()">🌙 Ambient</button>
-  </div>
-
 </div><!-- /app -->
 
 <!-- Search -->
@@ -1239,27 +1120,8 @@ body.student .cac-only { display: none !important; }
 /* ── PDF.js worker ── */
 let pdfWorkerReady = false;
 if(typeof pdfjsLib!=='undefined'){
-  if(window.electronAPI){
-    (async () => {
-      try {
-        const base = location.href.substring(0, location.href.lastIndexOf('/') + 1);
-        const workerUrl = base + 'pdf.worker.min.js';
-        const res = await fetch(workerUrl);
-        if (res.ok) {
-          const blob = await res.blob();
-          pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
-        } else {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-        }
-      } catch(e) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
-      }
-      pdfWorkerReady = true;
-    })();
-  } else {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-    pdfWorkerReady = true;
-  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  pdfWorkerReady = true;
 }
 
 /* ── State ── */
@@ -1616,16 +1478,6 @@ async function loadPDF(file) {
   pdfCurrentPage=1;
   addRecent(file.name,'','pdf');
   renderRecent();
-
-  // Auto-fit to container width before first render
-  await new Promise(r => requestAnimationFrame(r));
-  const canvasWrap = document.getElementById('pdf-canvas-wrap');
-  const firstPage = await pdfDoc.getPage(1);
-  const rotation = (firstPage.rotate + (pdfRotations[1] || 0)) % 360;
-  const naturalVp = firstPage.getViewport({ scale: 1, rotation });
-  const availW = canvasWrap.clientWidth > 0 ? canvasWrap.clientWidth - 48 : window.innerWidth - 340;
-  pdfScale = Math.max(0.5, Math.min(3, +(availW / naturalVp.width).toFixed(2)));
-
   await renderAllPages();
   setupPdfZoom();
   toast('PDF loaded ✓');
@@ -1786,10 +1638,8 @@ async function pdfZoomFit(){
   const wrap=document.getElementById('pdf-canvas-wrap');
   if(!pdfDoc)return;
   const page=await pdfDoc.getPage(1);
-  const rotation = (page.rotate + (pdfRotations[1] || 0)) % 360;
-  const vp=page.getViewport({scale:1, rotation});
-  const availW = wrap.clientWidth > 0 ? wrap.clientWidth - 48 : window.innerWidth - 340;
-  pdfScale=Math.max(0.5,Math.min(3,+(availW/vp.width).toFixed(2)));
+  const vp=page.getViewport({scale:1});
+  pdfScale=Math.max(0.5,+((wrap.clientWidth-64)/vp.width).toFixed(2));
   await renderAllPages();
 }
 
@@ -1982,21 +1832,7 @@ async function renderFormFields(pageNum, annoLayer, viewport) {
   } catch(e) { console.warn('Form fields:', e); }
 }
 
-/* ── Save PDF (PWA: downloads original unmodified file) ── */
-function downloadOriginalPdf() {
-  if (!pdfRawBytes) { toast('No PDF loaded'); return; }
-  const blob = new Blob([pdfRawBytes], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = pdfCurrentFilename || 'document.pdf';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast('PDF downloaded ✓');
-}
-
-/* ── Save PDF (legacy — not used in PWA) ── */
+/* ── Save PDF ── */
 async function savePdfEdits(){
   if(!pdfRawBytes){toast('No PDF loaded');return;}
   if(typeof PDFLib==='undefined'){toast('pdf-lib not loaded');return;}
@@ -2180,15 +2016,10 @@ async function openCACSignPanel() {
 
   try {
     const result = await window.electronAPI.listCACCerts();
-    console.log('CAC result:', JSON.stringify(result));
     const list = document.getElementById('cac-cert-list');
 
-    if (!result.success) {
-      document.getElementById('cac-status').textContent = 'Error: ' + (result.error || 'unknown') + ' — see console';
-      return;
-    }
-    if (!result.certs || result.certs.length === 0) {
-      document.getElementById('cac-status').textContent = 'No certs found · ' + (result.diag || '');
+    if (!result.success || !result.certs || result.certs.length === 0) {
+      document.getElementById('cac-status').textContent = 'No certificates found. Insert your CAC card and try again.';
       return;
     }
 
@@ -2266,10 +2097,7 @@ async function doCACSigning() {
 
 async function enterCACPlacementMode(result, reason) {
   const wrap = document.getElementById('pdf-canvas-wrap');
-  const viewer = document.getElementById('pdf-viewer');
   wrap.style.cursor = 'crosshair';
-  if (viewer) viewer.style.cursor = 'crosshair';
-  document.body.style.cursor = 'crosshair';
 
   // Show placement hint overlay
   const hint = document.createElement('div');
@@ -2286,8 +2114,6 @@ async function enterCACPlacementMode(result, reason) {
 
   function cleanup() {
     wrap.style.cursor = '';
-    if (viewer) viewer.style.cursor = '';
-    document.body.style.cursor = '';
     const h = document.getElementById('cac-placement-hint');
     if (h) h.remove();
     wrap.removeEventListener('click', onPlace);
@@ -2321,7 +2147,7 @@ async function enterCACPlacementMode(result, reason) {
 
     // Embed signature appearance at clicked position
     const { PDFDocument, rgb, StandardFonts } = PDFLib;
-    const pdfLibDoc = await PDFDocument.load(new Uint8Array(pdfRawBytes), { ignoreEncryption: true });
+    const pdfLibDoc = await PDFDocument.load(new Uint8Array(result.pdfBytes));
     const pages = pdfLibDoc.getPages();
     const page = pages[pageNum - 1];
     const { height: pageH } = page.getSize();
@@ -2342,7 +2168,7 @@ async function enterCACPlacementMode(result, reason) {
       borderWidth: 1.5,
     });
 
-    page.drawText('DIGITALLY SIGNED -- DoD CAC/PIV', {
+    page.drawText('✦ DIGITALLY SIGNED — DoD CAC/PIV', {
       x: sigX + 6, y: sigY - 14, size: 7,
       font: boldFont, color: rgb(0.1, 0.2, 0.5),
     });
@@ -2350,7 +2176,7 @@ async function enterCACPlacementMode(result, reason) {
       x: sigX + 6, y: sigY - 26, size: 10,
       font: boldFont, color: rgb(0, 0, 0),
     });
-    const dt = result.timestamp ? new Date(result.timestamp) : new Date();
+    const dt = new Date(result.timestamp);
     const dateStr = dt.toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'});
     const timeStr = dt.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
     page.drawText(`Signed: ${dateStr} ${timeStr}`, {
@@ -2363,22 +2189,19 @@ async function enterCACPlacementMode(result, reason) {
         font, color: rgb(0.4, 0.4, 0.4),
       });
     }
-    if (result.sigBytes && result.sigBytes.length > 0) {
-      const sigHex = result.sigBytes.slice(0, 6).map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
-      page.drawText(`CMS: ${sigHex}...`, {
-        x: sigX + sigW - 80, y: sigY - 49, size: 5.5,
-        font, color: rgb(0.6, 0.6, 0.6),
-      });
-    }
+    const sigHex = result.sigBytes.slice(0, 6).map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
+    page.drawText(`CMS: ${sigHex}…`, {
+      x: sigX + sigW - 80, y: sigY - 49, size: 5.5,
+      font, color: rgb(0.6, 0.6, 0.6),
+    });
 
     const signedPdfBytes = await pdfLibDoc.save();
 
     // Save to disk
     const fname = pdfCurrentFilename.replace(/\.pdf$/i, '_signed.pdf');
-    const bytesArray = Array.from(new Uint8Array(signedPdfBytes.buffer || signedPdfBytes));
     const saveResult = await window.electronAPI.showSaveDialog(
       fname,
-      JSON.stringify(bytesArray)
+      JSON.stringify(Array.from(signedPdfBytes))
     );
 
     if (saveResult.success) {
@@ -3268,225 +3091,35 @@ function enterSigPlacementMode() {
 
   function placeSig(e) {
     if (!pendingSigDataUrl) return;
+    // Create a draggable signature image
     const img = document.createElement('img');
     img.src = pendingSigDataUrl;
-    img.style.cssText = `max-width: 200px; display: block; border: none; box-shadow: none; border-radius: 0; position: relative; cursor: move; margin: 0.5rem 0;`;
+    img.style.cssText = `
+      max-width: 200px; display: block;
+      border: none; box-shadow: none; border-radius: 0;
+      position: relative;
+      cursor: move;
+      margin: 0.5rem 0;
+    `;
     img.title = 'Drag to reposition · Double-click to remove';
-    img.addEventListener('dblclick', () => { if (confirm('Remove signature?')) img.remove(); });
+    img.addEventListener('dblclick', () => {
+      if (confirm('Remove signature?')) img.remove();
+    });
+
+    // Insert at click position — find nearest element
     const el = document.elementFromPoint(e.clientX, e.clientY);
     const target = el?.closest('p,h1,h2,h3,h4,blockquote,li') || body;
     target.after(img);
+
+    // Cleanup
     pendingSigDataUrl = null;
     body.style.cursor = '';
     body.removeEventListener('click', placeSig);
     toast('Signature placed ✓ — drag to reposition, double-click to remove');
   }
+
   body.addEventListener('click', placeSig);
 }
-
-/* ══════════════════════════════════════════
-   IS_STUDENT FLAG
-══════════════════════════════════════════ */
-const IS_STUDENT = !window.electronAPI;
-if (IS_STUDENT) {
-  document.body.classList.add('student');
-  // Update splash/about title
-  document.querySelectorAll('.splash-title, .about-title, .hdr-logo-text').forEach(el => {
-    if (el.classList.contains('hdr-logo-text')) {
-      el.innerHTML = 'Teq<span>Docs</span> <span style="font-size:0.5em;color:var(--accent);vertical-align:super;font-family:var(--font-ui);letter-spacing:0.05em;">STUDENT</span>';
-    }
-  });
-  document.title = 'TeqDocs Student — Study Smarter';
-}
-
-/* ══════════════════════════════════════════
-   STATS PANEL
-══════════════════════════════════════════ */
-let statsPanelOpen = false;
-const DAILY_GOAL_WORDS = 500;
-let wordsReadToday = parseInt(localStorage.getItem('td-words-today') || '0');
-const sessionStart = Date.now();
-
-// Check/reset daily goal
-(function checkDailyReset() {
-  const lastDate = localStorage.getItem('td-goal-date');
-  const today = new Date().toDateString();
-  if (lastDate !== today) {
-    localStorage.setItem('td-goal-date', today);
-    localStorage.setItem('td-words-today', '0');
-    wordsReadToday = 0;
-  }
-})();
-
-function toggleStatsPanel() {
-  statsPanelOpen = !statsPanelOpen;
-  document.getElementById('stats-panel').classList.toggle('open', statsPanelOpen);
-  document.getElementById('stats-btn').classList.toggle('active', statsPanelOpen);
-  if (statsPanelOpen) updateStatsPanel();
-}
-
-function updateStatsPanel() {
-  const pct = Math.min(100, Math.round((wordsReadToday / DAILY_GOAL_WORDS) * 100));
-  // Big ring
-  const circumference = 220;
-  document.getElementById('sp-ring-fill').style.strokeDashoffset = circumference - (pct / 100) * circumference;
-  document.getElementById('sp-ring-pct').textContent = pct + '%';
-  // Cards
-  document.getElementById('sp-daily-words').textContent = wordsReadToday.toLocaleString();
-  document.getElementById('sp-goal').textContent = DAILY_GOAL_WORDS.toLocaleString();
-  // Pages
-  if (pdfDoc) {
-    document.getElementById('sp-pages-read').textContent = pdfCurrentPage + ' / ' + pdfTotalPages;
-    const pagePct = Math.round((pdfCurrentPage / pdfTotalPages) * 100);
-    document.getElementById('sp-pages-pct').textContent = pagePct + '% through document';
-  } else {
-    document.getElementById('sp-pages-read').textContent = '—';
-    document.getElementById('sp-pages-pct').textContent = 'Open a PDF to track pages';
-  }
-  // Session time
-  const mins = Math.round((Date.now() - sessionStart) / 60000);
-  document.getElementById('sp-session-time').textContent = mins < 60 ? mins + 'm' : Math.floor(mins/60) + 'h ' + (mins%60) + 'm';
-  // Doc name
-  document.getElementById('sp-doc-name').textContent = currentFilename || '—';
-}
-
-function trackWordCount(text) {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  wordsReadToday = Math.max(wordsReadToday, words);
-  localStorage.setItem('td-words-today', wordsReadToday);
-  updateStatusBar();
-  if (statsPanelOpen) updateStatsPanel();
-}
-
-/* ══════════════════════════════════════════
-   STATUS BAR
-══════════════════════════════════════════ */
-function updateStatusBar() {
-  const pct = Math.min(100, Math.round((wordsReadToday / DAILY_GOAL_WORDS) * 100));
-  const circumference = 63;
-  document.getElementById('sb-ring-fill').style.strokeDashoffset = circumference - (pct / 100) * circumference;
-  document.getElementById('sb-words').textContent = wordsReadToday.toLocaleString();
-  // Doc word count
-  if (currentFilename && currentMd) {
-    const dw = currentMd.trim().split(/\s+/).filter(Boolean).length;
-    document.getElementById('sb-doc-words').textContent = dw.toLocaleString();
-    document.getElementById('sb-doc-stat').style.display = 'flex';
-    document.getElementById('sb-doc-div').style.display = 'block';
-  }
-}
-
-function setGreeting() {
-  const hour = new Date().getHours();
-  const name = IS_STUDENT ? 'Student' : 'Scholar';
-  let msg;
-  if (hour < 12) msg = `Good morning, ${name}! Great time to study.`;
-  else if (hour < 17) msg = `Stay Focused, ${name}!`;
-  else if (hour < 21) msg = `Evening session, ${name}. Keep it up!`;
-  else msg = `Burning the midnight oil, ${name}?`;
-  document.getElementById('sb-greeting').textContent = msg;
-}
-setGreeting();
-updateStatusBar();
-
-// Patch renderDoc to track word count
-const _renderDocOrig2 = renderDoc;
-renderDoc = function() {
-  _renderDocOrig2();
-  trackWordCount(currentMd);
-  document.getElementById('sp-doc-name') && (document.getElementById('sp-doc-name').textContent = currentFilename);
-};
-
-/* ══════════════════════════════════════════
-   AMBIENT MODE
-══════════════════════════════════════════ */
-let ambientMode = false;
-function toggleAmbientMode() {
-  ambientMode = !ambientMode;
-  document.body.classList.toggle('ambient-mode', ambientMode);
-  document.getElementById('sb-ambient-btn').classList.toggle('active', ambientMode);
-  if (ambientMode) {
-    document.body.style.setProperty('--max-width', '580px');
-    document.body.style.setProperty('--line-height', '2.1');
-    document.body.style.setProperty('--font-size', '19px');
-    toast('🌙 Ambient reading on — relaxed spacing');
-  } else {
-    document.body.style.setProperty('--max-width', '680px');
-    document.body.style.setProperty('--line-height', '1.85');
-    document.body.style.setProperty('--font-size', '18px');
-    toast('Ambient reading off');
-  }
-}
-
-// Patch focus mode toggle to update status bar button
-const _origToggleFocus = toggleFocusMode;
-toggleFocusMode = function() {
-  _origToggleFocus();
-  document.getElementById('sb-focus-btn').classList.toggle('active', focusMode);
-};
-
-/* ══════════════════════════════════════════
-   FILE STATUS TAGS (cycle on click)
-══════════════════════════════════════════ */
-const STATUS_CYCLE = ['to-read', 'drafting', 'review', 'done'];
-const STATUS_LABELS = { 'to-read': 'To Read', 'drafting': 'Drafting', 'review': 'Review', 'done': 'Done' };
-
-function getFileStatuses() {
-  try { return JSON.parse(localStorage.getItem('td-file-statuses') || '{}'); } catch { return {}; }
-}
-function setFileStatus(name, status) {
-  const s = getFileStatuses();
-  s[name] = status;
-  localStorage.setItem('td-file-statuses', JSON.stringify(s));
-}
-function cycleFileStatus(name, el, e) {
-  e.stopPropagation();
-  const s = getFileStatuses();
-  const cur = s[name] || 'to-read';
-  const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length];
-  setFileStatus(name, next);
-  el.className = 'fc-status ' + next;
-  el.textContent = STATUS_LABELS[next];
-}
-function makeStatusTag(name) {
-  const s = getFileStatuses();
-  const cur = s[name] || 'to-read';
-  const el = document.createElement('span');
-  el.className = 'fc-status ' + cur;
-  el.textContent = STATUS_LABELS[cur];
-  el.title = 'Click to change status';
-  el.onclick = (e) => cycleFileStatus(name, el, e);
-  return el;
-}
-
-// Patch renderRecent and renderSaved to inject status tags
-const _origRenderRecent = renderRecent;
-renderRecent = function() {
-  _origRenderRecent();
-  document.querySelectorAll('#recent-list .file-card').forEach(card => {
-    const name = card.querySelector('.fc-name')?.textContent;
-    if (!name) return;
-    const meta = card.querySelector('.fc-meta');
-    if (meta && !meta.querySelector('.fc-status')) meta.appendChild(makeStatusTag(name));
-  });
-};
-const _origRenderSaved = renderSaved;
-renderSaved = function() {
-  _origRenderSaved();
-  document.querySelectorAll('#saved-list .file-card').forEach(card => {
-    const name = card.querySelector('.fc-name')?.textContent;
-    if (!name) return;
-    const meta = card.querySelector('.fc-meta');
-    if (meta && !meta.querySelector('.fc-status')) meta.appendChild(makeStatusTag(name));
-  });
-};
-
-// Re-render with tags on init
-renderRecent();
-renderSaved();
-
-// Session timer update
-setInterval(() => { if (statsPanelOpen) updateStatsPanel(); }, 30000);
-
 
 
 </script>
