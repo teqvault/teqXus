@@ -1245,15 +1245,19 @@ body.student .cac-only { display: none !important; }
     <div class="sb-music-player" id="sb-music-player">
       <select id="music-track-sel" class="sb-music-sel" onchange="changeTrack(this.value)" title="Select ambient track">
         <option value="">🎵 Ambient</option>
-        <option value="rain">🌧 Rain</option>
-        <option value="lofi">🎵 Lo-fi</option>
-        <option value="forest">🌲 Forest</option>
-        <option value="ocean">🌊 Ocean</option>
-        <option value="white">⬜ White Noise</option>
+        <optgroup label="Built-in">
+          <option value="rain">🌧 Rain</option>
+          <option value="lofi">🎵 Lo-fi</option>
+          <option value="forest">🌲 Forest</option>
+          <option value="ocean">🌊 Ocean</option>
+          <option value="white">⬜ White Noise</option>
+        </optgroup>
       </select>
       <button class="sb-music-btn" id="music-play-btn" onclick="toggleMusic()" title="Play/Pause">▶</button>
       <button class="sb-music-btn" id="music-stop-btn" onclick="stopMusic()" title="Stop" style="display:none">■</button>
       <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.3" class="sb-vol-slider" oninput="setMusicVolume(this.value)" title="Volume">
+      <button class="sb-music-btn" onclick="document.getElementById('sound-upload').click()" title="Add your own track">+</button>
+      <input type="file" id="sound-upload" accept="audio/*" style="display:none" onchange="handleUserTrackUpload(this.files[0]);this.value='';">
     </div>
     <div class="sb-bar-divider"></div>
     <!-- TTS CONTROLS (shown when reading) -->
@@ -4120,274 +4124,177 @@ document.addEventListener('keydown', e => {
 </script>
 <script>
 /* ══════════════════════════════════════════
-   AMBIENT MUSIC — Web Audio API
+   AMBIENT MUSIC — Audio File Player
 ══════════════════════════════════════════ */
-let audioCtx = null;
-let musicNodes = [];
+let currentAudio = null;
 let musicPlaying = false;
 let currentTrack = '';
 
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
+// Built-in tracks
+const BUILTIN_TRACKS = [
+  { value: 'rain',       label: '🌧 Rain',        src: 'sounds/rain.mp3' },
+  { value: 'lofi',       label: '🎵 Lo-fi',       src: 'sounds/lofi.mp3' },
+  { value: 'forest',     label: '🌲 Forest',      src: 'sounds/forest.mp3' },
+  { value: 'ocean',      label: '🌊 Ocean',       src: 'sounds/ocean.mp3' },
+  { value: 'white',      label: '⬜ White Noise', src: 'sounds/whitenoise.mp3' },
+];
 
-function stopAllNodes() {
-  musicNodes.forEach(n => { try { n.stop(); } catch(e) {} });
-  musicNodes = [];
-}
+// User tracks stored in IndexedDB
+const DB_NAME = 'teqdocs-sounds';
+const DB_STORE = 'user-tracks';
+let db = null;
 
-function createGain(ctx, vol) {
-  const g = ctx.createGain();
-  g.gain.value = vol;
-  g.connect(ctx.destination);
-  return g;
-}
-
-function makeNoise(ctx, gain, type = 'white') {
-  const bufSize = ctx.sampleRate * 4;
-  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
-  for (let i = 0; i < bufSize; i++) {
-    const w = Math.random() * 2 - 1;
-    if (type === 'pink') {
-      b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
-      b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
-      b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
-      data[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
-      b6 = w * 0.115926;
-    } else {
-      data[i] = w;
-    }
-  }
-  const src = ctx.createBufferSource();
-  src.buffer = buf; src.loop = true;
-  src.connect(gain); src.start();
-  return src;
-}
-
-function makeOscillator(ctx, gain, freq, type = 'sine', detune = 0) {
-  const osc = ctx.createOscillator();
-  osc.type = type; osc.frequency.value = freq; osc.detune.value = detune;
-  osc.connect(gain); osc.start();
-  return osc;
-}
-
-function makeLFO(ctx, target, rate, depth, offset) {
-  const lfo = ctx.createOscillator();
-  const lfoGain = ctx.createGain();
-  lfo.frequency.value = rate;
-  lfoGain.gain.value = depth;
-  lfo.connect(lfoGain);
-  lfoGain.connect(target);
-  target.value = offset;
-  lfo.start();
-  return lfo;
-}
-
-function playRain(ctx, masterVol) {
-  const bufSize = ctx.sampleRate * 3;
-  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
-  for (let i = 0; i < bufSize; i++) {
-    const w = Math.random() * 2 - 1;
-    b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
-    b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
-    b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
-    data[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
-    b6 = w * 0.115926;
-  }
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass'; filter.frequency.value = 2000;
-  const g = ctx.createGain(); g.gain.value = masterVol * 0.6;
-  filter.connect(g); g.connect(ctx.destination);
-  const src = ctx.createBufferSource();
-  src.buffer = buf; src.loop = true;
-  src.connect(filter); src.start();
-  musicNodes.push(src);
-}
-
-function playLofi(ctx, masterVol) {
-  const chords = [[220,277,330],[175,220,262],[261,329,392],[196,246,294]];
-  let step = 0;
-  const masterG = ctx.createGain(); masterG.gain.value = masterVol * 0.18;
-  masterG.connect(ctx.destination);
-  const hissBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
-  const hissData = hissBuf.getChannelData(0);
-  for (let i = 0; i < hissData.length; i++) hissData[i] = (Math.random() * 2 - 1) * 0.015;
-  const hissSrc = ctx.createBufferSource();
-  hissSrc.buffer = hissBuf; hissSrc.loop = true;
-  const hissG = ctx.createGain(); hissG.gain.value = masterVol * 0.08;
-  hissSrc.connect(hissG); hissG.connect(ctx.destination); hissSrc.start();
-  musicNodes.push(hissSrc);
-  function playChord() {
-    if (!musicPlaying) return;
-    const chord = chords[step % chords.length];
-    chord.forEach((freq, hi) => {
-      const osc = ctx.createOscillator();
-      const env = ctx.createGain();
-      osc.type = 'triangle'; osc.frequency.value = freq;
-      osc.detune.value = (Math.random() - 0.5) * 8;
-      osc.connect(env); env.connect(masterG);
-      const t = ctx.currentTime;
-      env.gain.setValueAtTime(0, t);
-      env.gain.linearRampToValueAtTime(0.8 - hi * 0.15, t + 0.08);
-      env.gain.exponentialRampToValueAtTime(0.001, t + 1.9);
-      osc.start(t); osc.stop(t + 2);
-    });
-    step++;
-    setTimeout(playChord, 2200);
-  }
-  playChord();
-}
-
-function playForest(ctx, masterVol) {
-  const bufSize = ctx.sampleRate * 4;
-  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
-  for (let i = 0; i < bufSize; i++) {
-    const w = Math.random() * 2 - 1;
-    b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
-    b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
-    b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
-    data[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
-    b6 = w * 0.115926;
-  }
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass'; filter.frequency.value = 600;
-  const windG = ctx.createGain(); windG.gain.value = masterVol * 0.25;
-  filter.connect(windG); windG.connect(ctx.destination);
-  const windSrc = ctx.createBufferSource();
-  windSrc.buffer = buf; windSrc.loop = true;
-  windSrc.connect(filter); windSrc.start();
-  const lfo = ctx.createOscillator();
-  const lfoG = ctx.createGain(); lfoG.gain.value = masterVol * 0.1;
-  lfo.frequency.value = 0.15; lfo.connect(lfoG); lfoG.connect(windG.gain); lfo.start();
-  function chirp() {
-    if (!musicPlaying) return;
-    const freq = 2400 + Math.random() * 1200;
-    const osc = ctx.createOscillator(); const env = ctx.createGain();
-    osc.frequency.value = freq; osc.type = 'sine';
-    osc.connect(env); env.connect(ctx.destination);
-    const t = ctx.currentTime;
-    env.gain.setValueAtTime(0, t);
-    env.gain.linearRampToValueAtTime(masterVol * 0.06, t + 0.02);
-    env.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-    osc.start(t); osc.stop(t + 0.2);
-    setTimeout(chirp, 2000 + Math.random() * 5000);
-  }
-  setTimeout(chirp, 1000);
-  musicNodes.push(windSrc, lfo);
-}
-
-function playOcean(ctx, masterVol) {
-  function makePink(vol) {
-    const bufSize = ctx.sampleRate * 5;
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
-    for (let i = 0; i < bufSize; i++) {
-      const w = Math.random() * 2 - 1;
-      b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
-      b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
-      b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
-      data[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
-      b6 = w * 0.115926;
-    }
-    const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 800;
-    const g = ctx.createGain(); g.gain.value = vol;
-    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
-    src.connect(f); f.connect(g); g.connect(ctx.destination); src.start();
-    return { src, g };
-  }
-  const wave1 = makePink(masterVol * 0.3);
-  const wave2 = makePink(masterVol * 0.2);
-  [wave1, wave2].forEach((w, i) => {
-    const lfo = ctx.createOscillator(); const lfoG = ctx.createGain();
-    lfoG.gain.value = masterVol * 0.2; lfo.frequency.value = 0.08 + i * 0.03;
-    lfo.connect(lfoG); lfoG.connect(w.g.gain); lfo.start();
-    musicNodes.push(lfo);
+function openSoundsDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(DB_STORE, { keyPath: 'name' });
+    req.onsuccess = e => { db = e.target.result; resolve(db); };
+    req.onerror = () => reject(req.error);
   });
-  const rumble = ctx.createOscillator(); const rumbleG = ctx.createGain();
-  rumbleG.gain.value = masterVol * 0.04; rumble.frequency.value = 55;
-  rumble.connect(rumbleG); rumbleG.connect(ctx.destination); rumble.start();
-  musicNodes.push(wave1.src, wave2.src, rumble);
 }
 
-function playWhiteNoise(ctx, masterVol) {
-  const bufSize = ctx.sampleRate * 2;
-  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass'; filter.frequency.value = 3500;
-  const g = ctx.createGain(); g.gain.value = masterVol * 0.3;
-  filter.connect(g); g.connect(ctx.destination);
-  const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
-  src.connect(filter); src.start();
-  musicNodes.push(src);
+async function getUserTracks() {
+  if (!db) await openSoundsDB();
+  return new Promise(resolve => {
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const req = tx.objectStore(DB_STORE).getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => resolve([]);
+  });
 }
 
-function startTrack(track) {
-  stopAllNodes();
-  if (!track) return;
-  const ctx = getAudioCtx();
-  if (ctx.state === 'suspended') ctx.resume();
-  const vol = parseFloat(document.getElementById('music-vol').value);
-  switch(track) {
-    case 'rain':    playRain(ctx, vol);       break;
-    case 'lofi':    playLofi(ctx, vol);       break;
-    case 'forest':  playForest(ctx, vol);     break;
-    case 'ocean':   playOcean(ctx, vol);      break;
-    case 'white':   playWhiteNoise(ctx, vol); break;
+async function saveUserTrack(name, blob) {
+  if (!db) await openSoundsDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put({ name, blob });
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function deleteUserTrack(name) {
+  if (!db) await openSoundsDB();
+  return new Promise((resolve) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).delete(name);
+    tx.oncomplete = resolve;
+  });
+}
+
+async function buildTrackDropdown() {
+  const sel = document.getElementById('music-track-sel');
+  // Clear existing user tracks (keep first option + builtins)
+  const opts = Array.from(sel.options);
+  opts.forEach(o => { if (o.dataset.user) o.remove(); });
+
+  const userTracks = await getUserTracks();
+  if (userTracks.length > 0) {
+    const grp = document.createElement('optgroup');
+    grp.label = 'My Sounds';
+    userTracks.forEach(t => {
+      const o = document.createElement('option');
+      o.value = 'user:' + t.name;
+      o.textContent = '🎧 ' + t.name;
+      o.dataset.user = '1';
+      grp.appendChild(o);
+    });
+    sel.appendChild(grp);
   }
+}
+
+async function handleUserTrackUpload(file) {
+  if (!file || !file.type.startsWith('audio/')) { toast('Please select an audio file'); return; }
+  const name = file.name.replace(/\.[^.]+$/, ''); // strip extension
+  const blob = file;
+  await saveUserTrack(name, blob);
+  await buildTrackDropdown();
+  // Auto-select and play
+  const sel = document.getElementById('music-track-sel');
+  sel.value = 'user:' + name;
+  changeTrack('user:' + name);
+  toast('✓ Track added: ' + name);
+}
+
+function stopMusic() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+  musicPlaying = false;
+  currentTrack = '';
+  const playBtn = document.getElementById('music-play-btn');
+  const stopBtn = document.getElementById('music-stop-btn');
+  if (playBtn) { playBtn.textContent = '▶'; playBtn.classList.remove('playing'); }
+  if (stopBtn) stopBtn.style.display = 'none';
+  document.getElementById('music-track-sel').value = '';
+}
+
+async function playTrack(trackValue) {
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+
+  let src = null;
+  if (trackValue.startsWith('user:')) {
+    const name = trackValue.slice(5);
+    const userTracks = await getUserTracks();
+    const track = userTracks.find(t => t.name === name);
+    if (!track) { toast('Track not found'); return; }
+    src = URL.createObjectURL(track.blob);
+  } else {
+    const builtin = BUILTIN_TRACKS.find(t => t.value === trackValue);
+    if (!builtin) return;
+    src = builtin.src;
+  }
+
+  const audio = new Audio(src);
+  audio.loop = true;
+  audio.volume = parseFloat(document.getElementById('music-vol').value);
+  audio.play().catch(e => toast('Could not play audio: ' + e.message));
+  currentAudio = audio;
+  musicPlaying = true;
+  currentTrack = trackValue;
+
+  const playBtn = document.getElementById('music-play-btn');
+  const stopBtn = document.getElementById('music-stop-btn');
+  if (playBtn) { playBtn.textContent = '⏸'; playBtn.classList.add('playing'); }
+  if (stopBtn) stopBtn.style.display = 'inline-block';
 }
 
 function toggleMusic() {
   const sel = document.getElementById('music-track-sel');
-  const playBtn = document.getElementById('music-play-btn');
-  const stopBtn = document.getElementById('music-stop-btn');
   if (!sel.value) { toast('Pick a track first'); return; }
   if (musicPlaying) {
+    if (currentAudio) { currentAudio.pause(); }
     musicPlaying = false;
-    stopAllNodes();
-    if (audioCtx) audioCtx.suspend();
-    playBtn.textContent = '▶'; playBtn.classList.remove('playing');
-    stopBtn.style.display = 'none';
+    const playBtn = document.getElementById('music-play-btn');
+    if (playBtn) { playBtn.textContent = '▶'; playBtn.classList.remove('playing'); }
   } else {
-    musicPlaying = true;
-    currentTrack = sel.value;
-    startTrack(currentTrack);
-    playBtn.textContent = '⏸'; playBtn.classList.add('playing');
-    stopBtn.style.display = 'inline-block';
+    if (currentAudio) {
+      currentAudio.play();
+      musicPlaying = true;
+      const playBtn = document.getElementById('music-play-btn');
+      if (playBtn) { playBtn.textContent = '⏸'; playBtn.classList.add('playing'); }
+    } else {
+      playTrack(sel.value);
+    }
   }
 }
 
-function stopMusic() {
-  musicPlaying = false;
-  stopAllNodes();
-  if (audioCtx) audioCtx.suspend();
-  const playBtn = document.getElementById('music-play-btn');
-  const stopBtn = document.getElementById('music-stop-btn');
-  playBtn.textContent = '▶'; playBtn.classList.remove('playing');
-  stopBtn.style.display = 'none';
-  document.getElementById('music-track-sel').value = '';
-}
-
-function changeTrack(track) {
-  if (musicPlaying) {
-    currentTrack = track;
-    startTrack(track);
-  }
+function changeTrack(trackValue) {
+  if (!trackValue) return;
+  playTrack(trackValue);
 }
 
 function setMusicVolume(val) {
-  if (musicPlaying) { stopAllNodes(); startTrack(currentTrack); }
+  if (currentAudio) currentAudio.volume = parseFloat(val);
 }
 
+// Init dropdown with user tracks on load
+openSoundsDB().then(() => buildTrackDropdown()).catch(() => {});
+
+/* ══════════════════════════════════════════
+   TEXT TO SPEECH — Web Speech API
 /* ══════════════════════════════════════════
    TEXT TO SPEECH — Web Speech API
 ══════════════════════════════════════════ */
