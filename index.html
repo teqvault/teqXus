@@ -56,6 +56,16 @@
   .teqdocs-btn .td-icon { font-size: 14px; line-height: 1; }
   .teqdocs-btn .td-label { font-size: 11px; font-weight: 700; color: var(--teal); letter-spacing: 0.03em; }
 
+  /* Mobile: move to bottom-right so it doesn't cover the header */
+  @media (max-width: 600px) {
+    .teqdocs-btn {
+      top: auto;
+      bottom: 80px;
+      left: auto;
+      right: 12px;
+    }
+  }
+
   /* TOP BAR */
   .topbar { background: var(--navy2); padding: 10px 14px 9px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .logo { display: flex; align-items: center; gap: 9px; }
