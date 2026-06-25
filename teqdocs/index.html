@@ -1505,29 +1505,10 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
 
 <script>
 /* ── PDF.js worker ── */
-let pdfWorkerReady = false;
+let pdfWorkerReady = true;
 if(typeof pdfjsLib!=='undefined'){
-  if(window.electronAPI){
-    (async () => {
-      try {
-        const base = location.href.substring(0, location.href.lastIndexOf('/') + 1);
-        const workerUrl = base + 'pdf.worker.min.js';
-        const res = await fetch(workerUrl);
-        if (res.ok) {
-          const blob = await res.blob();
-          pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
-        } else {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-        }
-      } catch(e) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
-      }
-      pdfWorkerReady = true;
-    })();
-  } else {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-    pdfWorkerReady = true;
-  }
+  // Same-origin worker file hosted next to index.html — no CORS, no fake worker
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
 }
 
 /* ── State ── */
@@ -2032,15 +2013,25 @@ async function renderSinglePage(pageNum,wrap) {
             try {
               let dest = ann.dest;
               if (typeof dest === 'string') dest = await pdfDoc.getDestination(dest);
-              if (!dest || !dest[0]) return;
-              let pageIndex;
-              // dest[0] can be a ref object {num, gen} or an integer page index
-              if (typeof dest[0] === 'number') {
-                pageIndex = dest[0];
-              } else {
-                pageIndex = await pdfDoc.getPageIndex(dest[0]);
+              if (!dest || dest.length === 0) return;
+              const ref = dest[0];
+              let pageIndex = -1;
+              if (typeof ref === 'number') {
+                pageIndex = ref;
+              } else if (ref && typeof ref === 'object') {
+                try { pageIndex = await pdfDoc.getPageIndex(ref); } catch(e) {}
+                if (pageIndex < 0) {
+                  for (let p = 1; p <= pdfTotalPages; p++) {
+                    try {
+                      const pg = await pdfDoc.getPage(p);
+                      if (pg.ref && pg.ref.num === ref.num && pg.ref.gen === ref.gen) {
+                        pageIndex = p - 1; break;
+                      }
+                    } catch(e) {}
+                  }
+                }
               }
-              goToPage(pageIndex + 1);
+              if (pageIndex >= 0) goToPage(pageIndex + 1);
             } catch(err) { console.warn('PDF dest nav:', err); }
           });
         } else if (ann.action?.actionType === 'Named') {
@@ -2113,6 +2104,7 @@ async function pdfGoToPage(n){
   const dir=p>pdfCurrentPage?'left':'right';
   pdfCurrentPage=p;scrollToPage(p,dir);
 }
+function goToPage(n){ pdfGoToPage(n); }
 function scrollToPage(pageNum,flipDir){
   const wrap=document.getElementById('pdf-canvas-wrap');
   const target=wrap.querySelector(`.pdf-page-wrapper[data-page="${pageNum}"]`);
@@ -3044,14 +3036,27 @@ async function renderOutlineItems(items, container, depth) {
       try {
         let dest = item.dest;
         if (typeof dest === 'string') dest = await pdfDoc.getDestination(dest);
-        if (!dest || !dest[0]) return;
-        let pageIndex;
-        if (typeof dest[0] === 'number') {
-          pageIndex = dest[0];
-        } else {
-          pageIndex = await pdfDoc.getPageIndex(dest[0]);
+        if (!dest || dest.length === 0) return;
+        const ref = dest[0];
+        let pageIndex = -1;
+
+        if (typeof ref === 'number') {
+          pageIndex = ref;
+        } else if (ref && typeof ref === 'object') {
+          try { pageIndex = await pdfDoc.getPageIndex(ref); } catch(e) {}
+          if (pageIndex < 0) {
+            for (let p = 1; p <= pdfTotalPages; p++) {
+              try {
+                const pg = await pdfDoc.getPage(p);
+                if (pg.ref && pg.ref.num === ref.num && pg.ref.gen === ref.gen) {
+                  pageIndex = p - 1; break;
+                }
+              } catch(e) {}
+            }
+          }
         }
-        goToPage(pageIndex + 1);
+
+        if (pageIndex >= 0) goToPage(pageIndex + 1);
       } catch(e) { console.warn('TOC nav:', e); }
     };
     container.appendChild(el);
