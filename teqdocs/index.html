@@ -1986,83 +1986,68 @@ async function renderSinglePage(pageNum,wrap) {
   // Render clickable link annotations
   try {
     const annotations = await page.getAnnotations();
-    if (annotations.length > 0) {
-      // Create a dedicated link layer above everything
+    const linkAnns = annotations.filter(a => a.subtype === 'Link' && a.rect);
+    if (linkAnns.length > 0) {
       const linkLayer = document.createElement('div');
-      linkLayer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:20;';
+      linkLayer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:30;overflow:hidden;';
       container.appendChild(linkLayer);
 
-      annotations.forEach(ann => {
-        if (!ann.rect || ann.subtype !== 'Link') return;
+      // viewport.transform = [sx, 0, 0, sy, tx, ty]
+      // PDF uses bottom-left origin; canvas uses top-left.
+      // For a rect [x1,y1,x2,y2] in PDF space:
+      //   canvas_x = x * sx + tx
+      //   canvas_y = pageHeight_in_pts * sy + ty - y * sy   (y is flipped)
+      // Simpler: just use viewport to convert both corners.
+      function pdfPtToCanvas(x, y) {
+        const [sx, shx, shy, sy, tx, ty] = viewport.transform;
+        return [sx*x + shx*y + tx, shy*x + sy*y + ty];
+      }
 
-        // PDF coords: bottom-left origin. Convert to canvas coords.
-        const rect = ann.rect;
-        const vt = viewport.transform;
-        // Apply viewport transform to all 4 corners
-        const p1 = pdfjsLib.Util.applyTransform([rect[0], rect[1]], vt);
-        const p2 = pdfjsLib.Util.applyTransform([rect[2], rect[3]], vt);
-        const left   = Math.min(p1[0], p2[0]);
-        const top    = Math.min(p1[1], p2[1]);
-        const width  = Math.abs(p2[0] - p1[0]);
-        const height = Math.abs(p2[1] - p1[1]);
+      linkAnns.forEach(ann => {
+        const [ax1, ay1, ax2, ay2] = ann.rect;
+        const c1 = pdfPtToCanvas(ax1, ay1);
+        const c2 = pdfPtToCanvas(ax2, ay2);
+        const left   = Math.min(c1[0], c2[0]);
+        const top    = Math.min(c1[1], c2[1]);
+        const width  = Math.abs(c2[0] - c1[0]);
+        const height = Math.abs(c2[1] - c1[1]);
+        if (width < 1 || height < 1) return;
 
-        if (width < 2 || height < 2) return; // skip degenerate rects
-
-        const linkEl = document.createElement('a');
-        linkEl.style.cssText = `
-          position:absolute;
-          left:${left}px;top:${top}px;
-          width:${width}px;height:${height}px;
-          cursor:pointer;pointer-events:auto;
-          z-index:20;border-radius:2px;
-          display:block;
-        `;
+        const el = document.createElement('a');
+        el.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:${width}px;height:${height}px;display:block;pointer-events:auto;cursor:pointer;border-radius:2px;transition:background 0.1s;`;
 
         if (ann.url) {
-          // External URL
-          linkEl.href = ann.url;
-          linkEl.target = '_blank';
-          linkEl.rel = 'noopener noreferrer';
-          linkEl.title = ann.url;
-          linkEl.style.background = 'rgba(0,163,255,0.0)';
-          linkEl.addEventListener('mouseenter', () => linkEl.style.background = 'rgba(0,163,255,0.12)');
-          linkEl.addEventListener('mouseleave', () => linkEl.style.background = 'rgba(0,163,255,0.0)');
+          el.href = ann.url;
+          el.target = '_blank';
+          el.rel = 'noopener noreferrer';
+          el.title = ann.url;
+          el.addEventListener('mouseenter', () => el.style.background = 'rgba(0,163,255,0.15)');
+          el.addEventListener('mouseleave', () => el.style.background = '');
         } else if (ann.dest) {
-          // Internal destination (TOC links, cross-refs, footnotes)
-          linkEl.href = '#';
-          linkEl.title = 'Jump to page';
-          linkEl.style.background = 'rgba(124,92,252,0.0)';
-          linkEl.addEventListener('mouseenter', () => linkEl.style.background = 'rgba(124,92,252,0.12)');
-          linkEl.addEventListener('mouseleave', () => linkEl.style.background = 'rgba(124,92,252,0.0)');
-          linkEl.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+          el.href = '#';
+          el.addEventListener('mouseenter', () => el.style.background = 'rgba(124,92,252,0.15)');
+          el.addEventListener('mouseleave', () => el.style.background = '');
+          el.addEventListener('click', async e => {
+            e.preventDefault(); e.stopPropagation();
             try {
               let dest = ann.dest;
               if (typeof dest === 'string') dest = await pdfDoc.getDestination(dest);
               if (!dest || !dest[0]) return;
-              const pageIndex = await pdfDoc.getPageIndex(dest[0]);
-              goToPage(pageIndex + 1);
-            } catch(err) { console.warn('Link nav error:', err); }
+              goToPage((await pdfDoc.getPageIndex(dest[0])) + 1);
+            } catch(err) {}
           });
-        } else if (ann.action && ann.action.actionType === 'Named') {
-          linkEl.href = '#';
-          linkEl.addEventListener('click', (e) => {
+        } else if (ann.action?.actionType === 'Named') {
+          el.href = '#';
+          el.addEventListener('click', e => {
             e.preventDefault();
-            switch(ann.action.action) {
-              case 'NextPage':  nextPage(); break;
-              case 'PrevPage':  prevPage(); break;
-              case 'FirstPage': goToPage(1); break;
-              case 'LastPage':  goToPage(pdfTotalPages); break;
-            }
+            ({NextPage:nextPage, PrevPage:prevPage, FirstPage:()=>goToPage(1), LastPage:()=>goToPage(pdfTotalPages)})[ann.action.action]?.();
           });
-        } else {
-          return;
-        }
-        linkLayer.appendChild(linkEl);
+        } else return;
+
+        linkLayer.appendChild(el);
       });
     }
-  } catch(e) { console.warn('Annotation render error:', e); }
+  } catch(e) { console.warn('PDF link render:', e); }
   canvas.addEventListener('click',e=>{
     if(pdfCurrentTool!=='addtext')return;
     const r=canvas.getBoundingClientRect();
