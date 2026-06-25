@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<meta name="theme-color" content="#0d0d14">
+<meta name="theme-color" content="#f5f0e8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="TeqDocs">
 <title>TeqDocs</title>
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -16,53 +17,6 @@
 
 <style>
 :root {
-  /* ── Dark theme (default) ── */
-  --parchment: #0d0d14;
-  --parchment2: #13131f;
-  --parchment3: #1a1a2e;
-  --ink: #e8e6f0;
-  --ink2: #9b99b0;
-  --ink3: #6b6880;
-  --accent: #7c5cfc;
-  --accent2: #5a3fd4;
-  --accent-light: rgba(124,92,252,0.15);
-  --teal: #3ecfa0;
-  --teal-glow: rgba(62,207,160,0.12);
-  --coral: #ff6b6b;
-  --coral-glow: rgba(255,107,107,0.12);
-  --amber: #f5a623;
-  --amber-glow: rgba(245,166,35,0.12);
-  --gold: #f5a623;
-  --sidebar-w: 260px;
-  --header-h: 52px;
-  --radius: 10px;
-  --shadow: 0 2px 16px rgba(0,0,0,0.4);
-  --page-shadow: 2px 0 12px rgba(0,0,0,0.3);
-  --font-serif: 'Georgia','Times New Roman',serif;
-  --font-ui: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  --font-mono: 'Fira Code','Consolas',monospace;
-  --font-size: 18px;
-  --line-height: 1.85;
-  --max-width: 680px;
-}
-/* ── Light theme (future toggle) ── */
-.light {
-  --parchment: #f5f0e8;
-  --parchment2: #ede8df;
-  --parchment3: #e0d9cc;
-  --ink: #1c1a16;
-  --ink2: #3d3a33;
-  --ink3: #6b6760;
-  --accent: #7c5cfc;
-  --accent2: #5a3fd4;
-  --accent-light: rgba(124,92,252,0.15);
-  --teal: #2aab7e;
-  --gold: #c49a3c;
-  --shadow: 0 2px 16px rgba(0,0,0,0.10);
-  --page-shadow: 2px 0 12px rgba(0,0,0,0.08);
-}
-/* ── Parchment theme (future toggle) ── */
-.parchment-theme {
   --parchment: #f5f0e8;
   --parchment2: #ede8df;
   --parchment3: #e0d9cc;
@@ -72,10 +26,32 @@
   --accent: #8b4513;
   --accent2: #a0522d;
   --accent-light: rgba(139,69,19,0.12);
-  --teal: #2a7a5a;
   --gold: #c49a3c;
+  --sidebar-w: 260px;
+  --header-h: 52px;
+  --radius: 10px;
   --shadow: 0 2px 16px rgba(0,0,0,0.10);
   --page-shadow: 2px 0 12px rgba(0,0,0,0.08);
+  --font-serif: 'Georgia','Times New Roman',serif;
+  --font-ui: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-mono: 'Fira Code','Consolas',monospace;
+  --font-size: 18px;
+  --line-height: 1.85;
+  --max-width: 680px;
+}
+.dark {
+  --parchment: #1a1814;
+  --parchment2: #221f1a;
+  --parchment3: #2d2a24;
+  --ink: #e8e4da;
+  --ink2: #c8c4ba;
+  --ink3: #8a867e;
+  --accent: #d4894a;
+  --accent2: #c47a3a;
+  --accent-light: rgba(212,137,74,0.12);
+  --gold: #d4a84b;
+  --shadow: 0 2px 16px rgba(0,0,0,0.4);
+  --page-shadow: 2px 0 12px rgba(0,0,0,0.3);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: var(--font-size); scroll-behavior: smooth; }
@@ -104,8 +80,7 @@ body { background: var(--parchment); color: var(--ink); font-family: var(--font-
 .hdr-btn.active { color: var(--accent); }
 
 /* ── BODY (sidebar + content) ── */
-#body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
-#content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+#body { display: flex; flex: 1; overflow: hidden; }
 
 /* ── SIDEBAR ── */
 #sidebar {
@@ -153,6 +128,7 @@ body { background: var(--parchment); color: var(--ink); font-family: var(--font-
 .toc-empty { font-size: 0.8rem; color: var(--ink3); text-align: center; padding: 1.5rem 1rem; }
 
 /* ── CONTENT AREA ── */
+#content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; min-height: 0; }
 #welcome { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 2rem; text-align: center; gap: 1.5rem; }
 #reader { display: none; flex: 1; overflow-y: auto; padding-bottom: 4rem; }
 #reader.visible { display: block; }
@@ -715,151 +691,6 @@ mark.current { background: var(--gold); color: #000; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--parchment3); border-radius: 4px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-
-/* ── IS_STUDENT overrides ── */
-body.student .cac-only { display: none !important; }
-
-/* ── BOTTOM STATUS BAR ── */
-#status-bar {
-  height: 36px; flex-shrink: 0;
-  background: var(--parchment2);
-  border-top: 1px solid var(--parchment3);
-  display: flex; align-items: center;
-  padding: 0 16px; gap: 14px;
-  font-size: 0.72rem; font-family: var(--font-ui);
-  color: var(--ink3); z-index: 30;
-}
-.sb-stat { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-.sb-stat strong { color: var(--ink2); font-weight: 700; }
-.sb-bar-divider { width: 1px; height: 16px; background: var(--parchment3); flex-shrink: 0; }
-.sb-greeting { flex: 1; text-align: center; font-family: var(--font-serif); font-style: italic; color: var(--accent); font-size: 0.78rem; font-weight: 600; }
-.sb-mode-btn { background: none; border: 1px solid var(--parchment3); border-radius: 6px; padding: 3px 10px; font-size: 0.7rem; font-weight: 700; font-family: var(--font-ui); color: var(--ink3); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-.sb-mode-btn:hover { border-color: var(--accent); color: var(--accent); }
-.sb-mode-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
-.sb-ring-wrap { position: relative; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; flex-shrink: 0; }
-.sb-ring-wrap svg { width: 26px; height: 26px; transform: rotate(-90deg); }
-.sb-ring-bg { fill: none; stroke: var(--parchment3); stroke-width: 3; }
-.sb-ring-fill { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 63; stroke-dashoffset: 63; transition: stroke-dashoffset 0.4s; }
-.sb-ring-pct { position: absolute; font-size: 0.5rem; font-weight: 700; color: var(--accent); }
-
-/* ── RIGHT STATS PANEL ── */
-#stats-panel { width: 220px; flex-shrink: 0; background: var(--parchment2); border-left: 1px solid var(--parchment3); display: none; flex-direction: column; overflow-y: auto; padding: 14px 12px; gap: 10px; }
-#stats-panel.open { display: flex; }
-.sp-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink3); margin-bottom: 4px; }
-.sp-card { background: var(--parchment); border: 1px solid var(--parchment3); border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
-.sp-card-title { font-size: 0.65rem; color: var(--ink3); font-family: var(--font-ui); margin-bottom: 3px; }
-.sp-card-value { font-size: 1.15rem; font-weight: 700; color: var(--ink); font-family: var(--font-serif); }
-.sp-card-sub { font-size: 0.62rem; color: var(--ink3); margin-top: 2px; }
-.sp-ring-container { position: relative; display: flex; align-items: center; justify-content: center; padding: 8px 0; }
-.sp-ring-container svg { width: 84px; height: 84px; transform: rotate(-90deg); }
-.sp-ring-bg { fill: none; stroke: var(--parchment3); stroke-width: 7; }
-.sp-ring-fill { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 0.4s; }
-.sp-ring-label { position: absolute; font-size: 0.9rem; font-weight: 700; color: var(--accent); font-family: var(--font-ui); }
-
-/* ── POMODORO ── */
-.sb-mode-btn.pomo-running { color: #ff6b6b; border-color: rgba(255,107,107,0.4); background: rgba(255,107,107,0.1); }
-.sb-mode-btn.pomo-break { color: var(--teal); border-color: rgba(62,207,160,0.4); background: rgba(62,207,160,0.1); }
-
-/* ── FLASHCARD MODAL ── */
-#flashcard-modal {
-  position: fixed; inset: 0; z-index: 600;
-  background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
-  display: none; align-items: center; justify-content: center; padding: 20px;
-}
-#flashcard-modal.open { display: flex; }
-.fc-modal-box {
-  background: var(--parchment2); border: 1px solid var(--parchment3);
-  border-radius: 16px; width: 100%; max-width: 520px;
-  padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  display: flex; flex-direction: column; gap: 16px;
-}
-.fc-modal-header { display: flex; align-items: center; justify-content: space-between; }
-.fc-modal-title { font-size: 1rem; font-weight: 700; color: var(--ink); }
-.fc-modal-close { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.2rem; }
-.fc-card {
-  min-height: 180px; background: var(--parchment3);
-  border-radius: 12px; display: flex; align-items: center; justify-content: center;
-  padding: 24px; text-align: center; cursor: pointer;
-  font-family: var(--font-serif); font-size: 1.1rem; color: var(--ink);
-  line-height: 1.6; position: relative; transition: transform 0.15s;
-  user-select: none;
-}
-.fc-card:hover { transform: scale(1.01); }
-.fc-card-hint { position: absolute; bottom: 10px; right: 14px; font-size: 0.65rem; color: var(--ink3); font-family: var(--font-ui); }
-.fc-card.flipped { background: var(--accent-light); border: 1px solid var(--accent); }
-.fc-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.fc-counter { font-size: 0.78rem; color: var(--ink3); font-family: var(--font-ui); }
-.fc-btn { flex: 1; padding: 9px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; border: none; transition: all 0.15s; }
-.fc-btn.prev { background: var(--parchment3); color: var(--ink2); }
-.fc-btn.flip { background: var(--accent); color: #fff; }
-.fc-btn.next { background: var(--parchment3); color: var(--ink2); }
-.fc-btn:hover { opacity: 0.85; }
-.fc-progress { height: 3px; background: var(--parchment3); border-radius: 3px; overflow: hidden; }
-.fc-progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
-.fc-generate-wrap { display: flex; flex-direction: column; gap: 10px; }
-.fc-generate-wrap p { font-size: 0.82rem; color: var(--ink3); line-height: 1.5; }
-.fc-gen-btn { padding: 10px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; }
-.fc-gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.fc-thinking { font-size: 0.82rem; color: var(--ink3); font-style: italic; text-align: center; padding: 20px; }
-
-/* ── MUSIC PLAYER ── */
-.sb-music-player { display:flex;align-items:center;gap:4px;flex-shrink:0; }
-.sb-music-sel { background:var(--parchment3);border:1px solid var(--parchment3);border-radius:6px;color:var(--ink2);font-family:var(--font-ui);font-size:0.7rem;padding:3px 6px;outline:none;cursor:pointer;max-width:100px; }
-.sb-music-sel:focus { border-color:var(--accent); }
-.sb-music-btn { background:none;border:1px solid var(--parchment3);border-radius:5px;color:var(--ink3);font-size:0.72rem;padding:3px 7px;cursor:pointer;transition:all 0.15s;line-height:1; }
-.sb-music-btn:hover { border-color:var(--accent);color:var(--accent); }
-.sb-music-btn.playing { color:var(--teal);border-color:rgba(62,207,160,0.4);background:rgba(62,207,160,0.08); }
-.sb-vol-slider { width:56px;height:3px;accent-color:var(--accent);cursor:pointer;vertical-align:middle; }
-
-/* ── TTS ── */
-.tts-highlight { background:rgba(124,92,252,0.25);border-radius:3px;transition:background 0.2s; }
-.tts-highlight.active { background:rgba(124,92,252,0.55);color:#fff; }
-#tts-btn.active { border-color:var(--accent);color:var(--accent);background:var(--accent-light); }
-/* ── PRO MODAL ── */
-#pro-modal { position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px; }
-#pro-modal.open { display:flex; }
-.pro-box { background:var(--parchment2);border:1px solid var(--parchment3);border-radius:16px;width:100%;max-width:400px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:14px; }
-.pro-header { display:flex;align-items:center;justify-content:space-between; }
-.pro-title { font-size:1.1rem;font-weight:800;color:var(--ink); }
-.pro-close { background:none;border:none;cursor:pointer;color:var(--ink3);font-size:1.2rem; }
-.pro-badge { display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;padding:4px 12px;border-radius:20px;text-transform:uppercase; }
-.pro-perks { display:flex;flex-direction:column;gap:6px; }
-.pro-perk { font-size:0.82rem;color:var(--ink2);display:flex;align-items:center;gap:8px; }
-.pro-perk span { color:var(--teal);font-size:1rem; }
-.pro-divider { border:none;border-top:1px solid var(--parchment3); }
-.pro-input { width:100%;background:var(--parchment3);border:1px solid var(--parchment3);border-radius:10px;color:var(--ink);font-family:var(--font-mono);font-size:1rem;padding:11px 14px;outline:none;text-align:center;letter-spacing:0.08em;text-transform:uppercase; }
-.pro-input:focus { border-color:var(--accent); }
-.pro-activate-btn { width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;transition:opacity 0.15s; }
-.pro-activate-btn:hover { opacity:0.88; }
-.pro-activate-btn:disabled { opacity:0.5;cursor:not-allowed; }
-.pro-msg { font-size:0.8rem;text-align:center;padding:6px 0;min-height:20px; }
-.pro-msg.success { color:var(--teal); }
-.pro-msg.error { color:#ff6b6b; }
-.pro-get-link { font-size:0.75rem;color:var(--ink3);text-align:center; }
-.pro-get-link a { color:var(--accent);font-weight:600; }
-/* Pro active state */
-#pro-btn.pro-active { background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:8px;padding:5px 12px;border:none; }
-</style>
-<style>
-#history-panel {
-  position: fixed; top: 0; right: 0; bottom: 0;
-  width: 300px; background: var(--parchment2);
-  border-left: 1px solid var(--parchment3);
-  z-index: 400; transform: translateX(100%);
-  transition: transform 0.25s; display: flex; flex-direction: column;
-  box-shadow: -4px 0 20px rgba(0,0,0,0.3);
-}
-#history-panel.open { transform: translateX(0); }
-.hp-header { padding: 14px 16px; border-bottom: 1px solid var(--parchment3); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-.hp-title { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
-.hp-close { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.1rem; }
-.hp-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
-.hp-item { background: var(--parchment3); border-radius: 8px; padding: 10px 12px; }
-.hp-item-name { font-size: 0.8rem; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hp-item-meta { font-size: 0.68rem; color: var(--ink3); margin-top: 3px; display: flex; gap: 8px; }
-.hp-item-bar { height: 3px; background: var(--parchment2); border-radius: 3px; overflow: hidden; margin-top: 6px; }
-.hp-item-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
-.hp-empty { padding: 20px; text-align: center; font-size: 0.82rem; color: var(--ink3); }
 </style>
 </head>
 <body>
@@ -876,19 +707,6 @@ body.student .cac-only { display: none !important; }
   <div class="splash-logo">📖</div>
   <div class="splash-title">Teq<span>Docs</span></div>
   <div class="splash-sub">Your beautiful reading & writing companion</div>
-  <div id="splash-name-wrap" style="display:none;flex-direction:column;align-items:center;gap:10px;margin-top:8px;width:100%;max-width:280px;">
-    <label style="font-size:0.78rem;color:var(--ink3);font-family:var(--font-ui);">What should we call you? <span style="opacity:0.5;">(optional)</span></label>
-    <input id="splash-name-input" type="text" maxlength="30" placeholder="Your name or nickname…"
-      style="width:100%;background:var(--parchment3);border:1px solid var(--parchment3);border-radius:10px;color:var(--ink);font-family:var(--font-ui);font-size:0.9rem;padding:9px 14px;outline:none;text-align:center;"
-      onkeydown="if(event.key==='Enter')dismissSplash()">
-    <button onclick="dismissSplash()"
-      style="width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;">
-      Let's go →
-    </button>
-    <button onclick="dismissSplash()" style="background:none;border:none;color:var(--ink3);font-size:0.75rem;font-family:var(--font-ui);cursor:pointer;padding:4px;">
-      Skip
-    </button>
-  </div>
   <div class="splash-version">v2.0.0 · TeqVault LLC</div>
 </div>
 
@@ -948,9 +766,6 @@ body.student .cac-only { display: none !important; }
     <button class="hdr-btn" onclick="toggleTheme()" id="theme-btn">☀️</button>
     <button class="hdr-btn" onclick="openShortcuts()" title="Keyboard shortcuts (?)">⌨</button>
     <button class="hdr-btn" onclick="openAbout()" title="About TeqDocs">ℹ</button>
-    <button class="hdr-btn" onclick="toggleStatsPanel()" id="stats-btn" title="Study Stats">📊</button>
-    <button class="hdr-btn" onclick="openHistoryPanel()" title="Reading History">📚</button>
-    <button class="hdr-btn" id="pro-btn" onclick="openProModal()" title="Activate TeqXus Pro" style="font-weight:700;">⚡ Pro</button>
     <a href="https://ko-fi.com/teqvault" target="_blank" title="Support TeqVault on Ko-fi" style="text-decoration:none;">
       <button class="hdr-btn" style="background:rgba(255,94,86,0.12);border:1px solid rgba(255,94,86,0.3);color:#ff5e56;font-weight:700;padding:5px 12px;border-radius:8px;">☕ Support</button>
     </a>
@@ -1005,7 +820,6 @@ body.student .cac-only { display: none !important; }
     </div>
 
     <!-- CONTENT -->
-    <div id="content-area" style="display:flex;flex:1;overflow:hidden;min-height:0;">
     <div id="content">
 
       <!-- Welcome -->
@@ -1038,7 +852,6 @@ body.student .cac-only { display: none !important; }
             <button class="dib-btn" id="doc-edit-btn" onclick="openEditorFromReader()" style="display:none">✏️ Edit</button>
             <button class="dib-btn" onclick="addBookmark()" title="Add bookmark (Ctrl+M)">🔖 Bookmark</button>
             <button class="dib-btn" onclick="openSigPanel()" title="Add signature">✍ Sign</button>
-            <button class="dib-btn" id="tts-btn" onclick="toggleTTS()" title="Read aloud">🔊 Listen</button>
             <button class="dib-btn" id="doc-export-btn" onclick="toggleExportMenu()">Export ▾</button>
           </div>
           <div class="export-menu" id="export-menu">
@@ -1078,9 +891,9 @@ body.student .cac-only { display: none !important; }
           <!-- File ops -->
           <button class="pdf-tb-btn" onclick="showMergeDialog()">⊕ Merge</button>
           <button class="pdf-tb-btn" onclick="showSplitDialog()">✂ Split</button>
-
-          <button class="pdf-tb-btn cac-only" onclick="openCACSignPanel()" title="Sign with CAC card" style="background:rgba(30,60,120,0.15);border-color:rgba(30,60,120,0.4);color:#1e3c78;">🪪 CAC Sign</button>
-          <button class="pdf-tb-btn" onclick="downloadOriginalPdf()" style="background:var(--accent);color:#fff;border-color:var(--accent)">💾 Save PDF</button>
+          <button class="pdf-tb-btn" onclick="convertPdfToDocx()" title="Convert to editable Word document">📝 Edit as Word</button>
+          <button class="pdf-tb-btn" onclick="openCACSignPanel()" title="Sign with CAC card" style="background:rgba(30,60,120,0.15);border-color:rgba(30,60,120,0.4);color:#1e3c78;">🪪 CAC Sign</button>
+          <button class="pdf-tb-btn" onclick="savePdfEdits()" style="background:var(--accent);color:#fff;border-color:var(--accent)">💾 Save PDF</button>
         </div>
 
         <!-- Add text input overlay -->
@@ -1197,80 +1010,7 @@ body.student .cac-only { display: none !important; }
 
     </div><!-- /content -->
 
-      <!-- RIGHT STATS PANEL -->
-      <div id="stats-panel">
-        <div class="sp-label">Study Progress</div>
-        <div class="sp-ring-container">
-          <svg viewBox="0 0 84 84"><circle class="sp-ring-bg" cx="42" cy="42" r="35"/><circle class="sp-ring-fill" id="sp-ring-fill" cx="42" cy="42" r="35"/></svg>
-          <div class="sp-ring-label" id="sp-ring-pct">0%</div>
-        </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Daily Word Count</div>
-          <div class="sp-card-value" id="sp-daily-words">0</div>
-          <div class="sp-card-sub">Goal: <span id="sp-goal">500</span> words</div>
-        </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Pages Read</div>
-          <div class="sp-card-value" id="sp-pages-read">0 / 0</div>
-          <div class="sp-card-sub" id="sp-pages-pct">—</div>
-        </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Session Time</div>
-          <div class="sp-card-value" id="sp-session-time">0m</div>
-          <div class="sp-card-sub">Since opening TeqDocs</div>
-        </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Current Document</div>
-          <div class="sp-card-value" style="font-size:0.82rem;word-break:break-all;" id="sp-doc-name">—</div>
-        </div>
-      </div>
-
-    </div><!-- /content-area -->
-
   </div><!-- /body -->
-
-  <!-- BOTTOM STATUS BAR -->
-  <div id="status-bar">
-    <div class="sb-ring-wrap" title="Daily goal progress">
-      <svg viewBox="0 0 26 26"><circle class="sb-ring-bg" cx="13" cy="13" r="10"/><circle class="sb-ring-fill" id="sb-ring-fill" cx="13" cy="13" r="10"/></svg>
-      <span class="sb-ring-pct" id="sb-ring-pct"></span>
-    </div>
-    <div class="sb-stat"><strong id="sb-words">0</strong> words today</div>
-    <div class="sb-bar-divider"></div>
-    <div class="sb-stat" id="sb-doc-stat" style="display:none">📄 <strong id="sb-doc-words">0</strong> words</div>
-    <div class="sb-bar-divider" id="sb-doc-div" style="display:none"></div>
-    <div class="sb-greeting" id="sb-greeting">Stay Focused!</div>
-    <div class="sb-bar-divider"></div>
-    <!-- AMBIENT MUSIC PLAYER -->
-    <div class="sb-music-player" id="sb-music-player">
-      <select id="music-track-sel" class="sb-music-sel" onchange="changeTrack(this.value)" title="Select ambient track">
-        <option value="">🎵 Ambient</option>
-        <option value="rain">🌧 Rain</option>
-        <option value="lofi">🎵 Lo-fi</option>
-        <option value="forest">🌲 Forest</option>
-        <option value="ocean">🌊 Ocean</option>
-        <option value="white">⬜ White Noise</option>
-      </select>
-      <button class="sb-music-btn" id="music-play-btn" onclick="toggleMusic()" title="Play/Pause">▶</button>
-      <button class="sb-music-btn" id="music-stop-btn" onclick="stopMusic()" title="Stop" style="display:none">■</button>
-      <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.3" class="sb-vol-slider" oninput="setMusicVolume(this.value)" title="Volume">
-    </div>
-    <div class="sb-bar-divider"></div>
-    <!-- TTS CONTROLS (shown when reading) -->
-    <div id="sb-tts-controls" style="display:none;align-items:center;gap:4px;">
-      <button class="sb-music-btn" id="tts-pause-btn" onclick="pauseTTS()" title="Pause reading">⏸</button>
-      <button class="sb-music-btn" onclick="stopTTS()" title="Stop reading">■</button>
-      <span id="tts-progress" style="font-size:0.65rem;color:var(--ink3);white-space:nowrap;"></span>
-      <div class="sb-bar-divider"></div>
-    </div>
-    <button class="sb-mode-btn" id="sb-pomodoro-btn" onclick="togglePomodoro()" title="Pomodoro Timer">🍅 <span id="pomo-display">25:00</span></button>
-    <div class="sb-bar-divider"></div>
-    <button class="sb-mode-btn" onclick="openFlashcards()" title="Flashcard Study Mode">🃏 Flashcards</button>
-    <div class="sb-bar-divider"></div>
-    <button class="sb-mode-btn" id="sb-focus-btn" onclick="toggleFocusMode()">⊙ Focus Mode</button>
-    <button class="sb-mode-btn" id="sb-ambient-btn" onclick="toggleAmbientMode()">🌙 Ambient</button>
-  </div>
-
 </div><!-- /app -->
 
 <!-- Search -->
@@ -1278,85 +1018,6 @@ body.student .cac-only { display: none !important; }
   <input type="text" id="search-input" placeholder="Search in document…" autocomplete="off" autocorrect="off" spellcheck="false">
   <span class="search-count" id="search-count"></span>
   <button class="search-close" onclick="closeSearch()">✕</button>
-</div>
-
-<!-- FLASHCARD MODAL -->
-<div id="flashcard-modal">
-  <div class="fc-modal-box">
-    <div class="fc-modal-header">
-      <div class="fc-modal-title">🃏 Flashcards</div>
-      <button class="fc-modal-close" onclick="closeFlashcards()">✕</button>
-    </div>
-    <div id="fc-generate-wrap" class="fc-generate-wrap">
-      <p>Generate flashcards from your current document using TeqXus AI. Open a document first, then hit Generate.</p>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <label style="font-size:0.78rem;color:var(--ink3);font-family:var(--font-ui);">How many?</label>
-        <select id="fc-count" style="flex:1;background:var(--parchment3);border:1px solid var(--parchment3);border-radius:8px;color:var(--ink);font-family:var(--font-ui);font-size:0.82rem;padding:6px 10px;outline:none;">
-          <option value="20">20 cards (Free)</option>
-          <option value="40">40 cards (Free)</option>
-          <option value="60">60 cards — 🔒 Pro</option>
-          <option value="80">80 cards — 🔒 Pro</option>
-          <option value="100">100 cards — 🔒 Pro</option>
-        </select>
-      </div>
-      <button class="fc-gen-btn" id="fc-gen-btn" onclick="generateFlashcards()">⚡ Generate Flashcards</button>
-      <div style="font-size:0.68rem;color:var(--ink3);text-align:center;">Pro unlocks up to 100 cards · <a href="https://teqxus.app" target="_blank" style="color:var(--accent);">Get TeqXus Pro</a></div>
-    </div>
-    <div id="fc-study-wrap" style="display:none;flex-direction:column;gap:14px;">
-      <div class="fc-progress"><div class="fc-progress-fill" id="fc-progress-fill" style="width:0%"></div></div>
-      <div class="fc-card" id="fc-card" onclick="flipCard()">
-        <span id="fc-card-text"></span>
-        <span class="fc-card-hint">Tap to flip</span>
-      </div>
-      <div class="fc-controls">
-        <button class="fc-btn prev" onclick="prevCard()">← Prev</button>
-        <span class="fc-counter" id="fc-counter">1 / 1</span>
-        <button class="fc-btn flip" onclick="flipCard()">Flip</button>
-        <button class="fc-btn next" onclick="nextCard()">Next →</button>
-      </div>
-      <button class="fc-gen-btn" onclick="generateFlashcards()" style="background:var(--parchment3);color:var(--ink2);">↻ Regenerate</button>
-    </div>
-  </div>
-</div>
-
-<!-- PRO ACTIVATION MODAL -->
-<div id="pro-modal">
-  <div class="pro-box">
-    <div class="pro-header">
-      <div class="pro-title">⚡ TeqXus Pro</div>
-      <button class="pro-close" onclick="closeProModal()">✕</button>
-    </div>
-    <div id="pro-active-state" style="display:none;flex-direction:column;gap:10px;align-items:center;text-align:center;">
-      <div style="font-size:2.5rem;">🎉</div>
-      <div class="pro-badge">⚡ Pro Active</div>
-      <div style="font-size:0.82rem;color:var(--ink2);">You have full Pro access. Enjoy up to 100 flashcards and Claude Sonnet quality.</div>
-      <button onclick="deactivatePro()" style="background:none;border:1px solid var(--parchment3);border-radius:8px;color:var(--ink3);font-size:0.75rem;font-family:var(--font-ui);padding:6px 14px;cursor:pointer;margin-top:4px;">Remove Pro code</button>
-    </div>
-    <div id="pro-inactive-state" style="display:flex;flex-direction:column;gap:14px;">
-      <div class="pro-perks">
-        <div class="pro-perk"><span>🃏</span> Up to 100 flashcards per generation</div>
-        <div class="pro-perk"><span>🧠</span> Claude Sonnet (higher quality AI)</div>
-        <div class="pro-perk"><span>📄</span> Longer document context (8000 chars)</div>
-        <div class="pro-perk"><span>⚡</span> Priority processing</div>
-      </div>
-      <hr class="pro-divider">
-      <input id="pro-code-input" class="pro-input" type="text" placeholder="TXPRO-XXXX-XXXX" maxlength="14"
-        onkeydown="if(event.key==='Enter')activatePro()"
-        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'')">
-      <button class="pro-activate-btn" id="pro-activate-btn" onclick="activatePro()">⚡ Activate Pro</button>
-      <div class="pro-msg" id="pro-msg"></div>
-      <div class="pro-get-link">Don't have a code? <a href="https://teqxus.app" target="_blank">Get TeqXus Pro →</a></div>
-    </div>
-  </div>
-</div>
-
-<!-- READING HISTORY PANEL -->
-<div id="history-panel">
-  <div class="hp-header">
-    <div class="hp-title">📚 Reading History</div>
-    <button class="hp-close" onclick="closeHistoryPanel()">✕</button>
-  </div>
-  <div class="hp-list" id="history-list"></div>
 </div>
 
 <!-- Reading progress ring -->
@@ -1459,27 +1120,8 @@ body.student .cac-only { display: none !important; }
 /* ── PDF.js worker ── */
 let pdfWorkerReady = false;
 if(typeof pdfjsLib!=='undefined'){
-  if(window.electronAPI){
-    (async () => {
-      try {
-        const base = location.href.substring(0, location.href.lastIndexOf('/') + 1);
-        const workerUrl = base + 'pdf.worker.min.js';
-        const res = await fetch(workerUrl);
-        if (res.ok) {
-          const blob = await res.blob();
-          pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
-        } else {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-        }
-      } catch(e) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
-      }
-      pdfWorkerReady = true;
-    })();
-  } else {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-    pdfWorkerReady = true;
-  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  pdfWorkerReady = true;
 }
 
 /* ── State ── */
@@ -1836,16 +1478,6 @@ async function loadPDF(file) {
   pdfCurrentPage=1;
   addRecent(file.name,'','pdf');
   renderRecent();
-
-  // Auto-fit to container width before first render
-  await new Promise(r => requestAnimationFrame(r));
-  const canvasWrap = document.getElementById('pdf-canvas-wrap');
-  const firstPage = await pdfDoc.getPage(1);
-  const rotation = (firstPage.rotate + (pdfRotations[1] || 0)) % 360;
-  const naturalVp = firstPage.getViewport({ scale: 1, rotation });
-  const availW = canvasWrap.clientWidth > 0 ? canvasWrap.clientWidth - 48 : window.innerWidth - 340;
-  pdfScale = Math.max(0.5, Math.min(3, +(availW / naturalVp.width).toFixed(2)));
-
   await renderAllPages();
   setupPdfZoom();
   toast('PDF loaded ✓');
@@ -2006,10 +1638,8 @@ async function pdfZoomFit(){
   const wrap=document.getElementById('pdf-canvas-wrap');
   if(!pdfDoc)return;
   const page=await pdfDoc.getPage(1);
-  const rotation = (page.rotate + (pdfRotations[1] || 0)) % 360;
-  const vp=page.getViewport({scale:1, rotation});
-  const availW = wrap.clientWidth > 0 ? wrap.clientWidth - 48 : window.innerWidth - 340;
-  pdfScale=Math.max(0.5,Math.min(3,+(availW/vp.width).toFixed(2)));
+  const vp=page.getViewport({scale:1});
+  pdfScale=Math.max(0.5,+((wrap.clientWidth-64)/vp.width).toFixed(2));
   await renderAllPages();
 }
 
@@ -2202,21 +1832,7 @@ async function renderFormFields(pageNum, annoLayer, viewport) {
   } catch(e) { console.warn('Form fields:', e); }
 }
 
-/* ── Save PDF (PWA: downloads original unmodified file) ── */
-function downloadOriginalPdf() {
-  if (!pdfRawBytes) { toast('No PDF loaded'); return; }
-  const blob = new Blob([pdfRawBytes], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = pdfCurrentFilename || 'document.pdf';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast('PDF downloaded ✓');
-}
-
-/* ── Save PDF (legacy — not used in PWA) ── */
+/* ── Save PDF ── */
 async function savePdfEdits(){
   if(!pdfRawBytes){toast('No PDF loaded');return;}
   if(typeof PDFLib==='undefined'){toast('pdf-lib not loaded');return;}
@@ -2400,15 +2016,10 @@ async function openCACSignPanel() {
 
   try {
     const result = await window.electronAPI.listCACCerts();
-    console.log('CAC result:', JSON.stringify(result));
     const list = document.getElementById('cac-cert-list');
 
-    if (!result.success) {
-      document.getElementById('cac-status').textContent = 'Error: ' + (result.error || 'unknown') + ' — see console';
-      return;
-    }
-    if (!result.certs || result.certs.length === 0) {
-      document.getElementById('cac-status').textContent = 'No certs found · ' + (result.diag || '');
+    if (!result.success || !result.certs || result.certs.length === 0) {
+      document.getElementById('cac-status').textContent = 'No certificates found. Insert your CAC card and try again.';
       return;
     }
 
@@ -2486,10 +2097,7 @@ async function doCACSigning() {
 
 async function enterCACPlacementMode(result, reason) {
   const wrap = document.getElementById('pdf-canvas-wrap');
-  const viewer = document.getElementById('pdf-viewer');
   wrap.style.cursor = 'crosshair';
-  if (viewer) viewer.style.cursor = 'crosshair';
-  document.body.style.cursor = 'crosshair';
 
   // Show placement hint overlay
   const hint = document.createElement('div');
@@ -2506,8 +2114,6 @@ async function enterCACPlacementMode(result, reason) {
 
   function cleanup() {
     wrap.style.cursor = '';
-    if (viewer) viewer.style.cursor = '';
-    document.body.style.cursor = '';
     const h = document.getElementById('cac-placement-hint');
     if (h) h.remove();
     wrap.removeEventListener('click', onPlace);
@@ -2541,7 +2147,7 @@ async function enterCACPlacementMode(result, reason) {
 
     // Embed signature appearance at clicked position
     const { PDFDocument, rgb, StandardFonts } = PDFLib;
-    const pdfLibDoc = await PDFDocument.load(new Uint8Array(pdfRawBytes), { ignoreEncryption: true });
+    const pdfLibDoc = await PDFDocument.load(new Uint8Array(result.pdfBytes));
     const pages = pdfLibDoc.getPages();
     const page = pages[pageNum - 1];
     const { height: pageH } = page.getSize();
@@ -2562,7 +2168,7 @@ async function enterCACPlacementMode(result, reason) {
       borderWidth: 1.5,
     });
 
-    page.drawText('DIGITALLY SIGNED -- DoD CAC/PIV', {
+    page.drawText('✦ DIGITALLY SIGNED — DoD CAC/PIV', {
       x: sigX + 6, y: sigY - 14, size: 7,
       font: boldFont, color: rgb(0.1, 0.2, 0.5),
     });
@@ -2570,7 +2176,7 @@ async function enterCACPlacementMode(result, reason) {
       x: sigX + 6, y: sigY - 26, size: 10,
       font: boldFont, color: rgb(0, 0, 0),
     });
-    const dt = result.timestamp ? new Date(result.timestamp) : new Date();
+    const dt = new Date(result.timestamp);
     const dateStr = dt.toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'});
     const timeStr = dt.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
     page.drawText(`Signed: ${dateStr} ${timeStr}`, {
@@ -2583,22 +2189,19 @@ async function enterCACPlacementMode(result, reason) {
         font, color: rgb(0.4, 0.4, 0.4),
       });
     }
-    if (result.sigBytes && result.sigBytes.length > 0) {
-      const sigHex = result.sigBytes.slice(0, 6).map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
-      page.drawText(`CMS: ${sigHex}...`, {
-        x: sigX + sigW - 80, y: sigY - 49, size: 5.5,
-        font, color: rgb(0.6, 0.6, 0.6),
-      });
-    }
+    const sigHex = result.sigBytes.slice(0, 6).map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
+    page.drawText(`CMS: ${sigHex}…`, {
+      x: sigX + sigW - 80, y: sigY - 49, size: 5.5,
+      font, color: rgb(0.6, 0.6, 0.6),
+    });
 
     const signedPdfBytes = await pdfLibDoc.save();
 
     // Save to disk
     const fname = pdfCurrentFilename.replace(/\.pdf$/i, '_signed.pdf');
-    const bytesArray = Array.from(new Uint8Array(signedPdfBytes.buffer || signedPdfBytes));
     const saveResult = await window.electronAPI.showSaveDialog(
       fname,
-      JSON.stringify(bytesArray)
+      JSON.stringify(Array.from(signedPdfBytes))
     );
 
     if (saveResult.success) {
@@ -2950,32 +2553,19 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 /* ══════════════════════════════════════════
    FEATURE 1 — SPLASH SCREEN
 ══════════════════════════════════════════ */
-function dismissSplash() {
-  const name = document.getElementById('splash-name-input').value.trim();
-  if (name) localStorage.setItem('td-user-name', name);
-  const splash = document.getElementById('splash');
-  splash.classList.add('hidden');
-  setTimeout(() => splash.style.display = 'none', 500);
-  setGreeting(); // update greeting with name
-}
-
 window.addEventListener('load', () => {
   const splash = document.getElementById('splash');
-  const isFirstLaunch = !localStorage.getItem('td-user-name') && !localStorage.getItem('td-launched');
-  if (isFirstLaunch) {
-    // Show name prompt after brief logo display
-    setTimeout(() => {
-      document.getElementById('splash-name-wrap').style.display = 'flex';
-      setTimeout(() => document.getElementById('splash-name-input').focus(), 50);
-    }, 1200);
-    localStorage.setItem('td-launched', 'true');
-  } else {
-    // Returning user — auto dismiss after 1.5s
+  const start = Date.now();
+  const minDisplay = 2000;
+  function hideSplash() {
+    const elapsed = Date.now() - start;
+    const remaining = Math.max(0, minDisplay - elapsed);
     setTimeout(() => {
       splash.classList.add('hidden');
       setTimeout(() => splash.style.display = 'none', 500);
-    }, 1500);
+    }, remaining);
   }
+  hideSplash();
 });
 
 /* ══════════════════════════════════════════
@@ -3501,891 +3091,37 @@ function enterSigPlacementMode() {
 
   function placeSig(e) {
     if (!pendingSigDataUrl) return;
+    // Create a draggable signature image
     const img = document.createElement('img');
     img.src = pendingSigDataUrl;
-    img.style.cssText = `max-width: 200px; display: block; border: none; box-shadow: none; border-radius: 0; position: relative; cursor: move; margin: 0.5rem 0;`;
+    img.style.cssText = `
+      max-width: 200px; display: block;
+      border: none; box-shadow: none; border-radius: 0;
+      position: relative;
+      cursor: move;
+      margin: 0.5rem 0;
+    `;
     img.title = 'Drag to reposition · Double-click to remove';
-    img.addEventListener('dblclick', () => { if (confirm('Remove signature?')) img.remove(); });
+    img.addEventListener('dblclick', () => {
+      if (confirm('Remove signature?')) img.remove();
+    });
+
+    // Insert at click position — find nearest element
     const el = document.elementFromPoint(e.clientX, e.clientY);
     const target = el?.closest('p,h1,h2,h3,h4,blockquote,li') || body;
     target.after(img);
+
+    // Cleanup
     pendingSigDataUrl = null;
     body.style.cursor = '';
     body.removeEventListener('click', placeSig);
     toast('Signature placed ✓ — drag to reposition, double-click to remove');
   }
+
   body.addEventListener('click', placeSig);
 }
-
-/* ══════════════════════════════════════════
-   IS_STUDENT FLAG
-══════════════════════════════════════════ */
-const IS_STUDENT = !window.electronAPI;
-if (IS_STUDENT) {
-  document.body.classList.add('student');
-  // Update splash/about title
-  document.querySelectorAll('.splash-title, .about-title, .hdr-logo-text').forEach(el => {
-    if (el.classList.contains('hdr-logo-text')) {
-      el.innerHTML = 'Teq<span>Docs</span> <span style="font-size:0.5em;color:var(--accent);vertical-align:super;font-family:var(--font-ui);letter-spacing:0.05em;">STUDENT</span>';
-    }
-  });
-  document.title = 'TeqDocs Student — Study Smarter';
-}
-
-/* ══════════════════════════════════════════
-   STATS PANEL
-══════════════════════════════════════════ */
-let statsPanelOpen = false;
-const DAILY_GOAL_WORDS = 500;
-let wordsReadToday = parseInt(localStorage.getItem('td-words-today') || '0');
-const sessionStart = Date.now();
-
-// Check/reset daily goal
-(function checkDailyReset() {
-  const lastDate = localStorage.getItem('td-goal-date');
-  const today = new Date().toDateString();
-  if (lastDate !== today) {
-    localStorage.setItem('td-goal-date', today);
-    localStorage.setItem('td-words-today', '0');
-    wordsReadToday = 0;
-  }
-})();
-
-function toggleStatsPanel() {
-  statsPanelOpen = !statsPanelOpen;
-  document.getElementById('stats-panel').classList.toggle('open', statsPanelOpen);
-  document.getElementById('stats-btn').classList.toggle('active', statsPanelOpen);
-  if (statsPanelOpen) updateStatsPanel();
-}
-
-function updateStatsPanel() {
-  const pct = Math.min(100, Math.round((wordsReadToday / DAILY_GOAL_WORDS) * 100));
-  // Big ring
-  const circumference = 220;
-  document.getElementById('sp-ring-fill').style.strokeDashoffset = circumference - (pct / 100) * circumference;
-  document.getElementById('sp-ring-pct').textContent = pct + '%';
-  // Cards
-  document.getElementById('sp-daily-words').textContent = wordsReadToday.toLocaleString();
-  document.getElementById('sp-goal').textContent = DAILY_GOAL_WORDS.toLocaleString();
-  // Pages
-  if (pdfDoc) {
-    document.getElementById('sp-pages-read').textContent = pdfCurrentPage + ' / ' + pdfTotalPages;
-    const pagePct = Math.round((pdfCurrentPage / pdfTotalPages) * 100);
-    document.getElementById('sp-pages-pct').textContent = pagePct + '% through document';
-  } else {
-    document.getElementById('sp-pages-read').textContent = '—';
-    document.getElementById('sp-pages-pct').textContent = 'Open a PDF to track pages';
-  }
-  // Session time
-  const mins = Math.round((Date.now() - sessionStart) / 60000);
-  document.getElementById('sp-session-time').textContent = mins < 60 ? mins + 'm' : Math.floor(mins/60) + 'h ' + (mins%60) + 'm';
-  // Doc name
-  document.getElementById('sp-doc-name').textContent = currentFilename || '—';
-}
-
-function trackWordCount(text) {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  wordsReadToday = Math.max(wordsReadToday, words);
-  localStorage.setItem('td-words-today', wordsReadToday);
-  updateStatusBar();
-  if (statsPanelOpen) updateStatsPanel();
-}
-
-/* ══════════════════════════════════════════
-   STATUS BAR
-══════════════════════════════════════════ */
-function updateStatusBar() {
-  const pct = Math.min(100, Math.round((wordsReadToday / DAILY_GOAL_WORDS) * 100));
-  const circumference = 63;
-  document.getElementById('sb-ring-fill').style.strokeDashoffset = circumference - (pct / 100) * circumference;
-  document.getElementById('sb-words').textContent = wordsReadToday.toLocaleString();
-  // Doc word count
-  if (currentFilename && currentMd) {
-    const dw = currentMd.trim().split(/\s+/).filter(Boolean).length;
-    document.getElementById('sb-doc-words').textContent = dw.toLocaleString();
-    document.getElementById('sb-doc-stat').style.display = 'flex';
-    document.getElementById('sb-doc-div').style.display = 'block';
-  }
-}
-
-function setGreeting() {
-  const hour = new Date().getHours();
-  const savedName = localStorage.getItem('td-user-name');
-  const name = savedName || (IS_STUDENT ? 'Student' : 'Scholar');
-  let msg;
-  if (hour < 12) msg = `Good morning, ${name}! Great time to study.`;
-  else if (hour < 17) msg = `Stay Focused, ${name}!`;
-  else if (hour < 21) msg = `Evening session, ${name}. Keep it up!`;
-  else msg = `Burning the midnight oil, ${name}?`;
-  document.getElementById('sb-greeting').textContent = msg;
-}
-setGreeting();
-updateStatusBar();
-
-// Patch renderDoc to track word count
-const _renderDocOrig2 = renderDoc;
-renderDoc = function() {
-  _renderDocOrig2();
-  trackWordCount(currentMd);
-  document.getElementById('sp-doc-name') && (document.getElementById('sp-doc-name').textContent = currentFilename);
-};
-
-/* ══════════════════════════════════════════
-   AMBIENT MODE
-══════════════════════════════════════════ */
-let ambientMode = false;
-function toggleAmbientMode() {
-  ambientMode = !ambientMode;
-  document.body.classList.toggle('ambient-mode', ambientMode);
-  document.getElementById('sb-ambient-btn').classList.toggle('active', ambientMode);
-  if (ambientMode) {
-    document.body.style.setProperty('--max-width', '580px');
-    document.body.style.setProperty('--line-height', '2.1');
-    document.body.style.setProperty('--font-size', '19px');
-    toast('🌙 Ambient reading on — relaxed spacing');
-  } else {
-    document.body.style.setProperty('--max-width', '680px');
-    document.body.style.setProperty('--line-height', '1.85');
-    document.body.style.setProperty('--font-size', '18px');
-    toast('Ambient reading off');
-  }
-}
-
-// Patch focus mode toggle to update status bar button
-const _origToggleFocus = toggleFocusMode;
-toggleFocusMode = function() {
-  _origToggleFocus();
-  document.getElementById('sb-focus-btn').classList.toggle('active', focusMode);
-};
-
-/* ══════════════════════════════════════════
-   FILE STATUS TAGS (cycle on click)
-══════════════════════════════════════════ */
-const STATUS_CYCLE = ['to-read', 'drafting', 'review', 'done'];
-const STATUS_LABELS = { 'to-read': 'To Read', 'drafting': 'Drafting', 'review': 'Review', 'done': 'Done' };
-
-function getFileStatuses() {
-  try { return JSON.parse(localStorage.getItem('td-file-statuses') || '{}'); } catch { return {}; }
-}
-function setFileStatus(name, status) {
-  const s = getFileStatuses();
-  s[name] = status;
-  localStorage.setItem('td-file-statuses', JSON.stringify(s));
-}
-function cycleFileStatus(name, el, e) {
-  e.stopPropagation();
-  const s = getFileStatuses();
-  const cur = s[name] || 'to-read';
-  const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length];
-  setFileStatus(name, next);
-  el.className = 'fc-status ' + next;
-  el.textContent = STATUS_LABELS[next];
-}
-function makeStatusTag(name) {
-  const s = getFileStatuses();
-  const cur = s[name] || 'to-read';
-  const el = document.createElement('span');
-  el.className = 'fc-status ' + cur;
-  el.textContent = STATUS_LABELS[cur];
-  el.title = 'Click to change status';
-  el.onclick = (e) => cycleFileStatus(name, el, e);
-  return el;
-}
-
-// Patch renderRecent and renderSaved to inject status tags
-const _origRenderRecent = renderRecent;
-renderRecent = function() {
-  _origRenderRecent();
-  document.querySelectorAll('#recent-list .file-card').forEach(card => {
-    const name = card.querySelector('.fc-name')?.textContent;
-    if (!name) return;
-    const meta = card.querySelector('.fc-meta');
-    if (meta && !meta.querySelector('.fc-status')) meta.appendChild(makeStatusTag(name));
-  });
-};
-const _origRenderSaved = renderSaved;
-renderSaved = function() {
-  _origRenderSaved();
-  document.querySelectorAll('#saved-list .file-card').forEach(card => {
-    const name = card.querySelector('.fc-name')?.textContent;
-    if (!name) return;
-    const meta = card.querySelector('.fc-meta');
-    if (meta && !meta.querySelector('.fc-status')) meta.appendChild(makeStatusTag(name));
-  });
-};
-
-// Re-render with tags on init
-renderRecent();
-renderSaved();
-
-// Session timer update
-setInterval(() => { if (statsPanelOpen) updateStatsPanel(); }, 30000);
-
 
 
 </script>
 </body>
 </html>
-<script>
-/* ══════════════════════════════════════════
-   POMODORO TIMER
-══════════════════════════════════════════ */
-let pomoState = 'idle';
-let pomoSeconds = 25 * 60;
-let pomoInterval = null;
-const POMO_WORK = 25 * 60;
-const POMO_BREAK = 5 * 60;
-
-function togglePomodoro() {
-  pomoState === 'idle' ? startPomodoro() : stopPomodoro();
-}
-function startPomodoro() {
-  pomoState = 'work';
-  pomoSeconds = POMO_WORK;
-  updatePomoDisplay();
-  document.getElementById('sb-pomodoro-btn').classList.add('pomo-running');
-  pomoInterval = setInterval(() => {
-    pomoSeconds--;
-    updatePomoDisplay();
-    if (pomoSeconds <= 0) {
-      const btn = document.getElementById('sb-pomodoro-btn');
-      if (pomoState === 'work') {
-        pomoState = 'break'; pomoSeconds = POMO_BREAK;
-        btn.classList.remove('pomo-running'); btn.classList.add('pomo-break');
-        toast('🍅 Pomodoro done! Take a 5 min break.');
-      } else {
-        pomoState = 'work'; pomoSeconds = POMO_WORK;
-        btn.classList.remove('pomo-break'); btn.classList.add('pomo-running');
-        toast('☀️ Break over! Back to work.');
-      }
-    }
-  }, 1000);
-}
-function stopPomodoro() {
-  clearInterval(pomoInterval); pomoInterval = null;
-  pomoState = 'idle'; pomoSeconds = POMO_WORK;
-  updatePomoDisplay();
-  document.getElementById('sb-pomodoro-btn').classList.remove('pomo-running','pomo-break');
-  toast('Pomodoro stopped');
-}
-function updatePomoDisplay() {
-  const m = Math.floor(pomoSeconds/60).toString().padStart(2,'0');
-  const s = (pomoSeconds%60).toString().padStart(2,'0');
-  document.getElementById('pomo-display').textContent = m+':'+s;
-}
-
-/* ══════════════════════════════════════════
-   FLASHCARDS
-══════════════════════════════════════════ */
-let flashcards = [], fcIndex = 0, fcFlipped = false;
-
-function openFlashcards() {
-  document.getElementById('flashcard-modal').classList.add('open');
-  flashcards.length ? showStudyWrap() : showGenerateWrap();
-}
-function closeFlashcards() {
-  document.getElementById('flashcard-modal').classList.remove('open');
-}
-function showGenerateWrap() {
-  document.getElementById('fc-generate-wrap').style.display = 'flex';
-  document.getElementById('fc-study-wrap').style.display = 'none';
-}
-function showStudyWrap() {
-  document.getElementById('fc-generate-wrap').style.display = 'none';
-  document.getElementById('fc-study-wrap').style.display = 'flex';
-  renderCard();
-}
-async function generateFlashcards() {
-  const docText = currentMd || document.getElementById('md-body')?.innerText || '';
-  if (!docText.trim()) { toast('Open a document first'); return; }
-  const countEl = document.getElementById('fc-count');
-  const count = parseInt(countEl.value);
-  const proCode = localStorage.getItem('teqxus-pro-code') || '';
-  const btn = document.getElementById('fc-gen-btn');
-  btn.disabled = true; btn.textContent = '⏳ Generating…';
-  showStudyWrap();
-  document.getElementById('fc-card-text').textContent = `Generating ${count} flashcards…`;
-  try {
-    const res = await fetch('https://teqxus-backend-zszr.onrender.com/teqdocs/flashcards', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: docText, count, proCode })
-    });
-    const data = await res.json();
-    if (res.status === 403) {
-      toast(`🔒 ${data.message}`);
-      countEl.value = '40';
-      showGenerateWrap();
-      return;
-    }
-    if (!res.ok) throw new Error(data.error || 'Failed');
-    flashcards = data.flashcards;
-    fcIndex = 0; fcFlipped = false;
-    showStudyWrap();
-    toast(`✓ ${flashcards.length} flashcards ready${data.isPro ? ' (Pro)' : ''}`);
-  } catch(e) {
-    toast('Could not generate flashcards — check connection');
-    showGenerateWrap();
-  } finally {
-    btn.disabled = false; btn.textContent = '⚡ Generate Flashcards';
-  }
-}
-function renderCard() {
-  if (!flashcards.length) return;
-  fcFlipped = false;
-  document.getElementById('fc-card').classList.remove('flipped');
-  document.getElementById('fc-card-text').textContent = flashcards[fcIndex].q;
-  document.getElementById('fc-counter').textContent = (fcIndex+1)+' / '+flashcards.length;
-  document.getElementById('fc-progress-fill').style.width = (((fcIndex+1)/flashcards.length)*100)+'%';
-}
-function flipCard() {
-  if (!flashcards.length) return;
-  fcFlipped = !fcFlipped;
-  document.getElementById('fc-card').classList.toggle('flipped', fcFlipped);
-  document.getElementById('fc-card-text').textContent = fcFlipped ? flashcards[fcIndex].a : flashcards[fcIndex].q;
-}
-function nextCard() { if (fcIndex < flashcards.length-1) { fcIndex++; renderCard(); } else toast('🎉 End of deck!'); }
-function prevCard() { if (fcIndex > 0) { fcIndex--; renderCard(); } }
-
-document.addEventListener('keydown', e => {
-  if (!document.getElementById('flashcard-modal').classList.contains('open')) return;
-  if (e.key === 'ArrowRight') nextCard();
-  if (e.key === 'ArrowLeft') prevCard();
-  if (e.key === ' ') { e.preventDefault(); flipCard(); }
-});
-
-/* ══════════════════════════════════════════
-   READING HISTORY
-══════════════════════════════════════════ */
-let docOpenTime = null;
-
-function getReadingHistory() { try { return JSON.parse(localStorage.getItem('td-reading-history')||'[]'); } catch { return []; } }
-function saveReadingHistory(h) { localStorage.setItem('td-reading-history', JSON.stringify(h.slice(0,100))); }
-
-function startReadingSession(filename) { docOpenTime = Date.now(); }
-
-function endReadingSession() {
-  if (!docOpenTime || !currentFilename) return;
-  const mins = Math.round((Date.now()-docOpenTime)/60000);
-  if (mins < 1) { docOpenTime = null; return; }
-  let h = getReadingHistory();
-  const ex = h.find(x => x.name === currentFilename);
-  if (ex) { ex.totalMins = (ex.totalMins||0)+mins; ex.sessions = (ex.sessions||1)+1; ex.lastRead = Date.now(); }
-  else h.unshift({ name: currentFilename, totalMins: mins, sessions: 1, lastRead: Date.now() });
-  saveReadingHistory(h);
-  docOpenTime = null;
-}
-
-function openHistoryPanel() { renderHistoryPanel(); document.getElementById('history-panel').classList.add('open'); }
-function closeHistoryPanel() { document.getElementById('history-panel').classList.remove('open'); }
-
-function renderHistoryPanel() {
-  const list = document.getElementById('history-list');
-  const h = getReadingHistory();
-  if (!h.length) { list.innerHTML = '<div class="hp-empty">No reading history yet.<br>Open a document to start tracking.</div>'; return; }
-  const maxMins = Math.max(...h.map(x => x.totalMins));
-  list.innerHTML = '';
-  h.forEach(item => {
-    const d = Math.floor((Date.now()-item.lastRead)/86400000);
-    const ds = d===0?'Today':d===1?'Yesterday':d+'d ago';
-    const pct = Math.round((item.totalMins/maxMins)*100);
-    const el = document.createElement('div'); el.className = 'hp-item';
-    el.innerHTML = `<div class="hp-item-name" title="${item.name}">${item.name}</div><div class="hp-item-meta"><span>⏱ ${item.totalMins}m total</span><span>📖 ${item.sessions} session${item.sessions>1?'s':''}</span><span>${ds}</span></div><div class="hp-item-bar"><div class="hp-item-bar-fill" style="width:${pct}%"></div></div>`;
-    list.appendChild(el);
-  });
-}
-
-// Hook into file loading to track sessions
-const _origLoadPDFHist = loadPDF;
-loadPDF = async function(file) { endReadingSession(); await _origLoadPDFHist(file); startReadingSession(file.name); };
-
-window.addEventListener('beforeunload', endReadingSession);
-</script>
-<script>
-/* ══════════════════════════════════════════
-   PRO ACTIVATION
-══════════════════════════════════════════ */
-const BACKEND = 'https://teqxus-backend-zszr.onrender.com';
-
-function getDeviceId() {
-  let id = localStorage.getItem('td-device-id');
-  if (!id) {
-    id = 'td-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
-    localStorage.setItem('td-device-id', id);
-  }
-  return id;
-}
-
-function openProModal() {
-  document.getElementById('pro-modal').classList.add('open');
-  const proCode = localStorage.getItem('teqxus-pro-code');
-  if (proCode) {
-    document.getElementById('pro-active-state').style.display = 'flex';
-    document.getElementById('pro-inactive-state').style.display = 'none';
-  } else {
-    document.getElementById('pro-active-state').style.display = 'none';
-    document.getElementById('pro-inactive-state').style.display = 'flex';
-    setTimeout(() => document.getElementById('pro-code-input').focus(), 100);
-  }
-  document.getElementById('pro-msg').textContent = '';
-  document.getElementById('pro-msg').className = 'pro-msg';
-}
-
-function closeProModal() {
-  document.getElementById('pro-modal').classList.remove('open');
-}
-
-async function activatePro() {
-  const code = document.getElementById('pro-code-input').value.trim().toUpperCase();
-  if (!code) { showProMsg('Enter your Pro code', 'error'); return; }
-  const btn = document.getElementById('pro-activate-btn');
-  btn.disabled = true; btn.textContent = 'Verifying…';
-  showProMsg('', '');
-  try {
-    const res = await fetch(BACKEND + '/verify-pro', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, identifier: getDeviceId() })
-    });
-    const data = await res.json();
-    if (data.valid) {
-      localStorage.setItem('teqxus-pro-code', code);
-      updateProUI(true);
-      showProMsg('✓ ' + data.message, 'success');
-      // Switch to active state after brief delay
-      setTimeout(() => {
-        document.getElementById('pro-active-state').style.display = 'flex';
-        document.getElementById('pro-inactive-state').style.display = 'none';
-      }, 1200);
-      toast('⚡ TeqXus Pro activated!');
-      updateFlashcardDropdown(true);
-    } else {
-      showProMsg('✕ ' + data.message, 'error');
-    }
-  } catch(e) {
-    showProMsg('Connection failed — check your internet', 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '⚡ Activate Pro';
-  }
-}
-
-function deactivatePro() {
-  if (!confirm('Remove your Pro code from this device?')) return;
-  localStorage.removeItem('teqxus-pro-code');
-  updateProUI(false);
-  updateFlashcardDropdown(false);
-  document.getElementById('pro-active-state').style.display = 'none';
-  document.getElementById('pro-inactive-state').style.display = 'flex';
-  document.getElementById('pro-code-input').value = '';
-  toast('Pro code removed');
-}
-
-function showProMsg(msg, type) {
-  const el = document.getElementById('pro-msg');
-  el.textContent = msg;
-  el.className = 'pro-msg' + (type ? ' ' + type : '');
-}
-
-function updateProUI(isPro) {
-  const btn = document.getElementById('pro-btn');
-  if (isPro) {
-    btn.textContent = '⚡ Pro';
-    btn.classList.add('pro-active');
-    btn.title = 'TeqXus Pro — Active';
-  } else {
-    btn.textContent = '⚡ Pro';
-    btn.classList.remove('pro-active');
-    btn.title = 'Activate TeqXus Pro';
-  }
-}
-
-function updateFlashcardDropdown(isPro) {
-  const sel = document.getElementById('fc-count');
-  if (!sel) return;
-  sel.innerHTML = isPro
-    ? `<option value="20">20 cards</option>
-       <option value="40">40 cards</option>
-       <option value="60">60 cards</option>
-       <option value="80">80 cards</option>
-       <option value="100">100 cards</option>`
-    : `<option value="20">20 cards (Free)</option>
-       <option value="40">40 cards (Free)</option>
-       <option value="60">60 cards — 🔒 Pro</option>
-       <option value="80">80 cards — 🔒 Pro</option>
-       <option value="100">100 cards — 🔒 Pro</option>`;
-}
-
-// Init pro state on load
-(function initProState() {
-  const proCode = localStorage.getItem('teqxus-pro-code');
-  updateProUI(!!proCode);
-  updateFlashcardDropdown(!!proCode);
-})();
-
-// Close pro modal on overlay click
-document.getElementById('pro-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('pro-modal')) closeProModal();
-});
-
-// Escape closes pro modal
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('pro-modal').classList.contains('open')) closeProModal();
-});
-</script>
-<script>
-/* ══════════════════════════════════════════
-   AMBIENT MUSIC — Web Audio API
-══════════════════════════════════════════ */
-let audioCtx = null;
-let musicNodes = [];
-let musicPlaying = false;
-let currentTrack = '';
-
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
-
-function stopAllNodes() {
-  musicNodes.forEach(n => { try { n.stop(); } catch(e) {} });
-  musicNodes = [];
-}
-
-function createGain(ctx, vol) {
-  const g = ctx.createGain();
-  g.gain.value = vol;
-  g.connect(ctx.destination);
-  return g;
-}
-
-function makeNoise(ctx, gain, type = 'white') {
-  const bufSize = ctx.sampleRate * 4;
-  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
-  for (let i = 0; i < bufSize; i++) {
-    const w = Math.random() * 2 - 1;
-    if (type === 'pink') {
-      b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
-      b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
-      b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
-      data[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
-      b6 = w * 0.115926;
-    } else {
-      data[i] = w;
-    }
-  }
-  const src = ctx.createBufferSource();
-  src.buffer = buf; src.loop = true;
-  src.connect(gain); src.start();
-  return src;
-}
-
-function makeOscillator(ctx, gain, freq, type = 'sine', detune = 0) {
-  const osc = ctx.createOscillator();
-  osc.type = type; osc.frequency.value = freq; osc.detune.value = detune;
-  osc.connect(gain); osc.start();
-  return osc;
-}
-
-function makeLFO(ctx, target, rate, depth, offset) {
-  const lfo = ctx.createOscillator();
-  const lfoGain = ctx.createGain();
-  lfo.frequency.value = rate;
-  lfoGain.gain.value = depth;
-  lfo.connect(lfoGain);
-  lfoGain.connect(target);
-  target.value = offset;
-  lfo.start();
-  return lfo;
-}
-
-function playRain(ctx, masterVol) {
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'bandpass'; filter.frequency.value = 1200; filter.Q.value = 0.5;
-  const g = ctx.createGain(); g.gain.value = masterVol * 0.4; g.connect(ctx.destination);
-  filter.connect(g);
-  const n = makeNoise(ctx, { connect: (d) => filter.connect(d) && filter }, 'pink');
-  const n2 = makeNoise(ctx, g, 'white');
-  // Drip effect via LFO on gain
-  const lfoG = ctx.createGain(); lfoG.connect(ctx.destination);
-  const lfoSrc = ctx.createOscillator();
-  lfoSrc.frequency.value = 3.5;
-  const lfoAmt = ctx.createGain(); lfoAmt.gain.value = masterVol * 0.05;
-  lfoSrc.connect(lfoAmt); lfoAmt.connect(lfoG.gain);
-  lfoSrc.start();
-  musicNodes.push(n2, lfoSrc);
-}
-
-function playLofi(ctx, masterVol) {
-  // Simple looping chord progression: Am - F - C - G
-  const chords = [[220,277,330],[175,220,262],[261,329,392],[196,246,294]];
-  let step = 0;
-  const g = createGain(ctx, masterVol * 0.15);
-  function playChord() {
-    if (!musicPlaying) return;
-    const chord = chords[step % chords.length];
-    chord.forEach(freq => {
-      const osc = ctx.createOscillator();
-      const env = ctx.createGain();
-      osc.type = 'triangle'; osc.frequency.value = freq;
-      osc.connect(env); env.connect(g);
-      env.gain.setValueAtTime(0, ctx.currentTime);
-      env.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.1);
-      env.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.8);
-      osc.start(); osc.stop(ctx.currentTime + 2);
-    });
-    step++;
-    setTimeout(playChord, 2000);
-  }
-  playChord();
-  // Subtle vinyl noise
-  makeNoise(ctx, createGain(ctx, masterVol * 0.02), 'white');
-}
-
-function playForest(ctx, masterVol) {
-  // Wind
-  const windG = createGain(ctx, masterVol * 0.12);
-  const wind = makeNoise(ctx, windG, 'pink');
-  const lfo = ctx.createOscillator();
-  const lfoG = ctx.createGain(); lfoG.gain.value = masterVol * 0.08;
-  lfo.frequency.value = 0.2; lfo.connect(lfoG); lfoG.connect(windG.gain);
-  lfo.start();
-  // Cricket chirps via oscillator bursts
-  function chirp() {
-    if (!musicPlaying) return;
-    const g = createGain(ctx, masterVol * 0.04);
-    const osc = ctx.createOscillator();
-    osc.frequency.value = 3800 + Math.random() * 400;
-    osc.connect(g); osc.start(); osc.stop(ctx.currentTime + 0.05);
-    setTimeout(chirp, 150 + Math.random() * 400);
-  }
-  setTimeout(chirp, 500);
-  musicNodes.push(wind, lfo);
-}
-
-function playOcean(ctx, masterVol) {
-  const g = createGain(ctx, masterVol * 0.3);
-  const noise = makeNoise(ctx, g, 'pink');
-  // Wave LFO
-  const lfo = ctx.createOscillator();
-  const lfoG = ctx.createGain(); lfoG.gain.value = masterVol * 0.25;
-  lfo.frequency.value = 0.12;
-  lfo.connect(lfoG); lfoG.connect(g.gain);
-  g.gain.value = masterVol * 0.05;
-  lfo.start();
-  // Low rumble
-  const rumbleG = createGain(ctx, masterVol * 0.08);
-  const rumble = makeOscillator(ctx, rumbleG, 60, 'sine');
-  musicNodes.push(noise, lfo, rumble);
-}
-
-function playWhiteNoise(ctx, masterVol) {
-  const g = createGain(ctx, masterVol * 0.25);
-  const n = makeNoise(ctx, g, 'white');
-  musicNodes.push(n);
-}
-
-function startTrack(track) {
-  stopAllNodes();
-  if (!track) return;
-  const ctx = getAudioCtx();
-  if (ctx.state === 'suspended') ctx.resume();
-  const vol = parseFloat(document.getElementById('music-vol').value);
-  switch(track) {
-    case 'rain':    playRain(ctx, vol);       break;
-    case 'lofi':    playLofi(ctx, vol);       break;
-    case 'forest':  playForest(ctx, vol);     break;
-    case 'ocean':   playOcean(ctx, vol);      break;
-    case 'white':   playWhiteNoise(ctx, vol); break;
-  }
-}
-
-function toggleMusic() {
-  const sel = document.getElementById('music-track-sel');
-  const playBtn = document.getElementById('music-play-btn');
-  const stopBtn = document.getElementById('music-stop-btn');
-  if (!sel.value) { toast('Pick a track first'); return; }
-  if (musicPlaying) {
-    musicPlaying = false;
-    stopAllNodes();
-    if (audioCtx) audioCtx.suspend();
-    playBtn.textContent = '▶'; playBtn.classList.remove('playing');
-    stopBtn.style.display = 'none';
-  } else {
-    musicPlaying = true;
-    currentTrack = sel.value;
-    startTrack(currentTrack);
-    playBtn.textContent = '⏸'; playBtn.classList.add('playing');
-    stopBtn.style.display = 'inline-block';
-  }
-}
-
-function stopMusic() {
-  musicPlaying = false;
-  stopAllNodes();
-  if (audioCtx) audioCtx.suspend();
-  const playBtn = document.getElementById('music-play-btn');
-  const stopBtn = document.getElementById('music-stop-btn');
-  playBtn.textContent = '▶'; playBtn.classList.remove('playing');
-  stopBtn.style.display = 'none';
-  document.getElementById('music-track-sel').value = '';
-}
-
-function changeTrack(track) {
-  if (musicPlaying) {
-    currentTrack = track;
-    startTrack(track);
-  }
-}
-
-function setMusicVolume(val) {
-  if (musicPlaying) { stopAllNodes(); startTrack(currentTrack); }
-}
-
-/* ══════════════════════════════════════════
-   TEXT TO SPEECH — Web Speech API
-══════════════════════════════════════════ */
-let ttsUtterance = null;
-let ttsChunks = [];
-let ttsChunkIndex = 0;
-let ttsPaused = false;
-let ttsActive = false;
-
-function getDocParagraphs() {
-  const body = document.getElementById('md-body');
-  if (!body) return [];
-  return Array.from(body.querySelectorAll('p,h1,h2,h3,h4,li,blockquote,td'))
-    .filter(el => el.textContent.trim().length > 0);
-}
-
-function getStartParagraph() {
-  // Priority 1: selected text
-  const sel = window.getSelection();
-  if (sel && sel.toString().trim().length > 10) return null; // handled separately
-
-  // Priority 2: nearest paragraph to scroll position
-  const content = document.getElementById('content');
-  const scrollTop = content ? content.scrollTop : 0;
-  const paras = getDocParagraphs();
-  if (!paras.length) return 0;
-
-  let closest = 0;
-  let closestDist = Infinity;
-  paras.forEach((p, i) => {
-    const rect = p.getBoundingClientRect();
-    const dist = Math.abs(rect.top - 100);
-    if (dist < closestDist) { closestDist = dist; closest = i; }
-  });
-  return closest;
-}
-
-function toggleTTS() {
-  if (ttsActive) { stopTTS(); return; }
-  startTTS();
-}
-
-function startTTS() {
-  if (!('speechSynthesis' in window)) { toast('Text-to-speech not supported in this browser'); return; }
-  window.speechSynthesis.cancel();
-
-  const sel = window.getSelection();
-  const selectedText = sel ? sel.toString().trim() : '';
-
-  let chunks = [];
-  if (selectedText.length > 10) {
-    // Read selected text only
-    chunks = [selectedText];
-  } else {
-    // Read from scroll position or beginning
-    const paras = getDocParagraphs();
-    if (!paras.length) { toast('No text to read'); return; }
-    const startIdx = getStartParagraph();
-    chunks = paras.slice(startIdx).map(p => p.textContent.trim()).filter(t => t.length > 0);
-  }
-
-  if (!chunks.length) { toast('Nothing to read'); return; }
-
-  ttsChunks = chunks;
-  ttsChunkIndex = 0;
-  ttsActive = true;
-  ttsPaused = false;
-
-  document.getElementById('tts-btn').classList.add('active');
-  document.getElementById('tts-btn').textContent = '🔊 Stop';
-  document.getElementById('sb-tts-controls').style.display = 'flex';
-
-  speakChunk();
-}
-
-function speakChunk() {
-  if (!ttsActive || ttsChunkIndex >= ttsChunks.length) {
-    if (ttsActive) { toast('✓ Done reading'); stopTTS(); }
-    return;
-  }
-  const text = ttsChunks[ttsChunkIndex];
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.rate = 0.95;
-  utt.pitch = 1;
-  utt.volume = 1;
-
-  // Prefer a natural voice
-  const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(v =>
-    /natural|enhanced|premium|neural/i.test(v.name) ||
-    /google|microsoft/i.test(v.name)
-  ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
-  if (preferred) utt.voice = preferred;
-
-  utt.onend = () => {
-    if (!ttsActive || ttsPaused) return;
-    ttsChunkIndex++;
-    updateTTSProgress();
-    speakChunk();
-  };
-  utt.onerror = (e) => { if (e.error !== 'canceled') { ttsChunkIndex++; speakChunk(); } };
-
-  ttsUtterance = utt;
-  window.speechSynthesis.speak(utt);
-  updateTTSProgress();
-}
-
-function pauseTTS() {
-  if (!ttsActive) return;
-  if (ttsPaused) {
-    ttsPaused = false;
-    window.speechSynthesis.resume();
-    document.getElementById('tts-pause-btn').textContent = '⏸';
-  } else {
-    ttsPaused = true;
-    window.speechSynthesis.pause();
-    document.getElementById('tts-pause-btn').textContent = '▶';
-  }
-}
-
-function stopTTS() {
-  ttsActive = false;
-  ttsPaused = false;
-  window.speechSynthesis.cancel();
-  ttsChunks = []; ttsChunkIndex = 0;
-  const btn = document.getElementById('tts-btn');
-  if (btn) { btn.classList.remove('active'); btn.textContent = '🔊 Listen'; }
-  document.getElementById('sb-tts-controls').style.display = 'none';
-  document.getElementById('tts-progress').textContent = '';
-}
-
-function updateTTSProgress() {
-  const total = ttsChunks.length;
-  const current = ttsChunkIndex + 1;
-  document.getElementById('tts-progress').textContent = `${current} / ${total}`;
-}
-
-// Stop TTS when switching documents
-const _origRenderDocTTS = typeof renderDoc === 'function' ? renderDoc : null;
-if (_origRenderDocTTS) {
-  renderDoc = function() { stopTTS(); _origRenderDocTTS(); };
-}
-
-// Voices may load async
-window.speechSynthesis.onvoiceschanged = () => {};
-</script>
