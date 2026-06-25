@@ -2033,8 +2033,15 @@ async function renderSinglePage(pageNum,wrap) {
               let dest = ann.dest;
               if (typeof dest === 'string') dest = await pdfDoc.getDestination(dest);
               if (!dest || !dest[0]) return;
-              goToPage((await pdfDoc.getPageIndex(dest[0])) + 1);
-            } catch(err) {}
+              let pageIndex;
+              // dest[0] can be a ref object {num, gen} or an integer page index
+              if (typeof dest[0] === 'number') {
+                pageIndex = dest[0];
+              } else {
+                pageIndex = await pdfDoc.getPageIndex(dest[0]);
+              }
+              goToPage(pageIndex + 1);
+            } catch(err) { console.warn('PDF dest nav:', err); }
           });
         } else if (ann.action?.actionType === 'Named') {
           el.href = '#';
@@ -3037,11 +3044,15 @@ async function renderOutlineItems(items, container, depth) {
       try {
         let dest = item.dest;
         if (typeof dest === 'string') dest = await pdfDoc.getDestination(dest);
-        if (!dest) return;
-        const ref = dest[0];
-        const pageIndex = await pdfDoc.getPageIndex(ref);
+        if (!dest || !dest[0]) return;
+        let pageIndex;
+        if (typeof dest[0] === 'number') {
+          pageIndex = dest[0];
+        } else {
+          pageIndex = await pdfDoc.getPageIndex(dest[0]);
+        }
         goToPage(pageIndex + 1);
-      } catch(e) {}
+      } catch(e) { console.warn('TOC nav:', e); }
     };
     container.appendChild(el);
     if (item.items && item.items.length) await renderOutlineItems(item.items, container, depth + 1);
