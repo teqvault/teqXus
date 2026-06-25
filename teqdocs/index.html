@@ -802,7 +802,44 @@ body.student .cac-only { display: none !important; }
 .fc-gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .fc-thinking { font-size: 0.82rem; color: var(--ink3); font-style: italic; text-align: center; padding: 20px; }
 
-/* ── READING HISTORY PANEL ── */
+/* ── MUSIC PLAYER ── */
+.sb-music-player { display:flex;align-items:center;gap:4px;flex-shrink:0; }
+.sb-music-sel { background:var(--parchment3);border:1px solid var(--parchment3);border-radius:6px;color:var(--ink2);font-family:var(--font-ui);font-size:0.7rem;padding:3px 6px;outline:none;cursor:pointer;max-width:100px; }
+.sb-music-sel:focus { border-color:var(--accent); }
+.sb-music-btn { background:none;border:1px solid var(--parchment3);border-radius:5px;color:var(--ink3);font-size:0.72rem;padding:3px 7px;cursor:pointer;transition:all 0.15s;line-height:1; }
+.sb-music-btn:hover { border-color:var(--accent);color:var(--accent); }
+.sb-music-btn.playing { color:var(--teal);border-color:rgba(62,207,160,0.4);background:rgba(62,207,160,0.08); }
+.sb-vol-slider { width:56px;height:3px;accent-color:var(--accent);cursor:pointer;vertical-align:middle; }
+
+/* ── TTS ── */
+.tts-highlight { background:rgba(124,92,252,0.25);border-radius:3px;transition:background 0.2s; }
+.tts-highlight.active { background:rgba(124,92,252,0.55);color:#fff; }
+#tts-btn.active { border-color:var(--accent);color:var(--accent);background:var(--accent-light); }
+/* ── PRO MODAL ── */
+#pro-modal { position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px; }
+#pro-modal.open { display:flex; }
+.pro-box { background:var(--parchment2);border:1px solid var(--parchment3);border-radius:16px;width:100%;max-width:400px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:14px; }
+.pro-header { display:flex;align-items:center;justify-content:space-between; }
+.pro-title { font-size:1.1rem;font-weight:800;color:var(--ink); }
+.pro-close { background:none;border:none;cursor:pointer;color:var(--ink3);font-size:1.2rem; }
+.pro-badge { display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;padding:4px 12px;border-radius:20px;text-transform:uppercase; }
+.pro-perks { display:flex;flex-direction:column;gap:6px; }
+.pro-perk { font-size:0.82rem;color:var(--ink2);display:flex;align-items:center;gap:8px; }
+.pro-perk span { color:var(--teal);font-size:1rem; }
+.pro-divider { border:none;border-top:1px solid var(--parchment3); }
+.pro-input { width:100%;background:var(--parchment3);border:1px solid var(--parchment3);border-radius:10px;color:var(--ink);font-family:var(--font-mono);font-size:1rem;padding:11px 14px;outline:none;text-align:center;letter-spacing:0.08em;text-transform:uppercase; }
+.pro-input:focus { border-color:var(--accent); }
+.pro-activate-btn { width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;transition:opacity 0.15s; }
+.pro-activate-btn:hover { opacity:0.88; }
+.pro-activate-btn:disabled { opacity:0.5;cursor:not-allowed; }
+.pro-msg { font-size:0.8rem;text-align:center;padding:6px 0;min-height:20px; }
+.pro-msg.success { color:var(--teal); }
+.pro-msg.error { color:#ff6b6b; }
+.pro-get-link { font-size:0.75rem;color:var(--ink3);text-align:center; }
+.pro-get-link a { color:var(--accent);font-weight:600; }
+/* Pro active state */
+#pro-btn.pro-active { background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:8px;padding:5px 12px;border:none; }
+</style>
 #history-panel {
   position: fixed; top: 0; right: 0; bottom: 0;
   width: 300px; background: var(--parchment2);
@@ -912,6 +949,7 @@ body.student .cac-only { display: none !important; }
     <button class="hdr-btn" onclick="openAbout()" title="About TeqDocs">ℹ</button>
     <button class="hdr-btn" onclick="toggleStatsPanel()" id="stats-btn" title="Study Stats">📊</button>
     <button class="hdr-btn" onclick="openHistoryPanel()" title="Reading History">📚</button>
+    <button class="hdr-btn" id="pro-btn" onclick="openProModal()" title="Activate TeqXus Pro" style="font-weight:700;">⚡ Pro</button>
     <a href="https://ko-fi.com/teqvault" target="_blank" title="Support TeqVault on Ko-fi" style="text-decoration:none;">
       <button class="hdr-btn" style="background:rgba(255,94,86,0.12);border:1px solid rgba(255,94,86,0.3);color:#ff5e56;font-weight:700;padding:5px 12px;border-radius:8px;">☕ Support</button>
     </a>
@@ -999,6 +1037,7 @@ body.student .cac-only { display: none !important; }
             <button class="dib-btn" id="doc-edit-btn" onclick="openEditorFromReader()" style="display:none">✏️ Edit</button>
             <button class="dib-btn" onclick="addBookmark()" title="Add bookmark (Ctrl+M)">🔖 Bookmark</button>
             <button class="dib-btn" onclick="openSigPanel()" title="Add signature">✍ Sign</button>
+            <button class="dib-btn" id="tts-btn" onclick="toggleTTS()" title="Read aloud">🔊 Listen</button>
             <button class="dib-btn" id="doc-export-btn" onclick="toggleExportMenu()">Export ▾</button>
           </div>
           <div class="export-menu" id="export-menu">
@@ -1201,6 +1240,28 @@ body.student .cac-only { display: none !important; }
     <div class="sb-bar-divider" id="sb-doc-div" style="display:none"></div>
     <div class="sb-greeting" id="sb-greeting">Stay Focused!</div>
     <div class="sb-bar-divider"></div>
+    <!-- AMBIENT MUSIC PLAYER -->
+    <div class="sb-music-player" id="sb-music-player">
+      <select id="music-track-sel" class="sb-music-sel" onchange="changeTrack(this.value)" title="Select ambient track">
+        <option value="">🎵 Ambient</option>
+        <option value="rain">🌧 Rain</option>
+        <option value="lofi">🎵 Lo-fi</option>
+        <option value="forest">🌲 Forest</option>
+        <option value="ocean">🌊 Ocean</option>
+        <option value="white">⬜ White Noise</option>
+      </select>
+      <button class="sb-music-btn" id="music-play-btn" onclick="toggleMusic()" title="Play/Pause">▶</button>
+      <button class="sb-music-btn" id="music-stop-btn" onclick="stopMusic()" title="Stop" style="display:none">■</button>
+      <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.3" class="sb-vol-slider" oninput="setMusicVolume(this.value)" title="Volume">
+    </div>
+    <div class="sb-bar-divider"></div>
+    <!-- TTS CONTROLS (shown when reading) -->
+    <div id="sb-tts-controls" style="display:none;align-items:center;gap:4px;">
+      <button class="sb-music-btn" id="tts-pause-btn" onclick="pauseTTS()" title="Pause reading">⏸</button>
+      <button class="sb-music-btn" onclick="stopTTS()" title="Stop reading">■</button>
+      <span id="tts-progress" style="font-size:0.65rem;color:var(--ink3);white-space:nowrap;"></span>
+      <div class="sb-bar-divider"></div>
+    </div>
     <button class="sb-mode-btn" id="sb-pomodoro-btn" onclick="togglePomodoro()" title="Pomodoro Timer">🍅 <span id="pomo-display">25:00</span></button>
     <div class="sb-bar-divider"></div>
     <button class="sb-mode-btn" onclick="openFlashcards()" title="Flashcard Study Mode">🃏 Flashcards</button>
@@ -1253,6 +1314,37 @@ body.student .cac-only { display: none !important; }
         <button class="fc-btn next" onclick="nextCard()">Next →</button>
       </div>
       <button class="fc-gen-btn" onclick="generateFlashcards()" style="background:var(--parchment3);color:var(--ink2);">↻ Regenerate</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRO ACTIVATION MODAL -->
+<div id="pro-modal">
+  <div class="pro-box">
+    <div class="pro-header">
+      <div class="pro-title">⚡ TeqXus Pro</div>
+      <button class="pro-close" onclick="closeProModal()">✕</button>
+    </div>
+    <div id="pro-active-state" style="display:none;flex-direction:column;gap:10px;align-items:center;text-align:center;">
+      <div style="font-size:2.5rem;">🎉</div>
+      <div class="pro-badge">⚡ Pro Active</div>
+      <div style="font-size:0.82rem;color:var(--ink2);">You have full Pro access. Enjoy up to 100 flashcards and Claude Sonnet quality.</div>
+      <button onclick="deactivatePro()" style="background:none;border:1px solid var(--parchment3);border-radius:8px;color:var(--ink3);font-size:0.75rem;font-family:var(--font-ui);padding:6px 14px;cursor:pointer;margin-top:4px;">Remove Pro code</button>
+    </div>
+    <div id="pro-inactive-state" style="display:flex;flex-direction:column;gap:14px;">
+      <div class="pro-perks">
+        <div class="pro-perk"><span>🃏</span> Up to 100 flashcards per generation</div>
+        <div class="pro-perk"><span>🧠</span> Claude Sonnet (higher quality AI)</div>
+        <div class="pro-perk"><span>📄</span> Longer document context (8000 chars)</div>
+        <div class="pro-perk"><span>⚡</span> Priority processing</div>
+      </div>
+      <hr class="pro-divider">
+      <input id="pro-code-input" class="pro-input" type="text" placeholder="TXPRO-XXXX-XXXX" maxlength="14"
+        onkeydown="if(event.key==='Enter')activatePro()"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'')">
+      <button class="pro-activate-btn" id="pro-activate-btn" onclick="activatePro()">⚡ Activate Pro</button>
+      <div class="pro-msg" id="pro-msg"></div>
+      <div class="pro-get-link">Don't have a code? <a href="https://teqxus.app" target="_blank">Get TeqXus Pro →</a></div>
     </div>
   </div>
 </div>
@@ -3807,4 +3899,492 @@ const _origLoadPDFHist = loadPDF;
 loadPDF = async function(file) { endReadingSession(); await _origLoadPDFHist(file); startReadingSession(file.name); };
 
 window.addEventListener('beforeunload', endReadingSession);
+</script>
+<script>
+/* ══════════════════════════════════════════
+   PRO ACTIVATION
+══════════════════════════════════════════ */
+const BACKEND = 'https://teqxus-backend-zszr.onrender.com';
+
+function getDeviceId() {
+  let id = localStorage.getItem('td-device-id');
+  if (!id) {
+    id = 'td-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+    localStorage.setItem('td-device-id', id);
+  }
+  return id;
+}
+
+function openProModal() {
+  document.getElementById('pro-modal').classList.add('open');
+  const proCode = localStorage.getItem('teqxus-pro-code');
+  if (proCode) {
+    document.getElementById('pro-active-state').style.display = 'flex';
+    document.getElementById('pro-inactive-state').style.display = 'none';
+  } else {
+    document.getElementById('pro-active-state').style.display = 'none';
+    document.getElementById('pro-inactive-state').style.display = 'flex';
+    setTimeout(() => document.getElementById('pro-code-input').focus(), 100);
+  }
+  document.getElementById('pro-msg').textContent = '';
+  document.getElementById('pro-msg').className = 'pro-msg';
+}
+
+function closeProModal() {
+  document.getElementById('pro-modal').classList.remove('open');
+}
+
+async function activatePro() {
+  const code = document.getElementById('pro-code-input').value.trim().toUpperCase();
+  if (!code) { showProMsg('Enter your Pro code', 'error'); return; }
+  const btn = document.getElementById('pro-activate-btn');
+  btn.disabled = true; btn.textContent = 'Verifying…';
+  showProMsg('', '');
+  try {
+    const res = await fetch(BACKEND + '/verify-pro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, identifier: getDeviceId() })
+    });
+    const data = await res.json();
+    if (data.valid) {
+      localStorage.setItem('teqxus-pro-code', code);
+      updateProUI(true);
+      showProMsg('✓ ' + data.message, 'success');
+      // Switch to active state after brief delay
+      setTimeout(() => {
+        document.getElementById('pro-active-state').style.display = 'flex';
+        document.getElementById('pro-inactive-state').style.display = 'none';
+      }, 1200);
+      toast('⚡ TeqXus Pro activated!');
+      updateFlashcardDropdown(true);
+    } else {
+      showProMsg('✕ ' + data.message, 'error');
+    }
+  } catch(e) {
+    showProMsg('Connection failed — check your internet', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '⚡ Activate Pro';
+  }
+}
+
+function deactivatePro() {
+  if (!confirm('Remove your Pro code from this device?')) return;
+  localStorage.removeItem('teqxus-pro-code');
+  updateProUI(false);
+  updateFlashcardDropdown(false);
+  document.getElementById('pro-active-state').style.display = 'none';
+  document.getElementById('pro-inactive-state').style.display = 'flex';
+  document.getElementById('pro-code-input').value = '';
+  toast('Pro code removed');
+}
+
+function showProMsg(msg, type) {
+  const el = document.getElementById('pro-msg');
+  el.textContent = msg;
+  el.className = 'pro-msg' + (type ? ' ' + type : '');
+}
+
+function updateProUI(isPro) {
+  const btn = document.getElementById('pro-btn');
+  if (isPro) {
+    btn.textContent = '⚡ Pro';
+    btn.classList.add('pro-active');
+    btn.title = 'TeqXus Pro — Active';
+  } else {
+    btn.textContent = '⚡ Pro';
+    btn.classList.remove('pro-active');
+    btn.title = 'Activate TeqXus Pro';
+  }
+}
+
+function updateFlashcardDropdown(isPro) {
+  const sel = document.getElementById('fc-count');
+  if (!sel) return;
+  sel.innerHTML = isPro
+    ? `<option value="20">20 cards</option>
+       <option value="40">40 cards</option>
+       <option value="60">60 cards</option>
+       <option value="80">80 cards</option>
+       <option value="100">100 cards</option>`
+    : `<option value="20">20 cards (Free)</option>
+       <option value="40">40 cards (Free)</option>
+       <option value="60">60 cards — 🔒 Pro</option>
+       <option value="80">80 cards — 🔒 Pro</option>
+       <option value="100">100 cards — 🔒 Pro</option>`;
+}
+
+// Init pro state on load
+(function initProState() {
+  const proCode = localStorage.getItem('teqxus-pro-code');
+  updateProUI(!!proCode);
+  updateFlashcardDropdown(!!proCode);
+})();
+
+// Close pro modal on overlay click
+document.getElementById('pro-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('pro-modal')) closeProModal();
+});
+
+// Escape closes pro modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('pro-modal').classList.contains('open')) closeProModal();
+});
+</script>
+<script>
+/* ══════════════════════════════════════════
+   AMBIENT MUSIC — Web Audio API
+══════════════════════════════════════════ */
+let audioCtx = null;
+let musicNodes = [];
+let musicPlaying = false;
+let currentTrack = '';
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function stopAllNodes() {
+  musicNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+  musicNodes = [];
+}
+
+function createGain(ctx, vol) {
+  const g = ctx.createGain();
+  g.gain.value = vol;
+  g.connect(ctx.destination);
+  return g;
+}
+
+function makeNoise(ctx, gain, type = 'white') {
+  const bufSize = ctx.sampleRate * 4;
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for (let i = 0; i < bufSize; i++) {
+    const w = Math.random() * 2 - 1;
+    if (type === 'pink') {
+      b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+      b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+      b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+      data[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
+      b6 = w * 0.115926;
+    } else {
+      data[i] = w;
+    }
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf; src.loop = true;
+  src.connect(gain); src.start();
+  return src;
+}
+
+function makeOscillator(ctx, gain, freq, type = 'sine', detune = 0) {
+  const osc = ctx.createOscillator();
+  osc.type = type; osc.frequency.value = freq; osc.detune.value = detune;
+  osc.connect(gain); osc.start();
+  return osc;
+}
+
+function makeLFO(ctx, target, rate, depth, offset) {
+  const lfo = ctx.createOscillator();
+  const lfoGain = ctx.createGain();
+  lfo.frequency.value = rate;
+  lfoGain.gain.value = depth;
+  lfo.connect(lfoGain);
+  lfoGain.connect(target);
+  target.value = offset;
+  lfo.start();
+  return lfo;
+}
+
+function playRain(ctx, masterVol) {
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass'; filter.frequency.value = 1200; filter.Q.value = 0.5;
+  const g = ctx.createGain(); g.gain.value = masterVol * 0.4; g.connect(ctx.destination);
+  filter.connect(g);
+  const n = makeNoise(ctx, { connect: (d) => filter.connect(d) && filter }, 'pink');
+  const n2 = makeNoise(ctx, g, 'white');
+  // Drip effect via LFO on gain
+  const lfoG = ctx.createGain(); lfoG.connect(ctx.destination);
+  const lfoSrc = ctx.createOscillator();
+  lfoSrc.frequency.value = 3.5;
+  const lfoAmt = ctx.createGain(); lfoAmt.gain.value = masterVol * 0.05;
+  lfoSrc.connect(lfoAmt); lfoAmt.connect(lfoG.gain);
+  lfoSrc.start();
+  musicNodes.push(n2, lfoSrc);
+}
+
+function playLofi(ctx, masterVol) {
+  // Simple looping chord progression: Am - F - C - G
+  const chords = [[220,277,330],[175,220,262],[261,329,392],[196,246,294]];
+  let step = 0;
+  const g = createGain(ctx, masterVol * 0.15);
+  function playChord() {
+    if (!musicPlaying) return;
+    const chord = chords[step % chords.length];
+    chord.forEach(freq => {
+      const osc = ctx.createOscillator();
+      const env = ctx.createGain();
+      osc.type = 'triangle'; osc.frequency.value = freq;
+      osc.connect(env); env.connect(g);
+      env.gain.setValueAtTime(0, ctx.currentTime);
+      env.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.1);
+      env.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.8);
+      osc.start(); osc.stop(ctx.currentTime + 2);
+    });
+    step++;
+    setTimeout(playChord, 2000);
+  }
+  playChord();
+  // Subtle vinyl noise
+  makeNoise(ctx, createGain(ctx, masterVol * 0.02), 'white');
+}
+
+function playForest(ctx, masterVol) {
+  // Wind
+  const windG = createGain(ctx, masterVol * 0.12);
+  const wind = makeNoise(ctx, windG, 'pink');
+  const lfo = ctx.createOscillator();
+  const lfoG = ctx.createGain(); lfoG.gain.value = masterVol * 0.08;
+  lfo.frequency.value = 0.2; lfo.connect(lfoG); lfoG.connect(windG.gain);
+  lfo.start();
+  // Cricket chirps via oscillator bursts
+  function chirp() {
+    if (!musicPlaying) return;
+    const g = createGain(ctx, masterVol * 0.04);
+    const osc = ctx.createOscillator();
+    osc.frequency.value = 3800 + Math.random() * 400;
+    osc.connect(g); osc.start(); osc.stop(ctx.currentTime + 0.05);
+    setTimeout(chirp, 150 + Math.random() * 400);
+  }
+  setTimeout(chirp, 500);
+  musicNodes.push(wind, lfo);
+}
+
+function playOcean(ctx, masterVol) {
+  const g = createGain(ctx, masterVol * 0.3);
+  const noise = makeNoise(ctx, g, 'pink');
+  // Wave LFO
+  const lfo = ctx.createOscillator();
+  const lfoG = ctx.createGain(); lfoG.gain.value = masterVol * 0.25;
+  lfo.frequency.value = 0.12;
+  lfo.connect(lfoG); lfoG.connect(g.gain);
+  g.gain.value = masterVol * 0.05;
+  lfo.start();
+  // Low rumble
+  const rumbleG = createGain(ctx, masterVol * 0.08);
+  const rumble = makeOscillator(ctx, rumbleG, 60, 'sine');
+  musicNodes.push(noise, lfo, rumble);
+}
+
+function playWhiteNoise(ctx, masterVol) {
+  const g = createGain(ctx, masterVol * 0.25);
+  const n = makeNoise(ctx, g, 'white');
+  musicNodes.push(n);
+}
+
+function startTrack(track) {
+  stopAllNodes();
+  if (!track) return;
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  const vol = parseFloat(document.getElementById('music-vol').value);
+  switch(track) {
+    case 'rain':    playRain(ctx, vol);       break;
+    case 'lofi':    playLofi(ctx, vol);       break;
+    case 'forest':  playForest(ctx, vol);     break;
+    case 'ocean':   playOcean(ctx, vol);      break;
+    case 'white':   playWhiteNoise(ctx, vol); break;
+  }
+}
+
+function toggleMusic() {
+  const sel = document.getElementById('music-track-sel');
+  const playBtn = document.getElementById('music-play-btn');
+  const stopBtn = document.getElementById('music-stop-btn');
+  if (!sel.value) { toast('Pick a track first'); return; }
+  if (musicPlaying) {
+    musicPlaying = false;
+    stopAllNodes();
+    if (audioCtx) audioCtx.suspend();
+    playBtn.textContent = '▶'; playBtn.classList.remove('playing');
+    stopBtn.style.display = 'none';
+  } else {
+    musicPlaying = true;
+    currentTrack = sel.value;
+    startTrack(currentTrack);
+    playBtn.textContent = '⏸'; playBtn.classList.add('playing');
+    stopBtn.style.display = 'inline-block';
+  }
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  stopAllNodes();
+  if (audioCtx) audioCtx.suspend();
+  const playBtn = document.getElementById('music-play-btn');
+  const stopBtn = document.getElementById('music-stop-btn');
+  playBtn.textContent = '▶'; playBtn.classList.remove('playing');
+  stopBtn.style.display = 'none';
+  document.getElementById('music-track-sel').value = '';
+}
+
+function changeTrack(track) {
+  if (musicPlaying) {
+    currentTrack = track;
+    startTrack(track);
+  }
+}
+
+function setMusicVolume(val) {
+  if (musicPlaying) { stopAllNodes(); startTrack(currentTrack); }
+}
+
+/* ══════════════════════════════════════════
+   TEXT TO SPEECH — Web Speech API
+══════════════════════════════════════════ */
+let ttsUtterance = null;
+let ttsChunks = [];
+let ttsChunkIndex = 0;
+let ttsPaused = false;
+let ttsActive = false;
+
+function getDocParagraphs() {
+  const body = document.getElementById('md-body');
+  if (!body) return [];
+  return Array.from(body.querySelectorAll('p,h1,h2,h3,h4,li,blockquote,td'))
+    .filter(el => el.textContent.trim().length > 0);
+}
+
+function getStartParagraph() {
+  // Priority 1: selected text
+  const sel = window.getSelection();
+  if (sel && sel.toString().trim().length > 10) return null; // handled separately
+
+  // Priority 2: nearest paragraph to scroll position
+  const content = document.getElementById('content');
+  const scrollTop = content ? content.scrollTop : 0;
+  const paras = getDocParagraphs();
+  if (!paras.length) return 0;
+
+  let closest = 0;
+  let closestDist = Infinity;
+  paras.forEach((p, i) => {
+    const rect = p.getBoundingClientRect();
+    const dist = Math.abs(rect.top - 100);
+    if (dist < closestDist) { closestDist = dist; closest = i; }
+  });
+  return closest;
+}
+
+function toggleTTS() {
+  if (ttsActive) { stopTTS(); return; }
+  startTTS();
+}
+
+function startTTS() {
+  if (!('speechSynthesis' in window)) { toast('Text-to-speech not supported in this browser'); return; }
+  window.speechSynthesis.cancel();
+
+  const sel = window.getSelection();
+  const selectedText = sel ? sel.toString().trim() : '';
+
+  let chunks = [];
+  if (selectedText.length > 10) {
+    // Read selected text only
+    chunks = [selectedText];
+  } else {
+    // Read from scroll position or beginning
+    const paras = getDocParagraphs();
+    if (!paras.length) { toast('No text to read'); return; }
+    const startIdx = getStartParagraph();
+    chunks = paras.slice(startIdx).map(p => p.textContent.trim()).filter(t => t.length > 0);
+  }
+
+  if (!chunks.length) { toast('Nothing to read'); return; }
+
+  ttsChunks = chunks;
+  ttsChunkIndex = 0;
+  ttsActive = true;
+  ttsPaused = false;
+
+  document.getElementById('tts-btn').classList.add('active');
+  document.getElementById('tts-btn').textContent = '🔊 Stop';
+  document.getElementById('sb-tts-controls').style.display = 'flex';
+
+  speakChunk();
+}
+
+function speakChunk() {
+  if (!ttsActive || ttsChunkIndex >= ttsChunks.length) {
+    if (ttsActive) { toast('✓ Done reading'); stopTTS(); }
+    return;
+  }
+  const text = ttsChunks[ttsChunkIndex];
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.95;
+  utt.pitch = 1;
+  utt.volume = 1;
+
+  // Prefer a natural voice
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v =>
+    /natural|enhanced|premium|neural/i.test(v.name) ||
+    /google|microsoft/i.test(v.name)
+  ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+  if (preferred) utt.voice = preferred;
+
+  utt.onend = () => {
+    if (!ttsActive || ttsPaused) return;
+    ttsChunkIndex++;
+    updateTTSProgress();
+    speakChunk();
+  };
+  utt.onerror = (e) => { if (e.error !== 'canceled') { ttsChunkIndex++; speakChunk(); } };
+
+  ttsUtterance = utt;
+  window.speechSynthesis.speak(utt);
+  updateTTSProgress();
+}
+
+function pauseTTS() {
+  if (!ttsActive) return;
+  if (ttsPaused) {
+    ttsPaused = false;
+    window.speechSynthesis.resume();
+    document.getElementById('tts-pause-btn').textContent = '⏸';
+  } else {
+    ttsPaused = true;
+    window.speechSynthesis.pause();
+    document.getElementById('tts-pause-btn').textContent = '▶';
+  }
+}
+
+function stopTTS() {
+  ttsActive = false;
+  ttsPaused = false;
+  window.speechSynthesis.cancel();
+  ttsChunks = []; ttsChunkIndex = 0;
+  const btn = document.getElementById('tts-btn');
+  if (btn) { btn.classList.remove('active'); btn.textContent = '🔊 Listen'; }
+  document.getElementById('sb-tts-controls').style.display = 'none';
+  document.getElementById('tts-progress').textContent = '';
+}
+
+function updateTTSProgress() {
+  const total = ttsChunks.length;
+  const current = ttsChunkIndex + 1;
+  document.getElementById('tts-progress').textContent = `${current} / ${total}`;
+}
+
+// Stop TTS when switching documents
+const _origRenderDocTTS = typeof renderDoc === 'function' ? renderDoc : null;
+if (_origRenderDocTTS) {
+  renderDoc = function() { stopTTS(); _origRenderDocTTS(); };
+}
+
+// Voices may load async
+window.speechSynthesis.onvoiceschanged = () => {};
 </script>
