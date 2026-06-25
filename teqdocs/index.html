@@ -756,12 +756,72 @@ body.student .cac-only { display: none !important; }
 .sp-ring-fill { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 0.4s; }
 .sp-ring-label { position: absolute; font-size: 0.9rem; font-weight: 700; color: var(--accent); font-family: var(--font-ui); }
 
-/* Colored status tags on file cards */
-.fc-status { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 10px; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
-.fc-status.to-read { background: rgba(62,160,207,0.15); color: #3ea0cf; border: 1px solid rgba(62,160,207,0.3); }
-.fc-status.drafting { background: rgba(245,166,35,0.15); color: #c89020; border: 1px solid rgba(245,166,35,0.3); }
-.fc-status.review { background: rgba(196,49,49,0.15); color: #c43131; border: 1px solid rgba(196,49,49,0.3); }
-.fc-status.done { background: rgba(46,160,67,0.15); color: #2ea043; border: 1px solid rgba(46,160,67,0.3); }
+/* ── POMODORO ── */
+.sb-mode-btn.pomo-running { color: #ff6b6b; border-color: rgba(255,107,107,0.4); background: rgba(255,107,107,0.1); }
+.sb-mode-btn.pomo-break { color: var(--teal); border-color: rgba(62,207,160,0.4); background: rgba(62,207,160,0.1); }
+
+/* ── FLASHCARD MODAL ── */
+#flashcard-modal {
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+#flashcard-modal.open { display: flex; }
+.fc-modal-box {
+  background: var(--parchment2); border: 1px solid var(--parchment3);
+  border-radius: 16px; width: 100%; max-width: 520px;
+  padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  display: flex; flex-direction: column; gap: 16px;
+}
+.fc-modal-header { display: flex; align-items: center; justify-content: space-between; }
+.fc-modal-title { font-size: 1rem; font-weight: 700; color: var(--ink); }
+.fc-modal-close { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.2rem; }
+.fc-card {
+  min-height: 180px; background: var(--parchment3);
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  padding: 24px; text-align: center; cursor: pointer;
+  font-family: var(--font-serif); font-size: 1.1rem; color: var(--ink);
+  line-height: 1.6; position: relative; transition: transform 0.15s;
+  user-select: none;
+}
+.fc-card:hover { transform: scale(1.01); }
+.fc-card-hint { position: absolute; bottom: 10px; right: 14px; font-size: 0.65rem; color: var(--ink3); font-family: var(--font-ui); }
+.fc-card.flipped { background: var(--accent-light); border: 1px solid var(--accent); }
+.fc-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fc-counter { font-size: 0.78rem; color: var(--ink3); font-family: var(--font-ui); }
+.fc-btn { flex: 1; padding: 9px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; border: none; transition: all 0.15s; }
+.fc-btn.prev { background: var(--parchment3); color: var(--ink2); }
+.fc-btn.flip { background: var(--accent); color: #fff; }
+.fc-btn.next { background: var(--parchment3); color: var(--ink2); }
+.fc-btn:hover { opacity: 0.85; }
+.fc-progress { height: 3px; background: var(--parchment3); border-radius: 3px; overflow: hidden; }
+.fc-progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+.fc-generate-wrap { display: flex; flex-direction: column; gap: 10px; }
+.fc-generate-wrap p { font-size: 0.82rem; color: var(--ink3); line-height: 1.5; }
+.fc-gen-btn { padding: 10px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; }
+.fc-gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.fc-thinking { font-size: 0.82rem; color: var(--ink3); font-style: italic; text-align: center; padding: 20px; }
+
+/* ── READING HISTORY PANEL ── */
+#history-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 300px; background: var(--parchment2);
+  border-left: 1px solid var(--parchment3);
+  z-index: 400; transform: translateX(100%);
+  transition: transform 0.25s; display: flex; flex-direction: column;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+}
+#history-panel.open { transform: translateX(0); }
+.hp-header { padding: 14px 16px; border-bottom: 1px solid var(--parchment3); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.hp-title { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+.hp-close { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.1rem; }
+.hp-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+.hp-item { background: var(--parchment3); border-radius: 8px; padding: 10px 12px; }
+.hp-item-name { font-size: 0.8rem; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hp-item-meta { font-size: 0.68rem; color: var(--ink3); margin-top: 3px; display: flex; gap: 8px; }
+.hp-item-bar { height: 3px; background: var(--parchment2); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.hp-item-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+.hp-empty { padding: 20px; text-align: center; font-size: 0.82rem; color: var(--ink3); }
 </style>
 </head>
 <body>
@@ -778,6 +838,19 @@ body.student .cac-only { display: none !important; }
   <div class="splash-logo">📖</div>
   <div class="splash-title">Teq<span>Docs</span></div>
   <div class="splash-sub">Your beautiful reading & writing companion</div>
+  <div id="splash-name-wrap" style="display:none;flex-direction:column;align-items:center;gap:10px;margin-top:8px;width:100%;max-width:280px;">
+    <label style="font-size:0.78rem;color:var(--ink3);font-family:var(--font-ui);">What should we call you? <span style="opacity:0.5;">(optional)</span></label>
+    <input id="splash-name-input" type="text" maxlength="30" placeholder="Your name or nickname…"
+      style="width:100%;background:var(--parchment3);border:1px solid var(--parchment3);border-radius:10px;color:var(--ink);font-family:var(--font-ui);font-size:0.9rem;padding:9px 14px;outline:none;text-align:center;"
+      onkeydown="if(event.key==='Enter')dismissSplash()">
+    <button onclick="dismissSplash()"
+      style="width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;">
+      Let's go →
+    </button>
+    <button onclick="dismissSplash()" style="background:none;border:none;color:var(--ink3);font-size:0.75rem;font-family:var(--font-ui);cursor:pointer;padding:4px;">
+      Skip
+    </button>
+  </div>
   <div class="splash-version">v2.0.0 · TeqVault LLC</div>
 </div>
 
@@ -838,6 +911,7 @@ body.student .cac-only { display: none !important; }
     <button class="hdr-btn" onclick="openShortcuts()" title="Keyboard shortcuts (?)">⌨</button>
     <button class="hdr-btn" onclick="openAbout()" title="About TeqDocs">ℹ</button>
     <button class="hdr-btn" onclick="toggleStatsPanel()" id="stats-btn" title="Study Stats">📊</button>
+    <button class="hdr-btn" onclick="openHistoryPanel()" title="Reading History">📚</button>
     <a href="https://ko-fi.com/teqvault" target="_blank" title="Support TeqVault on Ko-fi" style="text-decoration:none;">
       <button class="hdr-btn" style="background:rgba(255,94,86,0.12);border:1px solid rgba(255,94,86,0.3);color:#ff5e56;font-weight:700;padding:5px 12px;border-radius:8px;">☕ Support</button>
     </a>
@@ -1126,6 +1200,11 @@ body.student .cac-only { display: none !important; }
     <div class="sb-stat" id="sb-doc-stat" style="display:none">📄 <strong id="sb-doc-words">0</strong> words</div>
     <div class="sb-bar-divider" id="sb-doc-div" style="display:none"></div>
     <div class="sb-greeting" id="sb-greeting">Stay Focused!</div>
+    <div class="sb-bar-divider"></div>
+    <button class="sb-mode-btn" id="sb-pomodoro-btn" onclick="togglePomodoro()" title="Pomodoro Timer">🍅 <span id="pomo-display">25:00</span></button>
+    <div class="sb-bar-divider"></div>
+    <button class="sb-mode-btn" onclick="openFlashcards()" title="Flashcard Study Mode">🃏 Flashcards</button>
+    <div class="sb-bar-divider"></div>
     <button class="sb-mode-btn" id="sb-focus-btn" onclick="toggleFocusMode()">⊙ Focus Mode</button>
     <button class="sb-mode-btn" id="sb-ambient-btn" onclick="toggleAmbientMode()">🌙 Ambient</button>
   </div>
@@ -1137,6 +1216,54 @@ body.student .cac-only { display: none !important; }
   <input type="text" id="search-input" placeholder="Search in document…" autocomplete="off" autocorrect="off" spellcheck="false">
   <span class="search-count" id="search-count"></span>
   <button class="search-close" onclick="closeSearch()">✕</button>
+</div>
+
+<!-- FLASHCARD MODAL -->
+<div id="flashcard-modal">
+  <div class="fc-modal-box">
+    <div class="fc-modal-header">
+      <div class="fc-modal-title">🃏 Flashcards</div>
+      <button class="fc-modal-close" onclick="closeFlashcards()">✕</button>
+    </div>
+    <div id="fc-generate-wrap" class="fc-generate-wrap">
+      <p>Generate flashcards from your current document using TeqXus AI. Open a document first, then hit Generate.</p>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <label style="font-size:0.78rem;color:var(--ink3);font-family:var(--font-ui);">How many?</label>
+        <select id="fc-count" style="flex:1;background:var(--parchment3);border:1px solid var(--parchment3);border-radius:8px;color:var(--ink);font-family:var(--font-ui);font-size:0.82rem;padding:6px 10px;outline:none;">
+          <option value="20">20 cards (Free)</option>
+          <option value="40">40 cards (Free)</option>
+          <option value="60">60 cards — 🔒 Pro</option>
+          <option value="80">80 cards — 🔒 Pro</option>
+          <option value="100">100 cards — 🔒 Pro</option>
+        </select>
+      </div>
+      <button class="fc-gen-btn" id="fc-gen-btn" onclick="generateFlashcards()">⚡ Generate Flashcards</button>
+      <div style="font-size:0.68rem;color:var(--ink3);text-align:center;">Pro unlocks up to 100 cards · <a href="https://teqxus.app" target="_blank" style="color:var(--accent);">Get TeqXus Pro</a></div>
+    </div>
+    <div id="fc-study-wrap" style="display:none;flex-direction:column;gap:14px;">
+      <div class="fc-progress"><div class="fc-progress-fill" id="fc-progress-fill" style="width:0%"></div></div>
+      <div class="fc-card" id="fc-card" onclick="flipCard()">
+        <span id="fc-card-text"></span>
+        <span class="fc-card-hint">Tap to flip</span>
+      </div>
+      <div class="fc-controls">
+        <button class="fc-btn prev" onclick="prevCard()">← Prev</button>
+        <span class="fc-counter" id="fc-counter">1 / 1</span>
+        <button class="fc-btn flip" onclick="flipCard()">Flip</button>
+        <button class="fc-btn next" onclick="nextCard()">Next →</button>
+      </div>
+      <button class="fc-gen-btn" onclick="generateFlashcards()" style="background:var(--parchment3);color:var(--ink2);">↻ Regenerate</button>
+    </div>
+  </div>
+</div>
+
+<!-- READING HISTORY PANEL -->
+<div id="history-panel">
+  <div class="hp-header">
+    <div class="hp-title">📚 Reading History</div>
+    <button class="hp-close" onclick="closeHistoryPanel()">✕</button>
+  </div>
+  <div class="hp-list" id="history-list"></div>
 </div>
 
 <!-- Reading progress ring -->
@@ -2730,19 +2857,32 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 /* ══════════════════════════════════════════
    FEATURE 1 — SPLASH SCREEN
 ══════════════════════════════════════════ */
+function dismissSplash() {
+  const name = document.getElementById('splash-name-input').value.trim();
+  if (name) localStorage.setItem('td-user-name', name);
+  const splash = document.getElementById('splash');
+  splash.classList.add('hidden');
+  setTimeout(() => splash.style.display = 'none', 500);
+  setGreeting(); // update greeting with name
+}
+
 window.addEventListener('load', () => {
   const splash = document.getElementById('splash');
-  const start = Date.now();
-  const minDisplay = 2000;
-  function hideSplash() {
-    const elapsed = Date.now() - start;
-    const remaining = Math.max(0, minDisplay - elapsed);
+  const isFirstLaunch = !localStorage.getItem('td-user-name') && !localStorage.getItem('td-launched');
+  if (isFirstLaunch) {
+    // Show name prompt after brief logo display
+    setTimeout(() => {
+      document.getElementById('splash-name-wrap').style.display = 'flex';
+      setTimeout(() => document.getElementById('splash-name-input').focus(), 50);
+    }, 1200);
+    localStorage.setItem('td-launched', 'true');
+  } else {
+    // Returning user — auto dismiss after 1.5s
     setTimeout(() => {
       splash.classList.add('hidden');
       setTimeout(() => splash.style.display = 'none', 500);
-    }, remaining);
+    }, 1500);
   }
-  hideSplash();
 });
 
 /* ══════════════════════════════════════════
@@ -3377,7 +3517,8 @@ function updateStatusBar() {
 
 function setGreeting() {
   const hour = new Date().getHours();
-  const name = IS_STUDENT ? 'Student' : 'Scholar';
+  const savedName = localStorage.getItem('td-user-name');
+  const name = savedName || (IS_STUDENT ? 'Student' : 'Scholar');
   let msg;
   if (hour < 12) msg = `Good morning, ${name}! Great time to study.`;
   else if (hour < 17) msg = `Stay Focused, ${name}!`;
@@ -3492,3 +3633,178 @@ setInterval(() => { if (statsPanelOpen) updateStatsPanel(); }, 30000);
 </script>
 </body>
 </html>
+<script>
+/* ══════════════════════════════════════════
+   POMODORO TIMER
+══════════════════════════════════════════ */
+let pomoState = 'idle';
+let pomoSeconds = 25 * 60;
+let pomoInterval = null;
+const POMO_WORK = 25 * 60;
+const POMO_BREAK = 5 * 60;
+
+function togglePomodoro() {
+  pomoState === 'idle' ? startPomodoro() : stopPomodoro();
+}
+function startPomodoro() {
+  pomoState = 'work';
+  pomoSeconds = POMO_WORK;
+  updatePomoDisplay();
+  document.getElementById('sb-pomodoro-btn').classList.add('pomo-running');
+  pomoInterval = setInterval(() => {
+    pomoSeconds--;
+    updatePomoDisplay();
+    if (pomoSeconds <= 0) {
+      const btn = document.getElementById('sb-pomodoro-btn');
+      if (pomoState === 'work') {
+        pomoState = 'break'; pomoSeconds = POMO_BREAK;
+        btn.classList.remove('pomo-running'); btn.classList.add('pomo-break');
+        toast('🍅 Pomodoro done! Take a 5 min break.');
+      } else {
+        pomoState = 'work'; pomoSeconds = POMO_WORK;
+        btn.classList.remove('pomo-break'); btn.classList.add('pomo-running');
+        toast('☀️ Break over! Back to work.');
+      }
+    }
+  }, 1000);
+}
+function stopPomodoro() {
+  clearInterval(pomoInterval); pomoInterval = null;
+  pomoState = 'idle'; pomoSeconds = POMO_WORK;
+  updatePomoDisplay();
+  document.getElementById('sb-pomodoro-btn').classList.remove('pomo-running','pomo-break');
+  toast('Pomodoro stopped');
+}
+function updatePomoDisplay() {
+  const m = Math.floor(pomoSeconds/60).toString().padStart(2,'0');
+  const s = (pomoSeconds%60).toString().padStart(2,'0');
+  document.getElementById('pomo-display').textContent = m+':'+s;
+}
+
+/* ══════════════════════════════════════════
+   FLASHCARDS
+══════════════════════════════════════════ */
+let flashcards = [], fcIndex = 0, fcFlipped = false;
+
+function openFlashcards() {
+  document.getElementById('flashcard-modal').classList.add('open');
+  flashcards.length ? showStudyWrap() : showGenerateWrap();
+}
+function closeFlashcards() {
+  document.getElementById('flashcard-modal').classList.remove('open');
+}
+function showGenerateWrap() {
+  document.getElementById('fc-generate-wrap').style.display = 'flex';
+  document.getElementById('fc-study-wrap').style.display = 'none';
+}
+function showStudyWrap() {
+  document.getElementById('fc-generate-wrap').style.display = 'none';
+  document.getElementById('fc-study-wrap').style.display = 'flex';
+  renderCard();
+}
+async function generateFlashcards() {
+  const docText = currentMd || document.getElementById('md-body')?.innerText || '';
+  if (!docText.trim()) { toast('Open a document first'); return; }
+  const countEl = document.getElementById('fc-count');
+  const count = parseInt(countEl.value);
+  const proCode = localStorage.getItem('teqxus-pro-code') || '';
+  const btn = document.getElementById('fc-gen-btn');
+  btn.disabled = true; btn.textContent = '⏳ Generating…';
+  showStudyWrap();
+  document.getElementById('fc-card-text').textContent = `Generating ${count} flashcards…`;
+  try {
+    const res = await fetch('https://teqxus-backend-zszr.onrender.com/teqdocs/flashcards', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: docText, count, proCode })
+    });
+    const data = await res.json();
+    if (res.status === 403) {
+      toast(`🔒 ${data.message}`);
+      countEl.value = '40';
+      showGenerateWrap();
+      return;
+    }
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    flashcards = data.flashcards;
+    fcIndex = 0; fcFlipped = false;
+    showStudyWrap();
+    toast(`✓ ${flashcards.length} flashcards ready${data.isPro ? ' (Pro)' : ''}`);
+  } catch(e) {
+    toast('Could not generate flashcards — check connection');
+    showGenerateWrap();
+  } finally {
+    btn.disabled = false; btn.textContent = '⚡ Generate Flashcards';
+  }
+}
+function renderCard() {
+  if (!flashcards.length) return;
+  fcFlipped = false;
+  document.getElementById('fc-card').classList.remove('flipped');
+  document.getElementById('fc-card-text').textContent = flashcards[fcIndex].q;
+  document.getElementById('fc-counter').textContent = (fcIndex+1)+' / '+flashcards.length;
+  document.getElementById('fc-progress-fill').style.width = (((fcIndex+1)/flashcards.length)*100)+'%';
+}
+function flipCard() {
+  if (!flashcards.length) return;
+  fcFlipped = !fcFlipped;
+  document.getElementById('fc-card').classList.toggle('flipped', fcFlipped);
+  document.getElementById('fc-card-text').textContent = fcFlipped ? flashcards[fcIndex].a : flashcards[fcIndex].q;
+}
+function nextCard() { if (fcIndex < flashcards.length-1) { fcIndex++; renderCard(); } else toast('🎉 End of deck!'); }
+function prevCard() { if (fcIndex > 0) { fcIndex--; renderCard(); } }
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('flashcard-modal').classList.contains('open')) return;
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft') prevCard();
+  if (e.key === ' ') { e.preventDefault(); flipCard(); }
+});
+
+/* ══════════════════════════════════════════
+   READING HISTORY
+══════════════════════════════════════════ */
+let docOpenTime = null;
+
+function getReadingHistory() { try { return JSON.parse(localStorage.getItem('td-reading-history')||'[]'); } catch { return []; } }
+function saveReadingHistory(h) { localStorage.setItem('td-reading-history', JSON.stringify(h.slice(0,100))); }
+
+function startReadingSession(filename) { docOpenTime = Date.now(); }
+
+function endReadingSession() {
+  if (!docOpenTime || !currentFilename) return;
+  const mins = Math.round((Date.now()-docOpenTime)/60000);
+  if (mins < 1) { docOpenTime = null; return; }
+  let h = getReadingHistory();
+  const ex = h.find(x => x.name === currentFilename);
+  if (ex) { ex.totalMins = (ex.totalMins||0)+mins; ex.sessions = (ex.sessions||1)+1; ex.lastRead = Date.now(); }
+  else h.unshift({ name: currentFilename, totalMins: mins, sessions: 1, lastRead: Date.now() });
+  saveReadingHistory(h);
+  docOpenTime = null;
+}
+
+function openHistoryPanel() { renderHistoryPanel(); document.getElementById('history-panel').classList.add('open'); }
+function closeHistoryPanel() { document.getElementById('history-panel').classList.remove('open'); }
+
+function renderHistoryPanel() {
+  const list = document.getElementById('history-list');
+  const h = getReadingHistory();
+  if (!h.length) { list.innerHTML = '<div class="hp-empty">No reading history yet.<br>Open a document to start tracking.</div>'; return; }
+  const maxMins = Math.max(...h.map(x => x.totalMins));
+  list.innerHTML = '';
+  h.forEach(item => {
+    const d = Math.floor((Date.now()-item.lastRead)/86400000);
+    const ds = d===0?'Today':d===1?'Yesterday':d+'d ago';
+    const pct = Math.round((item.totalMins/maxMins)*100);
+    const el = document.createElement('div'); el.className = 'hp-item';
+    el.innerHTML = `<div class="hp-item-name" title="${item.name}">${item.name}</div><div class="hp-item-meta"><span>⏱ ${item.totalMins}m total</span><span>📖 ${item.sessions} session${item.sessions>1?'s':''}</span><span>${ds}</span></div><div class="hp-item-bar"><div class="hp-item-bar-fill" style="width:${pct}%"></div></div>`;
+    list.appendChild(el);
+  });
+}
+
+// Hook into file loading to track sessions
+const _origLoadPDFHist = loadPDF;
+loadPDF = async function(file) { endReadingSession(); await _origLoadPDFHist(file); startReadingSession(file.name); };
+
+window.addEventListener('beforeunload', endReadingSession);
+</script>
