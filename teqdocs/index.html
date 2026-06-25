@@ -1849,6 +1849,7 @@ async function loadPDF(file) {
   await renderAllPages();
   setupPdfZoom();
   toast('PDF loaded ✓');
+  buildPdfToc();
 }
 
 /* ── Render ALL pages (continuous scroll) ── */
@@ -2830,20 +2831,92 @@ function buildToc(){
     const item=document.createElement('div');item.className='toc-item';item.dataset.level=level;
     item.textContent=h.textContent;
     item.onclick=()=>{
-      // Smooth scroll to heading
       h.scrollIntoView({behavior:'smooth',block:'start'});
-      // Flash highlight on the heading
       h.classList.remove('section-jumped');
       void h.offsetWidth;
       h.classList.add('section-jumped');
       setTimeout(()=>h.classList.remove('section-jumped'),1500);
-      // Mark active in TOC
       list.querySelectorAll('.toc-item').forEach(i=>i.classList.remove('active'));
       item.classList.add('active');
       switchSbTab('contents');
     };
     list.appendChild(item);
   });
+}
+
+async function buildPdfToc() {
+  const list = document.getElementById('toc-list');
+  list.innerHTML = '<p class="toc-empty">Loading contents…</p>';
+  if (!pdfDoc) { list.innerHTML = '<p class="toc-empty">No PDF open</p>'; return; }
+  try {
+    const outline = await pdfDoc.getOutline();
+    if (outline && outline.length > 0) {
+      list.innerHTML = '';
+      await renderOutlineItems(outline, list, 0);
+      return;
+    }
+  } catch(e) {}
+  list.innerHTML = '<p class="toc-empty">Scanning for headings…</p>';
+  try {
+    const entries = [];
+    const pagesToScan = Math.min(pdfTotalPages, 30);
+    for (let pageNum = 1; pageNum <= pagesToScan; pageNum++) {
+      const page = await pdfDoc.getPage(pageNum);
+      const content = await page.getTextContent();
+      const sizes = content.items.filter(i => i.str.trim()).map(i => i.height || i.transform?.[3] || 12);
+      const avgSize = sizes.reduce((a,b) => a+b, 0) / (sizes.length || 1);
+      const threshold = avgSize * 1.4;
+      let lastText = '';
+      content.items.forEach(item => {
+        const size = item.height || item.transform?.[3] || 12;
+        const text = item.str.trim();
+        if (!text || text.length < 3 || text === lastText) return;
+        if (size >= threshold && text.length < 120) {
+          const level = size >= avgSize * 2 ? 1 : size >= avgSize * 1.6 ? 2 : 3;
+          entries.push({ text, pageNum, level });
+          lastText = text;
+        }
+      });
+    }
+    list.innerHTML = '';
+    if (!entries.length) { list.innerHTML = '<p class="toc-empty">No headings detected in this PDF</p>'; return; }
+    entries.forEach(entry => {
+      const item = document.createElement('div');
+      item.className = 'toc-item'; item.dataset.level = entry.level;
+      item.innerHTML = `<span style="opacity:0.5;font-size:0.65rem;margin-right:6px;">p.${entry.pageNum}</span>${entry.text}`;
+      item.onclick = () => {
+        goToPage(entry.pageNum);
+        list.querySelectorAll('.toc-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        switchSbTab('contents');
+      };
+      list.appendChild(item);
+    });
+  } catch(e) { list.innerHTML = '<p class="toc-empty">Could not read PDF structure</p>'; }
+}
+
+async function renderOutlineItems(items, container, depth) {
+  for (const item of items) {
+    const el = document.createElement('div');
+    el.className = 'toc-item'; el.dataset.level = Math.min(depth + 1, 3);
+    el.textContent = item.title || '(untitled)';
+    el.style.paddingLeft = (8 + depth * 12) + 'px';
+    el.onclick = async () => {
+      container.querySelectorAll('.toc-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active'); switchSbTab('contents');
+      if (!item.dest) return;
+      try {
+        let dest = item.dest;
+        if (typeof dest === 'string') dest = await pdfDoc.getDestination(dest);
+        if (!dest) return;
+        const ref = dest[0];
+        const pageIndex = await pdfDoc.getPageIndex(ref);
+        goToPage(pageIndex + 1);
+      } catch(e) {}
+    };
+    container.appendChild(el);
+    if (item.items && item.items.length) await renderOutlineItems(item.items, container, depth + 1);
+  }
 }
 
 /* ── Search ── */
@@ -3796,7 +3869,20 @@ function showStudyWrap() {
   renderCard();
 }
 async function generateFlashcards() {
-  const docText = currentMd || document.getElementById('md-body')?.innerText || '';
+  let docText = currentMd || document.getElementById('md-body')?.innerText || '';
+  if (!docText.trim() && typeof pdfDoc !== 'undefined' && pdfDoc) {
+    toast('Extracting PDF text…');
+    try {
+      let extracted = '';
+      const pagesToRead = Math.min(pdfTotalPages, 20);
+      for (let i = 1; i <= pagesToRead; i++) {
+        const page = await pdfDoc.getPage(i);
+        const content = await page.getTextContent();
+        extracted += content.items.map(item => item.str).join(' ') + '\n';
+      }
+      docText = extracted.trim();
+    } catch(e) { toast('Could not extract PDF text'); return; }
+  }
   if (!docText.trim()) { toast('Open a document first'); return; }
   const countEl = document.getElementById('fc-count');
   const count = parseInt(countEl.value);
@@ -4101,89 +4187,148 @@ function makeLFO(ctx, target, rate, depth, offset) {
 }
 
 function playRain(ctx, masterVol) {
+  const bufSize = ctx.sampleRate * 3;
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for (let i = 0; i < bufSize; i++) {
+    const w = Math.random() * 2 - 1;
+    b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+    b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+    b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+    data[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
+    b6 = w * 0.115926;
+  }
   const filter = ctx.createBiquadFilter();
-  filter.type = 'bandpass'; filter.frequency.value = 1200; filter.Q.value = 0.5;
-  const g = ctx.createGain(); g.gain.value = masterVol * 0.4; g.connect(ctx.destination);
-  filter.connect(g);
-  const n = makeNoise(ctx, { connect: (d) => filter.connect(d) && filter }, 'pink');
-  const n2 = makeNoise(ctx, g, 'white');
-  // Drip effect via LFO on gain
-  const lfoG = ctx.createGain(); lfoG.connect(ctx.destination);
-  const lfoSrc = ctx.createOscillator();
-  lfoSrc.frequency.value = 3.5;
-  const lfoAmt = ctx.createGain(); lfoAmt.gain.value = masterVol * 0.05;
-  lfoSrc.connect(lfoAmt); lfoAmt.connect(lfoG.gain);
-  lfoSrc.start();
-  musicNodes.push(n2, lfoSrc);
+  filter.type = 'lowpass'; filter.frequency.value = 2000;
+  const g = ctx.createGain(); g.gain.value = masterVol * 0.6;
+  filter.connect(g); g.connect(ctx.destination);
+  const src = ctx.createBufferSource();
+  src.buffer = buf; src.loop = true;
+  src.connect(filter); src.start();
+  musicNodes.push(src);
 }
 
 function playLofi(ctx, masterVol) {
-  // Simple looping chord progression: Am - F - C - G
   const chords = [[220,277,330],[175,220,262],[261,329,392],[196,246,294]];
   let step = 0;
-  const g = createGain(ctx, masterVol * 0.15);
+  const masterG = ctx.createGain(); masterG.gain.value = masterVol * 0.18;
+  masterG.connect(ctx.destination);
+  const hissBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+  const hissData = hissBuf.getChannelData(0);
+  for (let i = 0; i < hissData.length; i++) hissData[i] = (Math.random() * 2 - 1) * 0.015;
+  const hissSrc = ctx.createBufferSource();
+  hissSrc.buffer = hissBuf; hissSrc.loop = true;
+  const hissG = ctx.createGain(); hissG.gain.value = masterVol * 0.08;
+  hissSrc.connect(hissG); hissG.connect(ctx.destination); hissSrc.start();
+  musicNodes.push(hissSrc);
   function playChord() {
     if (!musicPlaying) return;
     const chord = chords[step % chords.length];
-    chord.forEach(freq => {
+    chord.forEach((freq, hi) => {
       const osc = ctx.createOscillator();
       const env = ctx.createGain();
       osc.type = 'triangle'; osc.frequency.value = freq;
-      osc.connect(env); env.connect(g);
-      env.gain.setValueAtTime(0, ctx.currentTime);
-      env.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.1);
-      env.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.8);
-      osc.start(); osc.stop(ctx.currentTime + 2);
+      osc.detune.value = (Math.random() - 0.5) * 8;
+      osc.connect(env); env.connect(masterG);
+      const t = ctx.currentTime;
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(0.8 - hi * 0.15, t + 0.08);
+      env.gain.exponentialRampToValueAtTime(0.001, t + 1.9);
+      osc.start(t); osc.stop(t + 2);
     });
     step++;
-    setTimeout(playChord, 2000);
+    setTimeout(playChord, 2200);
   }
   playChord();
-  // Subtle vinyl noise
-  makeNoise(ctx, createGain(ctx, masterVol * 0.02), 'white');
 }
 
 function playForest(ctx, masterVol) {
-  // Wind
-  const windG = createGain(ctx, masterVol * 0.12);
-  const wind = makeNoise(ctx, windG, 'pink');
+  const bufSize = ctx.sampleRate * 4;
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for (let i = 0; i < bufSize; i++) {
+    const w = Math.random() * 2 - 1;
+    b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+    b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+    b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+    data[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
+    b6 = w * 0.115926;
+  }
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass'; filter.frequency.value = 600;
+  const windG = ctx.createGain(); windG.gain.value = masterVol * 0.25;
+  filter.connect(windG); windG.connect(ctx.destination);
+  const windSrc = ctx.createBufferSource();
+  windSrc.buffer = buf; windSrc.loop = true;
+  windSrc.connect(filter); windSrc.start();
   const lfo = ctx.createOscillator();
-  const lfoG = ctx.createGain(); lfoG.gain.value = masterVol * 0.08;
-  lfo.frequency.value = 0.2; lfo.connect(lfoG); lfoG.connect(windG.gain);
-  lfo.start();
-  // Cricket chirps via oscillator bursts
+  const lfoG = ctx.createGain(); lfoG.gain.value = masterVol * 0.1;
+  lfo.frequency.value = 0.15; lfo.connect(lfoG); lfoG.connect(windG.gain); lfo.start();
   function chirp() {
     if (!musicPlaying) return;
-    const g = createGain(ctx, masterVol * 0.04);
-    const osc = ctx.createOscillator();
-    osc.frequency.value = 3800 + Math.random() * 400;
-    osc.connect(g); osc.start(); osc.stop(ctx.currentTime + 0.05);
-    setTimeout(chirp, 150 + Math.random() * 400);
+    const freq = 2400 + Math.random() * 1200;
+    const osc = ctx.createOscillator(); const env = ctx.createGain();
+    osc.frequency.value = freq; osc.type = 'sine';
+    osc.connect(env); env.connect(ctx.destination);
+    const t = ctx.currentTime;
+    env.gain.setValueAtTime(0, t);
+    env.gain.linearRampToValueAtTime(masterVol * 0.06, t + 0.02);
+    env.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    osc.start(t); osc.stop(t + 0.2);
+    setTimeout(chirp, 2000 + Math.random() * 5000);
   }
-  setTimeout(chirp, 500);
-  musicNodes.push(wind, lfo);
+  setTimeout(chirp, 1000);
+  musicNodes.push(windSrc, lfo);
 }
 
 function playOcean(ctx, masterVol) {
-  const g = createGain(ctx, masterVol * 0.3);
-  const noise = makeNoise(ctx, g, 'pink');
-  // Wave LFO
-  const lfo = ctx.createOscillator();
-  const lfoG = ctx.createGain(); lfoG.gain.value = masterVol * 0.25;
-  lfo.frequency.value = 0.12;
-  lfo.connect(lfoG); lfoG.connect(g.gain);
-  g.gain.value = masterVol * 0.05;
-  lfo.start();
-  // Low rumble
-  const rumbleG = createGain(ctx, masterVol * 0.08);
-  const rumble = makeOscillator(ctx, rumbleG, 60, 'sine');
-  musicNodes.push(noise, lfo, rumble);
+  function makePink(vol) {
+    const bufSize = ctx.sampleRate * 5;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for (let i = 0; i < bufSize; i++) {
+      const w = Math.random() * 2 - 1;
+      b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+      b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+      b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+      data[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
+      b6 = w * 0.115926;
+    }
+    const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 800;
+    const g = ctx.createGain(); g.gain.value = vol;
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    src.connect(f); f.connect(g); g.connect(ctx.destination); src.start();
+    return { src, g };
+  }
+  const wave1 = makePink(masterVol * 0.3);
+  const wave2 = makePink(masterVol * 0.2);
+  [wave1, wave2].forEach((w, i) => {
+    const lfo = ctx.createOscillator(); const lfoG = ctx.createGain();
+    lfoG.gain.value = masterVol * 0.2; lfo.frequency.value = 0.08 + i * 0.03;
+    lfo.connect(lfoG); lfoG.connect(w.g.gain); lfo.start();
+    musicNodes.push(lfo);
+  });
+  const rumble = ctx.createOscillator(); const rumbleG = ctx.createGain();
+  rumbleG.gain.value = masterVol * 0.04; rumble.frequency.value = 55;
+  rumble.connect(rumbleG); rumbleG.connect(ctx.destination); rumble.start();
+  musicNodes.push(wave1.src, wave2.src, rumble);
 }
 
 function playWhiteNoise(ctx, masterVol) {
-  const g = createGain(ctx, masterVol * 0.25);
-  const n = makeNoise(ctx, g, 'white');
-  musicNodes.push(n);
+  const bufSize = ctx.sampleRate * 2;
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass'; filter.frequency.value = 3500;
+  const g = ctx.createGain(); g.gain.value = masterVol * 0.3;
+  filter.connect(g); g.connect(ctx.destination);
+  const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+  src.connect(filter); src.start();
+  musicNodes.push(src);
 }
 
 function startTrack(track) {
