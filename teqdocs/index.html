@@ -956,6 +956,11 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
     </button>
   </div>
   <div class="splash-version">v2.0.0 · TeqVault LLC</div>
+  <a href="https://github.com/teqvault/teqdocsDesktop/releases/download/2.0.0/TeqDocs.Student.Setup.2.0.0.exe"
+     style="position:absolute;bottom:48px;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.3);border-radius:20px;color:var(--accent);font-family:var(--font-ui);font-size:0.72rem;font-weight:700;text-decoration:none;letter-spacing:0.03em;"
+     title="Download TeqDocs for Windows">
+    ⬇ Download for Windows
+  </a>
 </div>
 
 <!-- ABOUT PANEL -->
@@ -2004,15 +2009,14 @@ async function renderSinglePage(pageNum,wrap) {
   container.style.position='relative';
   const canvas=document.createElement('canvas');
   canvas.className='pdf-canvas';
-  // Scale canvas buffer by DPR for crisp rendering on high-DPI screens
-  canvas.width=Math.floor(viewport.width * dpr);
-  canvas.height=Math.floor(viewport.height * dpr);
-  canvas.style.width=viewport.width+'px';
-  canvas.style.height=viewport.height+'px';
+  // Use a DPR-scaled viewport for crisp rendering — don't scale the context
+  const scaledViewport = page.getViewport({scale: pdfScale * dpr, rotation});
+  canvas.width = Math.floor(scaledViewport.width);
+  canvas.height = Math.floor(scaledViewport.height);
+  canvas.style.width = viewport.width + 'px';
+  canvas.style.height = viewport.height + 'px';
   container.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  await page.render({canvasContext:ctx, viewport}).promise;
+  await page.render({canvasContext: canvas.getContext('2d'), viewport: scaledViewport}).promise;
   if(pdfDarkMode) canvas.style.filter='invert(1) hue-rotate(180deg)';
 
   // Text layer for selection/highlighting
