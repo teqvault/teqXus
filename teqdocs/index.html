@@ -724,6 +724,35 @@ mark.current { background: var(--gold); color: #000; }
 ::-webkit-scrollbar-thumb { background: var(--parchment3); border-radius: 4px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
+/* ── MOBILE PDF TOOLBAR ── */
+@media (max-width: 640px) {
+  .pdf-toolbar {
+    padding: 6px 10px !important;
+    gap: 5px !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pdf-toolbar::-webkit-scrollbar { display: none; }
+  .pdf-page-nav { font-size: 0.72rem; white-space: nowrap; }
+  .pdf-page-input { width: 36px !important; }
+  .pdf-tb-btn { padding: 5px 8px !important; font-size: 0.72rem !important; }
+  .pdf-zoom-display { font-size: 0.72rem; }
+  .pdf-spacer { display: none; }
+
+  /* Status bar — hide less important items on mobile */
+  #status-bar { gap: 8px; padding: 0 10px; }
+  .sb-stat { font-size: 0.68rem; }
+  .sb-ring-wrap { width: 22px; height: 22px; }
+  .sb-ring-wrap svg { width: 22px; height: 22px; }
+  #sb-doc-stat, #sb-doc-div { display: none !important; }
+  .sb-music-player .sb-music-sel { max-width: 72px; font-size: 0.65rem; }
+  .sb-vol-slider { width: 40px; }
+
+  /* Header — hide some buttons on very small screens */
+  .hdr-btn { padding: 5px 7px !important; font-size: 0.8rem !important; }
+}
+
 /* ── IS_STUDENT overrides ── */
 body.student .cac-only { display: none !important; }
 
@@ -1922,7 +1951,8 @@ async function loadPDF(file) {
   const firstPage = await pdfDoc.getPage(1);
   const rotation = (firstPage.rotate + (pdfRotations[1] || 0)) % 360;
   const naturalVp = firstPage.getViewport({ scale: 1, rotation });
-  const availW = canvasWrap.clientWidth > 0 ? canvasWrap.clientWidth - 48 : window.innerWidth - 340;
+  const sidebarW = window.innerWidth <= 640 ? 0 : 340;
+  const availW = canvasWrap.clientWidth > 0 ? canvasWrap.clientWidth - 24 : window.innerWidth - sidebarW;
   pdfScale = Math.max(0.5, Math.min(3, +(availW / naturalVp.width).toFixed(2)));
 
   await renderAllPages();
@@ -1963,6 +1993,7 @@ async function renderSinglePage(pageNum,wrap) {
   const page=await pdfDoc.getPage(pageNum);
   const rotation = (page.rotate + (pdfRotations[pageNum] || 0)) % 360;
   const viewport=page.getViewport({scale:pdfScale, rotation});
+  const dpr = window.devicePixelRatio || 1;
   const wrapper=document.createElement('div');
   wrapper.className='pdf-page-wrapper';
   wrapper.dataset.page=pageNum;
@@ -1973,9 +2004,15 @@ async function renderSinglePage(pageNum,wrap) {
   container.style.position='relative';
   const canvas=document.createElement('canvas');
   canvas.className='pdf-canvas';
-  canvas.width=viewport.width;canvas.height=viewport.height;
+  // Scale canvas buffer by DPR for crisp rendering on high-DPI screens
+  canvas.width=Math.floor(viewport.width * dpr);
+  canvas.height=Math.floor(viewport.height * dpr);
+  canvas.style.width=viewport.width+'px';
+  canvas.style.height=viewport.height+'px';
   container.appendChild(canvas);
-  await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  await page.render({canvasContext:ctx, viewport}).promise;
   if(pdfDarkMode) canvas.style.filter='invert(1) hue-rotate(180deg)';
 
   // Text layer for selection/highlighting
@@ -2189,7 +2226,8 @@ async function pdfZoomFit(){
   const page=await pdfDoc.getPage(1);
   const rotation = (page.rotate + (pdfRotations[1] || 0)) % 360;
   const vp=page.getViewport({scale:1, rotation});
-  const availW = wrap.clientWidth > 0 ? wrap.clientWidth - 48 : window.innerWidth - 340;
+  const sidebarW = window.innerWidth <= 640 ? 0 : 340;
+  const availW = wrap.clientWidth > 0 ? wrap.clientWidth - 24 : window.innerWidth - sidebarW;
   pdfScale=Math.max(0.5,Math.min(3,+(availW/vp.width).toFixed(2)));
   await renderAllPages();
 }
