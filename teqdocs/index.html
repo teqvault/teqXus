@@ -3,66 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<meta name="theme-color" content="#0d0d14">
+<meta name="theme-color" content="#f5f0e8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="TeqDocs">
 <title>TeqDocs</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="atom-one-dark.min.css">
+<script src="highlight.min.js"></script>
+<script src="pdf.min.js"></script>
+<script src="pdf-lib.min.js"></script>
+<script src="mammoth.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 
 <style>
 :root {
-  /* ── Dark theme (default) ── */
-  --parchment: #0d0d14;
-  --parchment2: #13131f;
-  --parchment3: #1a1a2e;
-  --ink: #e8e6f0;
-  --ink2: #9b99b0;
-  --ink3: #6b6880;
-  --accent: #7c5cfc;
-  --accent2: #5a3fd4;
-  --accent-light: rgba(124,92,252,0.15);
-  --teal: #3ecfa0;
-  --teal-glow: rgba(62,207,160,0.12);
-  --coral: #ff6b6b;
-  --coral-glow: rgba(255,107,107,0.12);
-  --amber: #f5a623;
-  --amber-glow: rgba(245,166,35,0.12);
-  --gold: #f5a623;
-  --sidebar-w: 260px;
-  --header-h: 52px;
-  --radius: 10px;
-  --shadow: 0 2px 16px rgba(0,0,0,0.4);
-  --page-shadow: 2px 0 12px rgba(0,0,0,0.3);
-  --font-serif: 'Georgia','Times New Roman',serif;
-  --font-ui: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  --font-mono: 'Fira Code','Consolas',monospace;
-  --font-size: 18px;
-  --line-height: 1.85;
-  --max-width: 680px;
-}
-/* ── Light theme (future toggle) ── */
-.light {
-  --parchment: #f5f0e8;
-  --parchment2: #ede8df;
-  --parchment3: #e0d9cc;
-  --ink: #1c1a16;
-  --ink2: #3d3a33;
-  --ink3: #6b6760;
-  --accent: #7c5cfc;
-  --accent2: #5a3fd4;
-  --accent-light: rgba(124,92,252,0.15);
-  --teal: #2aab7e;
-  --gold: #c49a3c;
-  --shadow: 0 2px 16px rgba(0,0,0,0.10);
-  --page-shadow: 2px 0 12px rgba(0,0,0,0.08);
-}
-/* ── Parchment theme (future toggle) ── */
-.parchment-theme {
   --parchment: #f5f0e8;
   --parchment2: #ede8df;
   --parchment3: #e0d9cc;
@@ -72,10 +27,32 @@
   --accent: #8b4513;
   --accent2: #a0522d;
   --accent-light: rgba(139,69,19,0.12);
-  --teal: #2a7a5a;
   --gold: #c49a3c;
+  --sidebar-w: 260px;
+  --header-h: 52px;
+  --radius: 10px;
   --shadow: 0 2px 16px rgba(0,0,0,0.10);
   --page-shadow: 2px 0 12px rgba(0,0,0,0.08);
+  --font-serif: 'Georgia','Times New Roman',serif;
+  --font-ui: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-mono: 'Fira Code','Consolas',monospace;
+  --font-size: 18px;
+  --line-height: 1.85;
+  --max-width: 680px;
+}
+.dark {
+  --parchment: #1a1814;
+  --parchment2: #221f1a;
+  --parchment3: #2d2a24;
+  --ink: #e8e4da;
+  --ink2: #c8c4ba;
+  --ink3: #8a867e;
+  --accent: #d4894a;
+  --accent2: #c47a3a;
+  --accent-light: rgba(212,137,74,0.12);
+  --gold: #d4a84b;
+  --shadow: 0 2px 16px rgba(0,0,0,0.4);
+  --page-shadow: 2px 0 12px rgba(0,0,0,0.3);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: var(--font-size); scroll-behavior: smooth; }
@@ -104,8 +81,7 @@ body { background: var(--parchment); color: var(--ink); font-family: var(--font-
 .hdr-btn.active { color: var(--accent); }
 
 /* ── BODY (sidebar + content) ── */
-#body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
-#content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+#body { display: flex; flex: 1; overflow: hidden; }
 
 /* ── SIDEBAR ── */
 #sidebar {
@@ -153,6 +129,7 @@ body { background: var(--parchment); color: var(--ink); font-family: var(--font-
 .toc-empty { font-size: 0.8rem; color: var(--ink3); text-align: center; padding: 1.5rem 1rem; }
 
 /* ── CONTENT AREA ── */
+#content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; min-height: 0; }
 #welcome { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 2rem; text-align: center; gap: 1.5rem; }
 #reader { display: none; flex: 1; overflow-y: auto; padding-bottom: 4rem; }
 #reader.visible { display: block; }
@@ -232,14 +209,6 @@ body.focus-mode .doc-info-bar { opacity: 0; pointer-events: none; transition: op
 body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 
 /* ── PDF VIEWER ── */
-/* ── PDF LOADING PROGRESS BAR ── */
-#pdf-progress-wrap { position:absolute;top:0;left:0;right:0;z-index:100;pointer-events:none; }
-#pdf-progress-bar { height:3px;width:0%;background:linear-gradient(90deg,var(--accent),var(--teal));transition:width 0.2s ease;border-radius:0 2px 2px 0; }
-#pdf-progress-bar.indeterminate { width:40%;animation:pdf-progress-slide 1.2s ease-in-out infinite; }
-#pdf-progress-label { position:absolute;top:6px;right:12px;font-size:0.65rem;font-family:var(--font-ui);color:var(--ink3);font-weight:600;opacity:0;transition:opacity 0.2s; }
-#pdf-progress-label.visible { opacity:1; }
-@keyframes pdf-progress-slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(300%)} }
-
 #pdf-viewer { display: none; flex-direction: column; }
 #pdf-viewer.visible { display: flex; height: 100%; }
 .pdf-toolbar { display: flex; align-items: center; gap: 8px; padding: 10px 2rem; border-bottom: 1px solid var(--parchment3); background: var(--parchment2); position: sticky; top: 0; z-index: 30; flex-wrap: wrap; flex-shrink: 0; }
@@ -316,6 +285,54 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 .anno-text { font-size: 0.78rem; color: var(--ink2); font-family: var(--font-serif); font-style: italic; line-height: 1.4; }
 .anno-page { font-size: 0.65rem; color: var(--ink3); margin-top: 4px; font-family: var(--font-ui); }
 .anno-empty { font-size: 0.8rem; color: var(--ink3); text-align: center; padding: 2rem 1rem; font-style: italic; }
+
+/* ── WORD EDITOR ── */
+#docx-editor-screen { display: none; flex-direction: column; flex: 1; min-height: 0; }
+#docx-editor-screen.visible { display: flex; }
+.docx-editor-header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--parchment3); background: var(--parchment2); flex-shrink: 0; }
+.docx-editor-title { flex: 1; background: transparent; border: none; color: var(--ink); font-size: 1rem; font-weight: 700; font-family: var(--font-serif); outline: none; min-width: 0; }
+.docx-editor-title::placeholder { color: var(--ink3); font-style: italic; }
+.docx-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: opacity 0.15s; }
+.docx-save-btn:hover { opacity: 0.85; }
+.docx-saveas-btn { background: none; border: 1px solid var(--parchment3); color: var(--ink2); border-radius: 8px; padding: 6px 12px; font-size: 0.82rem; font-weight: 600; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
+.docx-saveas-btn:hover { border-color: var(--accent); color: var(--accent); }
+.docx-back-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 1.1rem; padding: 4px; font-family: var(--font-ui); transition: opacity 0.15s; }
+.docx-back-btn:hover { opacity: 0.7; }
+.docx-toolbar { display: flex; flex-direction: column; gap: 2px; padding: 5px 10px; border-bottom: 1px solid var(--parchment3); background: var(--parchment); flex-shrink: 0; }
+.docx-tb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
+.docx-tb-btn { background: none; border: 1px solid transparent; border-radius: 5px; padding: 3px 7px; font-size: 0.8rem; color: var(--ink2); cursor: pointer; font-family: var(--font-ui); line-height: 1.4; transition: background 0.1s, border-color 0.1s; min-width: 26px; text-align: center; white-space: nowrap; }
+.docx-tb-btn:hover { background: var(--parchment2); border-color: var(--parchment3); }
+.docx-tb-btn.active { background: var(--parchment3); border-color: var(--accent); color: var(--accent); }
+.docx-tb-sep { width: 1px; height: 18px; background: var(--parchment3); margin: 0 3px; flex-shrink: 0; }
+.docx-sel { background: var(--parchment2); border: 1px solid var(--parchment3); border-radius: 5px; padding: 3px 5px; font-size: 0.78rem; color: var(--ink); font-family: var(--font-ui); cursor: pointer; }
+.docx-sel-wide { min-width: 90px; }
+.docx-sel-font { min-width: 110px; max-width: 130px; }
+.docx-sel-size { width: 52px; }
+.docx-color-wrap { position: relative; overflow: hidden; padding: 3px 6px; }
+.docx-color-label { pointer-events: none; font-weight: 700; font-size: 0.9rem; }
+.docx-color-wrap input[type="color"] { position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; border: none; padding: 0; }
+.docx-editor-body { flex: 1; overflow-y: auto; padding: 40px 60px; background: var(--parchment); }
+#docx-content { max-width: 720px; margin: 0 auto; min-height: 400px; outline: none; font-family: var(--font-serif); font-size: 1.05rem; line-height: 1.75; color: var(--ink); caret-color: var(--accent); }
+#docx-content h1 { font-size: 1.8rem; font-weight: 800; margin: 1.2em 0 0.4em; line-height: 1.2; }
+#docx-content h2 { font-size: 1.35rem; font-weight: 700; margin: 1em 0 0.35em; }
+#docx-content h3 { font-size: 1.1rem; font-weight: 700; margin: 0.9em 0 0.3em; }
+#docx-content h4,#docx-content h5,#docx-content h6 { font-size: 1rem; font-weight: 700; margin: 0.8em 0 0.25em; }
+#docx-content p { margin: 0 0 0.75em; }
+#docx-content ul,#docx-content ol { padding-left: 1.8em; margin: 0 0 0.75em; }
+#docx-content li { margin: 0.2em 0; }
+#docx-content table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+#docx-content th,#docx-content td { border: 1px solid var(--parchment3); padding: 6px 12px; text-align: left; }
+#docx-content th { background: var(--parchment2); font-weight: 700; }
+#docx-content blockquote { border-left: 3px solid var(--accent); margin: 0.75em 0; padding: 0.4em 1em; color: var(--ink2); font-style: italic; }
+#docx-content a { color: var(--accent); }
+#docx-content img { max-width: 100%; border-radius: 4px; }
+.dark #docx-editor-screen { background: var(--parchment); }
+.docx-status-bar { display: flex; align-items: center; gap: 16px; padding: 5px 14px; background: var(--parchment2); border-top: 1px solid var(--parchment3); font-size: 0.72rem; color: var(--ink3); font-family: var(--font-ui); flex-shrink: 0; }
+/* Pilcrow / formatting marks */
+#docx-content.show-pilcrow p::after,
+#docx-content.show-pilcrow h1::after,#docx-content.show-pilcrow h2::after,
+#docx-content.show-pilcrow h3::after,#docx-content.show-pilcrow h4::after { content: " ¶"; color: var(--accent); opacity: 0.45; font-weight: 400; font-size: 0.85em; pointer-events: none; }
+#docx-content.show-pilcrow br::after { content: "↵"; color: var(--accent); opacity: 0.45; font-size: 0.75em; }
 
 /* ── EDITOR — Premium ── */
 #editor-screen { display: none; flex-direction: column; flex: 1; min-height: 0; }
@@ -723,209 +740,6 @@ mark.current { background: var(--gold); color: #000; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--parchment3); border-radius: 4px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-
-/* ── MOBILE PDF TOOLBAR ── */
-@media (max-width: 640px) {
-  .pdf-toolbar {
-    padding: 6px 10px !important;
-    gap: 5px !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .pdf-toolbar::-webkit-scrollbar { display: none; }
-  .pdf-page-nav { font-size: 0.72rem; white-space: nowrap; }
-  .pdf-page-input { width: 36px !important; }
-  .pdf-tb-btn { padding: 5px 8px !important; font-size: 0.72rem !important; }
-  .pdf-zoom-display { font-size: 0.72rem; }
-  .pdf-spacer { display: none; }
-
-  /* Status bar — hide less important items on mobile */
-  #status-bar { gap: 8px; padding: 0 10px; }
-  .sb-stat { font-size: 0.68rem; }
-  .sb-ring-wrap { width: 22px; height: 22px; }
-  .sb-ring-wrap svg { width: 22px; height: 22px; }
-  #sb-doc-stat, #sb-doc-div { display: none !important; }
-  .sb-music-player .sb-music-sel { max-width: 72px; font-size: 0.65rem; }
-  .sb-vol-slider { width: 40px; }
-
-  /* Header — hide some buttons on very small screens */
-  .hdr-btn { padding: 5px 7px !important; font-size: 0.8rem !important; }
-}
-
-/* ── IS_STUDENT overrides ── */
-body.student .cac-only { display: none !important; }
-
-/* ── BOTTOM STATUS BAR ── */
-#status-bar {
-  height: 36px; flex-shrink: 0;
-  background: var(--parchment2);
-  border-top: 1px solid var(--parchment3);
-  display: flex; align-items: center;
-  padding: 0 16px; gap: 14px;
-  font-size: 0.72rem; font-family: var(--font-ui);
-  color: var(--ink3); z-index: 30;
-}
-.sb-stat { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-.sb-stat strong { color: var(--ink2); font-weight: 700; }
-.sb-bar-divider { width: 1px; height: 16px; background: var(--parchment3); flex-shrink: 0; }
-.sb-greeting { flex: 1; text-align: center; font-family: var(--font-serif); font-style: italic; color: var(--accent); font-size: 0.78rem; font-weight: 600; }
-.sb-mode-btn { background: none; border: 1px solid var(--parchment3); border-radius: 6px; padding: 3px 10px; font-size: 0.7rem; font-weight: 700; font-family: var(--font-ui); color: var(--ink3); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-.sb-mode-btn:hover { border-color: var(--accent); color: var(--accent); }
-.sb-mode-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
-.sb-ring-wrap { position: relative; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; flex-shrink: 0; }
-.sb-ring-wrap svg { width: 26px; height: 26px; transform: rotate(-90deg); }
-.sb-ring-bg { fill: none; stroke: var(--parchment3); stroke-width: 3; }
-.sb-ring-fill { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 63; stroke-dashoffset: 63; transition: stroke-dashoffset 0.4s; }
-.sb-ring-pct { position: absolute; font-size: 0.5rem; font-weight: 700; color: var(--accent); }
-
-/* ── RIGHT STATS PANEL ── */
-#stats-panel { width: 220px; flex-shrink: 0; background: var(--parchment2); border-left: 1px solid var(--parchment3); display: none; flex-direction: column; overflow-y: auto; padding: 14px 12px; gap: 10px; }
-#stats-panel.open { display: flex; }
-.sp-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink3); margin-bottom: 4px; }
-.sp-card { background: var(--parchment); border: 1px solid var(--parchment3); border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
-.sp-card-title { font-size: 0.65rem; color: var(--ink3); font-family: var(--font-ui); margin-bottom: 3px; }
-.sp-card-value { font-size: 1.15rem; font-weight: 700; color: var(--ink); font-family: var(--font-serif); }
-.sp-card-sub { font-size: 0.62rem; color: var(--ink3); margin-top: 2px; }
-.sp-ring-container { position: relative; display: flex; align-items: center; justify-content: center; padding: 8px 0; }
-.sp-ring-container svg { width: 84px; height: 84px; transform: rotate(-90deg); }
-.sp-ring-bg { fill: none; stroke: var(--parchment3); stroke-width: 7; }
-.sp-ring-fill { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 0.4s; }
-.sp-ring-label { position: absolute; font-size: 0.9rem; font-weight: 700; color: var(--accent); font-family: var(--font-ui); }
-
-/* ── POMODORO ── */
-.sb-mode-btn.pomo-running { color: #ff6b6b; border-color: rgba(255,107,107,0.4); background: rgba(255,107,107,0.1); }
-.sb-mode-btn.pomo-break { color: var(--teal); border-color: rgba(62,207,160,0.4); background: rgba(62,207,160,0.1); }
-
-/* ── FLASHCARD MODAL ── */
-#flashcard-modal {
-  position: fixed; inset: 0; z-index: 600;
-  background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
-  display: none; align-items: center; justify-content: center; padding: 20px;
-}
-#flashcard-modal.open { display: flex; }
-.fc-modal-box {
-  background: var(--parchment2); border: 1px solid var(--parchment3);
-  border-radius: 16px; width: 100%; max-width: 520px;
-  padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  display: flex; flex-direction: column; gap: 16px;
-}
-.fc-modal-header { display: flex; align-items: center; justify-content: space-between; }
-.fc-modal-title { font-size: 1rem; font-weight: 700; color: var(--ink); }
-.fc-modal-close { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.2rem; }
-.fc-card {
-  min-height: 180px; background: var(--parchment3);
-  border-radius: 12px; display: flex; align-items: center; justify-content: center;
-  padding: 24px; text-align: center; cursor: pointer;
-  font-family: var(--font-serif); font-size: 1.1rem; color: var(--ink);
-  line-height: 1.6; position: relative; transition: transform 0.15s;
-  user-select: none;
-}
-.fc-card:hover { transform: scale(1.01); }
-.fc-card-hint { position: absolute; bottom: 10px; right: 14px; font-size: 0.65rem; color: var(--ink3); font-family: var(--font-ui); }
-.fc-card.flipped { background: var(--accent-light); border: 1px solid var(--accent); }
-.fc-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.fc-counter { font-size: 0.78rem; color: var(--ink3); font-family: var(--font-ui); }
-.fc-btn { flex: 1; padding: 9px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; border: none; transition: all 0.15s; }
-.fc-btn.prev { background: var(--parchment3); color: var(--ink2); }
-.fc-btn.flip { background: var(--accent); color: #fff; }
-.fc-btn.next { background: var(--parchment3); color: var(--ink2); }
-.fc-btn:hover { opacity: 0.85; }
-.fc-progress { height: 3px; background: var(--parchment3); border-radius: 3px; overflow: hidden; }
-.fc-progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
-.fc-generate-wrap { display: flex; flex-direction: column; gap: 10px; }
-.fc-generate-wrap p { font-size: 0.82rem; color: var(--ink3); line-height: 1.5; }
-.fc-gen-btn { padding: 10px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; }
-.fc-gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.fc-thinking { font-size: 0.82rem; color: var(--ink3); font-style: italic; text-align: center; padding: 20px; }
-
-/* ── MUSIC PLAYER ── */
-.sb-music-player { display:flex;align-items:center;gap:4px;flex-shrink:0; }
-.sb-music-sel { background:var(--parchment3);border:1px solid var(--parchment3);border-radius:6px;color:var(--ink2);font-family:var(--font-ui);font-size:0.7rem;padding:3px 6px;outline:none;cursor:pointer;max-width:100px; }
-.sb-music-sel:focus { border-color:var(--accent); }
-.sb-music-btn { background:none;border:1px solid var(--parchment3);border-radius:5px;color:var(--ink3);font-size:0.72rem;padding:3px 7px;cursor:pointer;transition:all 0.15s;line-height:1; }
-.sb-music-btn:hover { border-color:var(--accent);color:var(--accent); }
-.sb-music-btn.playing { color:var(--teal);border-color:rgba(62,207,160,0.4);background:rgba(62,207,160,0.08); }
-.sb-vol-slider { width:56px;height:3px;accent-color:var(--accent);cursor:pointer;vertical-align:middle; }
-
-/* ── AMBIENT READING MODE ── */
-body.ambient-mode .md-body {
-  max-width: 560px !important;
-  font-size: 1.15rem !important;
-  line-height: 2.1 !important;
-  letter-spacing: 0.01em;
-}
-body.ambient-mode .md-body p { margin-bottom: 1.6rem; }
-body.ambient-mode .md-body h1 { font-size: 2.2rem; }
-body.ambient-mode .md-body h2 { font-size: 1.6rem; }
-body.ambient-mode .md-body h3 { font-size: 1.3rem; }
-body.ambient-mode #reader { background: var(--parchment); }
-body.ambient-mode #content { background: var(--parchment); }
-body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color: rgba(62,207,160,0.4) !important; background: rgba(62,207,160,0.08) !important; }
-
-/* ── TTS ── */
-.tts-highlight { background:rgba(124,92,252,0.25);border-radius:3px;transition:background 0.2s; }
-.tts-highlight.active { background:rgba(124,92,252,0.55);color:#fff; }
-#tts-btn.active { border-color:var(--accent);color:var(--accent);background:var(--accent-light); }
-/* ── SOUNDS PANEL ── */
-#sounds-panel { position:fixed;bottom:48px;left:50%;transform:translateX(-50%);z-index:500;background:var(--parchment2);border:1px solid var(--parchment3);border-radius:14px;padding:16px;width:280px;box-shadow:0 8px 30px rgba(0,0,0,0.4);display:none;flex-direction:column;gap:10px; }
-#sounds-panel.open { display:flex; }
-.sp-panel-title { font-size:0.78rem;font-weight:700;color:var(--ink);font-family:var(--font-ui); }
-.sp-track-list { display:flex;flex-direction:column;gap:4px;max-height:140px;overflow-y:auto; }
-.sp-track-item { display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:7px;background:var(--parchment3);font-size:0.75rem;color:var(--ink2); }
-.sp-track-item span { flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.sp-track-del { background:none;border:none;cursor:pointer;color:var(--ink3);font-size:0.8rem;padding:0 4px; }
-.sp-track-del:hover { color:#ff6b6b; }
-.sp-add-btn { width:100%;padding:8px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.78rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px; }
-.sp-add-btn:hover { opacity:0.88; }
-.sp-empty { font-size:0.72rem;color:var(--ink3);text-align:center;padding:8px 0; }
-.sp-close-btn { background:none;border:none;cursor:pointer;color:var(--ink3);font-size:0.9rem;padding:0;float:right; }
-
-/* ── PRO MODAL ── */
-#pro-modal { position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px; }
-#pro-modal.open { display:flex; }
-.pro-box { background:var(--parchment2);border:1px solid var(--parchment3);border-radius:16px;width:100%;max-width:400px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:14px; }
-.pro-header { display:flex;align-items:center;justify-content:space-between; }
-.pro-title { font-size:1.1rem;font-weight:800;color:var(--ink); }
-.pro-close { background:none;border:none;cursor:pointer;color:var(--ink3);font-size:1.2rem; }
-.pro-badge { display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;padding:4px 12px;border-radius:20px;text-transform:uppercase; }
-.pro-perks { display:flex;flex-direction:column;gap:6px; }
-.pro-perk { font-size:0.82rem;color:var(--ink2);display:flex;align-items:center;gap:8px; }
-.pro-perk span { color:var(--teal);font-size:1rem; }
-.pro-divider { border:none;border-top:1px solid var(--parchment3); }
-.pro-input { width:100%;background:var(--parchment3);border:1px solid var(--parchment3);border-radius:10px;color:var(--ink);font-family:var(--font-mono);font-size:1rem;padding:11px 14px;outline:none;text-align:center;letter-spacing:0.08em;text-transform:uppercase; }
-.pro-input:focus { border-color:var(--accent); }
-.pro-activate-btn { width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;transition:opacity 0.15s; }
-.pro-activate-btn:hover { opacity:0.88; }
-.pro-activate-btn:disabled { opacity:0.5;cursor:not-allowed; }
-.pro-msg { font-size:0.8rem;text-align:center;padding:6px 0;min-height:20px; }
-.pro-msg.success { color:var(--teal); }
-.pro-msg.error { color:#ff6b6b; }
-.pro-get-link { font-size:0.75rem;color:var(--ink3);text-align:center; }
-.pro-get-link a { color:var(--accent);font-weight:600; }
-/* Pro active state */
-#pro-btn.pro-active { background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:8px;padding:5px 12px;border:none; }
-</style>
-<style>
-#history-panel {
-  position: fixed; top: 0; right: 0; bottom: 0;
-  width: 300px; background: var(--parchment2);
-  border-left: 1px solid var(--parchment3);
-  z-index: 400; transform: translateX(100%);
-  transition: transform 0.25s; display: flex; flex-direction: column;
-  box-shadow: -4px 0 20px rgba(0,0,0,0.3);
-}
-#history-panel.open { transform: translateX(0); }
-.hp-header { padding: 14px 16px; border-bottom: 1px solid var(--parchment3); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-.hp-title { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
-.hp-close { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.1rem; }
-.hp-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
-.hp-item { background: var(--parchment3); border-radius: 8px; padding: 10px 12px; }
-.hp-item-name { font-size: 0.8rem; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hp-item-meta { font-size: 0.68rem; color: var(--ink3); margin-top: 3px; display: flex; gap: 8px; }
-.hp-item-bar { height: 3px; background: var(--parchment2); border-radius: 3px; overflow: hidden; margin-top: 6px; }
-.hp-item-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
-.hp-empty { padding: 20px; text-align: center; font-size: 0.82rem; color: var(--ink3); }
 </style>
 </head>
 <body>
@@ -942,25 +756,7 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
   <div class="splash-logo">📖</div>
   <div class="splash-title">Teq<span>Docs</span></div>
   <div class="splash-sub">Your beautiful reading & writing companion</div>
-  <div id="splash-name-wrap" style="display:none;flex-direction:column;align-items:center;gap:10px;margin-top:8px;width:100%;max-width:280px;">
-    <label style="font-size:0.78rem;color:var(--ink3);font-family:var(--font-ui);">What should we call you? <span style="opacity:0.5;">(optional)</span></label>
-    <input id="splash-name-input" type="text" maxlength="30" placeholder="Your name or nickname…"
-      style="width:100%;background:var(--parchment3);border:1px solid var(--parchment3);border-radius:10px;color:var(--ink);font-family:var(--font-ui);font-size:0.9rem;padding:9px 14px;outline:none;text-align:center;"
-      onkeydown="if(event.key==='Enter')dismissSplash()">
-    <button onclick="dismissSplash()"
-      style="width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;">
-      Let's go →
-    </button>
-    <button onclick="dismissSplash()" style="background:none;border:none;color:var(--ink3);font-size:0.75rem;font-family:var(--font-ui);cursor:pointer;padding:4px;">
-      Skip
-    </button>
-  </div>
   <div class="splash-version">v2.0.0 · TeqVault LLC</div>
-  <a href="https://github.com/teqvault/teqdocsDesktop/releases/download/2.0.0/TeqDocs.Student.Setup.2.0.0.exe"
-     style="position:absolute;bottom:48px;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.3);border-radius:20px;color:var(--accent);font-family:var(--font-ui);font-size:0.72rem;font-weight:700;text-decoration:none;letter-spacing:0.03em;"
-     title="Download TeqDocs for Windows">
-    ⬇ Download for Windows
-  </a>
 </div>
 
 <!-- ABOUT PANEL -->
@@ -1019,9 +815,6 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
     <button class="hdr-btn" onclick="toggleTheme()" id="theme-btn">☀️</button>
     <button class="hdr-btn" onclick="openShortcuts()" title="Keyboard shortcuts (?)">⌨</button>
     <button class="hdr-btn" onclick="openAbout()" title="About TeqDocs">ℹ</button>
-    <button class="hdr-btn" onclick="toggleStatsPanel()" id="stats-btn" title="Study Stats">📊</button>
-    <button class="hdr-btn" onclick="openHistoryPanel()" title="Reading History">📚</button>
-    <button class="hdr-btn" id="pro-btn" onclick="openProModal()" title="Activate TeqXus Pro" style="font-weight:700;">⚡ Pro</button>
     <a href="https://ko-fi.com/teqvault" target="_blank" title="Support TeqVault on Ko-fi" style="text-decoration:none;">
       <button class="hdr-btn" style="background:rgba(255,94,86,0.12);border:1px solid rgba(255,94,86,0.3);color:#ff5e56;font-weight:700;padding:5px 12px;border-radius:8px;">☕ Support</button>
     </a>
@@ -1076,7 +869,6 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
     </div>
 
     <!-- CONTENT -->
-    <div id="content-area" style="display:flex;flex:1;overflow:hidden;min-height:0;">
     <div id="content">
 
       <!-- Welcome -->
@@ -1109,7 +901,6 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
             <button class="dib-btn" id="doc-edit-btn" onclick="openEditorFromReader()" style="display:none">✏️ Edit</button>
             <button class="dib-btn" onclick="addBookmark()" title="Add bookmark (Ctrl+M)">🔖 Bookmark</button>
             <button class="dib-btn" onclick="openSigPanel()" title="Add signature">✍ Sign</button>
-            <button class="dib-btn" id="tts-btn" onclick="toggleTTS()" title="Read aloud">🔊 Listen</button>
             <button class="dib-btn" id="doc-export-btn" onclick="toggleExportMenu()">Export ▾</button>
           </div>
           <div class="export-menu" id="export-menu">
@@ -1123,11 +914,6 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
 
       <!-- PDF Viewer -->
       <div id="pdf-viewer">
-        <!-- Loading progress bar -->
-        <div id="pdf-progress-wrap">
-          <div id="pdf-progress-bar"></div>
-          <div id="pdf-progress-label"></div>
-        </div>
         <div class="pdf-toolbar">
           <!-- Navigation -->
           <button class="pdf-tb-btn" onclick="pdfPrevPage()">← Prev</button>
@@ -1154,9 +940,9 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
           <!-- File ops -->
           <button class="pdf-tb-btn" onclick="showMergeDialog()">⊕ Merge</button>
           <button class="pdf-tb-btn" onclick="showSplitDialog()">✂ Split</button>
-
-          <button class="pdf-tb-btn cac-only" onclick="openCACSignPanel()" title="Sign with CAC card" style="background:rgba(30,60,120,0.15);border-color:rgba(30,60,120,0.4);color:#1e3c78;">🪪 CAC Sign</button>
-          <button class="pdf-tb-btn" onclick="downloadOriginalPdf()" style="background:var(--accent);color:#fff;border-color:var(--accent)">💾 Save PDF</button>
+          <button class="pdf-tb-btn" onclick="convertPdfToDocx()" title="Convert to editable Word document">📝 Edit as Word</button>
+          <button class="pdf-tb-btn" onclick="openCACSignPanel()" title="Sign with CAC card" style="background:rgba(30,60,120,0.15);border-color:rgba(30,60,120,0.4);color:#1e3c78;">🪪 CAC Sign</button>
+          <button class="pdf-tb-btn" onclick="savePdfEdits()" style="background:var(--accent);color:#fff;border-color:var(--accent)">💾 Save PDF</button>
         </div>
 
         <!-- Add text input overlay -->
@@ -1271,86 +1057,126 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
         </div>
       </div>
 
-    </div><!-- /content -->
-
-      <!-- RIGHT STATS PANEL -->
-      <div id="stats-panel">
-        <div class="sp-label">Study Progress</div>
-        <div class="sp-ring-container">
-          <svg viewBox="0 0 84 84"><circle class="sp-ring-bg" cx="42" cy="42" r="35"/><circle class="sp-ring-fill" id="sp-ring-fill" cx="42" cy="42" r="35"/></svg>
-          <div class="sp-ring-label" id="sp-ring-pct">0%</div>
+      <!-- Word (.docx) Editor -->
+      <div id="docx-editor-screen">
+        <div class="docx-editor-header">
+          <button class="docx-back-btn" onclick="docxEditorBack()">← Back</button>
+          <input class="docx-editor-title" id="docx-editor-title" type="text" placeholder="Untitled document" autocomplete="off">
+          <button class="docx-save-btn" onclick="saveDocxFile()">💾 Save</button>
+          <button class="docx-saveas-btn" onclick="saveDocxFileAs()" title="Save a copy with a new name">Save As…</button>
         </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Daily Word Count</div>
-          <div class="sp-card-value" id="sp-daily-words">0</div>
-          <div class="sp-card-sub">Goal: <span id="sp-goal">500</span> words</div>
+        <div class="docx-toolbar">
+          <!-- Row 1: Heading + Font + Size + Size bumps -->
+          <div class="docx-tb-row">
+            <select class="docx-sel docx-sel-wide" id="docx-heading-sel" onchange="applyDocxHeading(this.value)" title="Paragraph style">
+              <option value="">Paragraph</option>
+              <option value="h1">Heading 1</option>
+              <option value="h2">Heading 2</option>
+              <option value="h3">Heading 3</option>
+              <option value="h4">Heading 4</option>
+            </select>
+            <div class="docx-tb-sep"></div>
+            <select class="docx-sel docx-sel-font" id="docx-font-sel" onchange="execDoc('fontName',this.value)" title="Font family">
+              <option value="Georgia">Georgia</option>
+              <option value="Arial">Arial</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Calibri">Calibri</option>
+              <option value="Courier New">Courier New</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Trebuchet MS">Trebuchet MS</option>
+            </select>
+            <select class="docx-sel docx-sel-size" id="docx-size-sel" onchange="setDocxFontSize(this.value)" title="Font size (pt)">
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12" selected>12</option>
+              <option value="14">14</option>
+              <option value="16">16</option>
+              <option value="18">18</option>
+              <option value="20">20</option>
+              <option value="24">24</option>
+              <option value="28">28</option>
+              <option value="32">32</option>
+              <option value="36">36</option>
+              <option value="48">48</option>
+              <option value="60">60</option>
+              <option value="72">72</option>
+            </select>
+            <button class="docx-tb-btn" onclick="bumpFontSize(2)" title="Increase font size">A↑</button>
+            <button class="docx-tb-btn" onclick="bumpFontSize(-2)" title="Decrease font size">A↓</button>
+            <div class="docx-tb-sep"></div>
+            <!-- Case cycling -->
+            <button class="docx-tb-btn" onclick="cycleCase()" title="Change case (Aa / AA / aa)">Aa</button>
+            <div class="docx-tb-sep"></div>
+            <!-- Inline formatting -->
+            <button class="docx-tb-btn" id="tb-bold"      onclick="execDoc('bold')"          title="Bold (Ctrl+B)"><b>B</b></button>
+            <button class="docx-tb-btn" id="tb-italic"    onclick="execDoc('italic')"         title="Italic (Ctrl+I)"><i>I</i></button>
+            <button class="docx-tb-btn" id="tb-underline" onclick="execDoc('underline')"      title="Underline (Ctrl+U)"><u>U</u></button>
+            <button class="docx-tb-btn" id="tb-strike"    onclick="execDoc('strikeThrough')"  title="Strikethrough"><s>S</s></button>
+            <button class="docx-tb-btn" id="tb-sub"       onclick="execDoc('subscript')"      title="Subscript">x<sub>2</sub></button>
+            <button class="docx-tb-btn" id="tb-sup"       onclick="execDoc('superscript')"    title="Superscript">x<sup>2</sup></button>
+            <div class="docx-tb-sep"></div>
+            <!-- Colors -->
+            <button class="docx-tb-btn docx-color-wrap" title="Text color">
+              <span class="docx-color-label" id="docx-fc-label" style="border-bottom:3px solid #000">A</span>
+              <input type="color" id="docx-color-input" value="#000000" oninput="applyTextColor(this.value)" title="Text color">
+            </button>
+            <button class="docx-tb-btn docx-color-wrap" title="Highlight color">
+              <span class="docx-color-label" id="docx-hl-label" style="background:#FFFF00;padding:0 3px">🖍</span>
+              <input type="color" id="docx-hilite-input" value="#FFFF00" oninput="applyHighlight(this.value)" title="Highlight color">
+            </button>
+            <button class="docx-tb-btn" onclick="execDoc('removeFormat')" title="Clear formatting">✕</button>
+          </div>
+          <!-- Row 2: Lists + Align + Indent + Spacing + Line spacing -->
+          <div class="docx-tb-row">
+            <button class="docx-tb-btn" onclick="execDoc('insertUnorderedList')" title="Bullet list">• List</button>
+            <button class="docx-tb-btn" onclick="execDoc('insertOrderedList')"   title="Numbered list">1. List</button>
+            <div class="docx-tb-sep"></div>
+            <button class="docx-tb-btn" onclick="execDoc('outdent')"  title="Decrease indent">⇤</button>
+            <button class="docx-tb-btn" onclick="execDoc('indent')"   title="Increase indent">⇥</button>
+            <div class="docx-tb-sep"></div>
+            <button class="docx-tb-btn" onclick="execDoc('justifyLeft')"    title="Align left">≡L</button>
+            <button class="docx-tb-btn" onclick="execDoc('justifyCenter')"  title="Center">≡C</button>
+            <button class="docx-tb-btn" onclick="execDoc('justifyRight')"   title="Align right">≡R</button>
+            <button class="docx-tb-btn" onclick="execDoc('justifyFull')"    title="Justify">≡J</button>
+            <div class="docx-tb-sep"></div>
+            <!-- Line spacing -->
+            <select class="docx-sel" id="docx-linespacing-sel" onchange="applyLineSpacing(this.value)" title="Line spacing">
+              <option value="1">1.0×</option>
+              <option value="1.15" selected>1.15×</option>
+              <option value="1.5">1.5×</option>
+              <option value="2">2.0×</option>
+              <option value="2.5">2.5×</option>
+              <option value="3">3.0×</option>
+            </select>
+            <div class="docx-tb-sep"></div>
+            <!-- Paragraph spacing -->
+            <button class="docx-tb-btn" onclick="addParaSpacing(6)"  title="Add space before paragraph">↑¶</button>
+            <button class="docx-tb-btn" onclick="addParaSpacing(-6)" title="Remove space before paragraph">↓¶</button>
+            <div class="docx-tb-sep"></div>
+            <!-- Insert -->
+            <button class="docx-tb-btn" onclick="docxInsertLink()"              title="Insert hyperlink">🔗</button>
+            <button class="docx-tb-btn" onclick="execDoc('insertHorizontalRule')" title="Horizontal rule">—</button>
+            <div class="docx-tb-sep"></div>
+            <!-- Pilcrow toggle -->
+            <button class="docx-tb-btn" id="tb-pilcrow" onclick="togglePilcrow()" title="Show/hide formatting marks">¶</button>
+          </div>
         </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Pages Read</div>
-          <div class="sp-card-value" id="sp-pages-read">0 / 0</div>
-          <div class="sp-card-sub" id="sp-pages-pct">—</div>
+        <div class="docx-editor-body">
+          <div id="docx-content" contenteditable="true" spellcheck="true"></div>
         </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Session Time</div>
-          <div class="sp-card-value" id="sp-session-time">0m</div>
-          <div class="sp-card-sub">Since opening TeqDocs</div>
-        </div>
-        <div class="sp-card">
-          <div class="sp-card-title">Current Document</div>
-          <div class="sp-card-value" style="font-size:0.82rem;word-break:break-all;" id="sp-doc-name">—</div>
+        <div class="docx-status-bar">
+          <span>📃 Word (.docx)</span>
+          <span id="docx-save-method" style="color:var(--accent);font-style:italic"></span>
+          <span>📝 <span id="docx-word-count">0</span> words</span>
+          <span id="docx-save-status">● Unsaved</span>
         </div>
       </div>
 
-    </div><!-- /content-area -->
+    </div><!-- /content -->
 
   </div><!-- /body -->
-
-  <!-- BOTTOM STATUS BAR -->
-  <div id="status-bar">
-    <div class="sb-ring-wrap" title="Daily goal progress">
-      <svg viewBox="0 0 26 26"><circle class="sb-ring-bg" cx="13" cy="13" r="10"/><circle class="sb-ring-fill" id="sb-ring-fill" cx="13" cy="13" r="10"/></svg>
-      <span class="sb-ring-pct" id="sb-ring-pct"></span>
-    </div>
-    <div class="sb-stat"><strong id="sb-words">0</strong> words today</div>
-    <div class="sb-bar-divider"></div>
-    <div class="sb-stat" id="sb-doc-stat" style="display:none">📄 <strong id="sb-doc-words">0</strong> words</div>
-    <div class="sb-bar-divider" id="sb-doc-div" style="display:none"></div>
-    <div class="sb-greeting" id="sb-greeting">Stay Focused!</div>
-    <div class="sb-bar-divider"></div>
-    <!-- AMBIENT MUSIC PLAYER -->
-    <div class="sb-music-player" id="sb-music-player">
-      <select id="music-track-sel" class="sb-music-sel" onchange="changeTrack(this.value)" title="Select ambient track">
-        <option value="">🎵 Ambient</option>
-        <optgroup label="Built-in">
-          <option value="rain">🌧 Rain</option>
-          <option value="lofi">🎵 Lo-fi</option>
-          <option value="forest">🌲 Forest</option>
-          <option value="ocean">🌊 Ocean</option>
-          <option value="white">⬜ White Noise</option>
-        </optgroup>
-      </select>
-      <button class="sb-music-btn" id="music-play-btn" onclick="toggleMusic()" title="Play/Pause">▶</button>
-      <button class="sb-music-btn" id="music-stop-btn" onclick="stopMusic()" title="Stop" style="display:none">■</button>
-      <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.3" class="sb-vol-slider" oninput="setMusicVolume(this.value)" title="Volume">
-      <button class="sb-music-btn" onclick="openSoundsPanel()" title="Manage sounds / Add your own">🎧</button>
-      <input type="file" id="sound-upload" accept="audio/*" style="display:none" onchange="handleUserTrackUpload(this.files[0]);this.value='';">
-    </div>
-    <div class="sb-bar-divider"></div>
-    <!-- TTS CONTROLS (shown when reading) -->
-    <div id="sb-tts-controls" style="display:none;align-items:center;gap:4px;">
-      <button class="sb-music-btn" id="tts-pause-btn" onclick="pauseTTS()" title="Pause reading">⏸</button>
-      <button class="sb-music-btn" onclick="stopTTS()" title="Stop reading">■</button>
-      <span id="tts-progress" style="font-size:0.65rem;color:var(--ink3);white-space:nowrap;"></span>
-      <div class="sb-bar-divider"></div>
-    </div>
-    <button class="sb-mode-btn" id="sb-pomodoro-btn" onclick="togglePomodoro()" title="Pomodoro Timer">🍅 <span id="pomo-display">25:00</span></button>
-    <div class="sb-bar-divider"></div>
-    <button class="sb-mode-btn" onclick="openFlashcards()" title="Flashcard Study Mode">🃏 Flashcards</button>
-    <div class="sb-bar-divider"></div>
-    <button class="sb-mode-btn" id="sb-focus-btn" onclick="toggleFocusMode()">⊙ Focus Mode</button>
-    <button class="sb-mode-btn" id="sb-ambient-btn" onclick="toggleAmbientMode()">🌙 Ambient</button>
-  </div>
-
 </div><!-- /app -->
 
 <!-- Search -->
@@ -1358,100 +1184,6 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
   <input type="text" id="search-input" placeholder="Search in document…" autocomplete="off" autocorrect="off" spellcheck="false">
   <span class="search-count" id="search-count"></span>
   <button class="search-close" onclick="closeSearch()">✕</button>
-</div>
-
-<!-- FLASHCARD MODAL -->
-<div id="flashcard-modal">
-  <div class="fc-modal-box">
-    <div class="fc-modal-header">
-      <div class="fc-modal-title">🃏 Flashcards</div>
-      <button class="fc-modal-close" onclick="closeFlashcards()">✕</button>
-    </div>
-    <div id="fc-generate-wrap" class="fc-generate-wrap">
-      <p>Generate flashcards from your current document using TeqXus AI. Open a document first, then hit Generate.</p>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <label style="font-size:0.78rem;color:var(--ink3);font-family:var(--font-ui);">How many?</label>
-        <select id="fc-count" style="flex:1;background:var(--parchment3);border:1px solid var(--parchment3);border-radius:8px;color:var(--ink);font-family:var(--font-ui);font-size:0.82rem;padding:6px 10px;outline:none;">
-          <option value="20">20 cards (Free)</option>
-          <option value="40">40 cards (Free)</option>
-          <option value="60">60 cards — 🔒 Pro</option>
-          <option value="80">80 cards — 🔒 Pro</option>
-          <option value="100">100 cards — 🔒 Pro</option>
-        </select>
-      </div>
-      <button class="fc-gen-btn" id="fc-gen-btn" onclick="generateFlashcards()">⚡ Generate Flashcards</button>
-      <div style="font-size:0.68rem;color:var(--ink3);text-align:center;">Pro unlocks up to 100 cards · <a href="https://teqxus.app" target="_blank" style="color:var(--accent);">Get TeqXus Pro</a></div>
-    </div>
-    <div id="fc-study-wrap" style="display:none;flex-direction:column;gap:14px;">
-      <div class="fc-progress"><div class="fc-progress-fill" id="fc-progress-fill" style="width:0%"></div></div>
-      <div class="fc-card" id="fc-card" onclick="flipCard()">
-        <span id="fc-card-text"></span>
-        <span class="fc-card-hint">Tap to flip</span>
-      </div>
-      <div class="fc-controls">
-        <button class="fc-btn prev" onclick="prevCard()">← Prev</button>
-        <span class="fc-counter" id="fc-counter">1 / 1</span>
-        <button class="fc-btn flip" onclick="flipCard()">Flip</button>
-        <button class="fc-btn next" onclick="nextCard()">Next →</button>
-      </div>
-      <button class="fc-gen-btn" onclick="generateFlashcards()" style="background:var(--parchment3);color:var(--ink2);">↻ Regenerate</button>
-    </div>
-  </div>
-</div>
-
-<!-- SOUNDS PANEL -->
-<div id="sounds-panel">
-  <div style="display:flex;align-items:center;justify-content:space-between;">
-    <div class="sp-panel-title">🎧 Ambient Sounds</div>
-    <button class="sp-close-btn" onclick="closeSoundsPanel()">✕</button>
-  </div>
-  <div class="sp-track-list" id="sp-track-list">
-    <div class="sp-empty">No custom tracks yet</div>
-  </div>
-  <button class="sp-add-btn" onclick="document.getElementById('sound-upload').click()">
-    + Add Your Own Track
-  </button>
-  <div style="font-size:0.65rem;color:var(--ink3);text-align:center;">MP3, WAV, OGG supported</div>
-</div>
-
-<!-- PRO ACTIVATION MODAL -->
-<div id="pro-modal">
-  <div class="pro-box">
-    <div class="pro-header">
-      <div class="pro-title">⚡ TeqXus Pro</div>
-      <button class="pro-close" onclick="closeProModal()">✕</button>
-    </div>
-    <div id="pro-active-state" style="display:none;flex-direction:column;gap:10px;align-items:center;text-align:center;">
-      <div style="font-size:2.5rem;">🎉</div>
-      <div class="pro-badge">⚡ Pro Active</div>
-      <div style="font-size:0.82rem;color:var(--ink2);">You have full Pro access. Enjoy up to 100 flashcards and Claude Sonnet quality.</div>
-      <button onclick="deactivatePro()" style="background:none;border:1px solid var(--parchment3);border-radius:8px;color:var(--ink3);font-size:0.75rem;font-family:var(--font-ui);padding:6px 14px;cursor:pointer;margin-top:4px;">Remove Pro code</button>
-    </div>
-    <div id="pro-inactive-state" style="display:flex;flex-direction:column;gap:14px;">
-      <div class="pro-perks">
-        <div class="pro-perk"><span>🃏</span> Up to 100 flashcards per generation</div>
-        <div class="pro-perk"><span>🧠</span> Claude Sonnet (higher quality AI)</div>
-        <div class="pro-perk"><span>📄</span> Longer document context (8000 chars)</div>
-        <div class="pro-perk"><span>⚡</span> Priority processing</div>
-      </div>
-      <hr class="pro-divider">
-      <input id="pro-code-input" class="pro-input" type="text" placeholder="TXPRO-XXXX-XXXX" maxlength="14"
-        onkeydown="if(event.key==='Enter')activatePro()"
-        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'')">
-      <button class="pro-activate-btn" id="pro-activate-btn" onclick="activatePro()">⚡ Activate Pro</button>
-      <div class="pro-msg" id="pro-msg"></div>
-      <div class="pro-get-link">Don't have a code? <a href="https://teqxus.app" target="_blank">Get TeqXus Pro →</a></div>
-    </div>
-  </div>
-</div>
-
-<!-- READING HISTORY PANEL -->
-<div id="history-panel">
-  <div class="hp-header">
-    <div class="hp-title">📚 Reading History</div>
-    <button class="hp-close" onclick="closeHistoryPanel()">✕</button>
-  </div>
-  <div class="hp-list" id="history-list"></div>
 </div>
 
 <!-- Reading progress ring -->
@@ -1552,14 +1284,33 @@ body.ambient-mode .sb-ambient-btn { color: var(--teal) !important; border-color:
 
 <script>
 /* ── PDF.js worker ── */
-let pdfWorkerReady = true;
+let pdfWorkerReady = false;
 if(typeof pdfjsLib!=='undefined'){
-  // Same-origin worker file hosted next to index.html — no CORS, no fake worker
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
+  if(window.electronAPI){
+    (async () => {
+      try {
+        const base = location.href.substring(0, location.href.lastIndexOf('/') + 1);
+        const workerUrl = base + 'pdf.worker.min.js';
+        const res = await fetch(workerUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+        } else {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+        }
+      } catch(e) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
+      }
+      pdfWorkerReady = true;
+    })();
+  } else {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    pdfWorkerReady = true;
+  }
 }
 
 /* ── State ── */
-let currentMd='', currentFilename='', currentSavedId=null, currentFileType='md';
+let currentMd='', currentFilename='', currentSavedId=null, currentFileType='md', currentDocxHtml='';
 let editorMode='write', focusMode=false, sidebarOpen=true;
 let searchMatches=[], searchIndex=0;
 let fontSizePx=parseInt(localStorage.getItem('teqdocs-font')||'18');
@@ -1599,7 +1350,7 @@ document.addEventListener('drop',e=>{
 function loadFileByType(file) {
   const name=file.name.toLowerCase();
   if(name.endsWith('.pdf')) loadPDF(file);
-  else if(name.endsWith('.docx')) loadDocx(file);
+  else if(name.endsWith('.docx')) { docxFileHandle = null; loadDocx(file); }
   else loadMD(file);
 }
 function loadMD(file) {
@@ -1628,6 +1379,7 @@ async function loadDocx(file) {
     currentFilename=file.name;
     currentSavedId=null;
     currentFileType='docx';
+    currentDocxHtml=result.value;
     addRecent(file.name, result.value, 'docx');
     hideAll();
     document.getElementById('hdr-doc-title').textContent=file.name;
@@ -1649,6 +1401,7 @@ async function loadDocx(file) {
     document.getElementById('content').scrollTo(0,0);
     // Show any conversion warnings
     if(result.messages.length) console.log('Docx warnings:',result.messages);
+    document.getElementById('doc-edit-btn').style.display='block';
     toast('Word document opened ✓');
     body.addEventListener('mouseup',handleMdHighlight);
   } catch(e) {
@@ -1760,7 +1513,11 @@ function downloadCurrent(){
   triggerDownload(name.endsWith('.md')?name:name+'.md',content);
 }
 function openEditorFromReader(){
-  openEditor(currentSavedId?getSaved().find(f=>f.id===currentSavedId):{id:null,name:currentFilename,content:currentMd});
+  if(currentFileType==='docx'){
+    openDocxEditor();
+  } else {
+    openEditor(currentSavedId?getSaved().find(f=>f.id===currentSavedId):{id:null,name:currentFilename,content:currentMd});
+  }
 }
 
 /* ── Format helpers ── */
@@ -1902,44 +1659,9 @@ async function loadPDF(file) {
   pdfTextAnnotations=[];
   document.getElementById('hdr-doc-title').textContent=file.name;
   document.getElementById('pdf-viewer').classList.add('visible');
-
-  // Show progress bar
-  const pbar = document.getElementById('pdf-progress-bar');
-  const plabel = document.getElementById('pdf-progress-label');
-  function setProgress(pct, label) {
-    pbar.classList.remove('indeterminate');
-    pbar.style.width = pct + '%';
-    if (label) { plabel.textContent = label; plabel.classList.add('visible'); }
-  }
-  function setIndeterminate(label) {
-    pbar.classList.add('indeterminate');
-    if (label) { plabel.textContent = label; plabel.classList.add('visible'); }
-  }
-  function hideProgress() {
-    pbar.style.width = '100%';
-    setTimeout(() => {
-      pbar.style.width = '0%';
-      pbar.classList.remove('indeterminate');
-      plabel.classList.remove('visible');
-    }, 400);
-  }
-
-  setIndeterminate('Reading file…');
-  pdfRawBytes = await file.arrayBuffer();
-  setProgress(15, 'Parsing PDF…');
-
-  // Load PDF with progress tracking
-  const loadingTask = pdfjsLib.getDocument({ data: pdfRawBytes.slice(0) });
-  loadingTask.onProgress = function(progress) {
-    if (progress.total > 0) {
-      const pct = 15 + Math.round((progress.loaded / progress.total) * 55);
-      setProgress(Math.min(pct, 70), `Parsing… ${Math.round(progress.loaded/progress.total*100)}%`);
-    } else {
-      setIndeterminate('Parsing PDF…');
-    }
-  };
-  pdfDoc = await loadingTask.promise;
-
+  toast('Loading PDF…');
+  pdfRawBytes=await file.arrayBuffer();
+  pdfDoc=await pdfjsLib.getDocument({data:pdfRawBytes.slice(0)}).promise;
   pdfTotalPages=pdfDoc.numPages;
   document.getElementById('pdf-total-pages').textContent=pdfTotalPages;
   document.getElementById('split-total').textContent=pdfTotalPages;
@@ -1947,40 +1669,10 @@ async function loadPDF(file) {
   pdfCurrentPage=1;
   addRecent(file.name,'','pdf');
   renderRecent();
-
-  setProgress(72, 'Rendering pages…');
-
-  // Auto-fit to container width before first render
-  await new Promise(r => requestAnimationFrame(r));
-  const canvasWrap = document.getElementById('pdf-canvas-wrap');
-  const firstPage = await pdfDoc.getPage(1);
-  const rotation = (firstPage.rotate + (pdfRotations[1] || 0)) % 360;
-  const naturalVp = firstPage.getViewport({ scale: 1, rotation });
-  const sidebarW = window.innerWidth <= 640 ? 0 : 340;
-  const availW = canvasWrap.clientWidth > 0 ? canvasWrap.clientWidth - 24 : window.innerWidth - sidebarW;
-  pdfScale = Math.max(0.5, Math.min(3, +(availW / naturalVp.width).toFixed(2)));
-
   await renderAllPages();
-  setProgress(100, 'Done');
-  hideProgress();
   setupPdfZoom();
   toast('PDF loaded ✓');
   buildPdfToc();
-
-  // Extract text from first 10 pages for word count
-  try {
-    let pdfText = '';
-    const pagesToCount = Math.min(pdfTotalPages, 10);
-    for (let i = 1; i <= pagesToCount; i++) {
-      const pg = await pdfDoc.getPage(i);
-      const ct = await pg.getTextContent();
-      pdfText += ct.items.map(item => item.str).join(' ') + ' ';
-    }
-    // Extrapolate if PDF has more pages
-    const sampledWords = pdfText.trim().split(/\s+/).filter(Boolean).length;
-    const estimatedTotal = Math.round(sampledWords * (pdfTotalPages / pagesToCount));
-    trackWordCount(pdfText + ' '.repeat(Math.max(0, estimatedTotal - sampledWords)));
-  } catch(e) {}
 }
 
 /* ── Render ALL pages (continuous scroll) ── */
@@ -1998,7 +1690,6 @@ async function renderSinglePage(pageNum,wrap) {
   const page=await pdfDoc.getPage(pageNum);
   const rotation = (page.rotate + (pdfRotations[pageNum] || 0)) % 360;
   const viewport=page.getViewport({scale:pdfScale, rotation});
-  const dpr = window.devicePixelRatio || 1;
   const wrapper=document.createElement('div');
   wrapper.className='pdf-page-wrapper';
   wrapper.dataset.page=pageNum;
@@ -2009,14 +1700,9 @@ async function renderSinglePage(pageNum,wrap) {
   container.style.position='relative';
   const canvas=document.createElement('canvas');
   canvas.className='pdf-canvas';
-  // Use a DPR-scaled viewport for crisp rendering — don't scale the context
-  const scaledViewport = page.getViewport({scale: pdfScale * dpr, rotation});
-  canvas.width = Math.floor(scaledViewport.width);
-  canvas.height = Math.floor(scaledViewport.height);
-  canvas.style.width = viewport.width + 'px';
-  canvas.style.height = viewport.height + 'px';
+  canvas.width=viewport.width;canvas.height=viewport.height;
   container.appendChild(canvas);
-  await page.render({canvasContext: canvas.getContext('2d'), viewport: scaledViewport}).promise;
+  await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
   if(pdfDarkMode) canvas.style.filter='invert(1) hue-rotate(180deg)';
 
   // Text layer for selection/highlighting
@@ -2056,7 +1742,6 @@ async function renderSinglePage(pageNum,wrap) {
   pdfTextAnnotations.filter(a=>a.page===pageNum).forEach(a=>annoLayer.appendChild(createTextAnnotEl(a,annoLayer)));
   // Render form fields if in form mode
   await renderFormFields(pageNum, annoLayer, viewport);
-
   // Render clickable link annotations
   try {
     const annotations = await page.getAnnotations();
@@ -2065,80 +1750,50 @@ async function renderSinglePage(pageNum,wrap) {
       const linkLayer = document.createElement('div');
       linkLayer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:30;overflow:hidden;';
       container.appendChild(linkLayer);
-
-      // viewport.transform = [sx, 0, 0, sy, tx, ty]
-      // PDF uses bottom-left origin; canvas uses top-left.
-      // For a rect [x1,y1,x2,y2] in PDF space:
-      //   canvas_x = x * sx + tx
-      //   canvas_y = pageHeight_in_pts * sy + ty - y * sy   (y is flipped)
-      // Simpler: just use viewport to convert both corners.
       function pdfPtToCanvas(x, y) {
         const [sx, shx, shy, sy, tx, ty] = viewport.transform;
         return [sx*x + shx*y + tx, shy*x + sy*y + ty];
       }
-
       linkAnns.forEach(ann => {
         const [ax1, ay1, ax2, ay2] = ann.rect;
         const c1 = pdfPtToCanvas(ax1, ay1);
         const c2 = pdfPtToCanvas(ax2, ay2);
-        const left   = Math.min(c1[0], c2[0]);
-        const top    = Math.min(c1[1], c2[1]);
-        const width  = Math.abs(c2[0] - c1[0]);
-        const height = Math.abs(c2[1] - c1[1]);
+        const left = Math.min(c1[0], c2[0]), top = Math.min(c1[1], c2[1]);
+        const width = Math.abs(c2[0]-c1[0]), height = Math.abs(c2[1]-c1[1]);
         if (width < 1 || height < 1) return;
-
         const el = document.createElement('a');
         el.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:${width}px;height:${height}px;display:block;pointer-events:auto;cursor:pointer;border-radius:2px;transition:background 0.1s;`;
-
         if (ann.url) {
-          el.href = ann.url;
-          el.target = '_blank';
-          el.rel = 'noopener noreferrer';
-          el.title = ann.url;
-          el.addEventListener('mouseenter', () => el.style.background = 'rgba(0,163,255,0.15)');
-          el.addEventListener('mouseleave', () => el.style.background = '');
+          el.href=ann.url; el.target='_blank'; el.rel='noopener noreferrer'; el.title=ann.url;
+          el.addEventListener('mouseenter',()=>el.style.background='rgba(0,163,255,0.15)');
+          el.addEventListener('mouseleave',()=>el.style.background='');
         } else if (ann.dest) {
-          el.href = '#';
-          el.addEventListener('mouseenter', () => el.style.background = 'rgba(124,92,252,0.15)');
-          el.addEventListener('mouseleave', () => el.style.background = '');
+          el.href='#';
+          el.addEventListener('mouseenter',()=>el.style.background='rgba(124,92,252,0.15)');
+          el.addEventListener('mouseleave',()=>el.style.background='');
           el.addEventListener('click', async e => {
             e.preventDefault(); e.stopPropagation();
             try {
-              let dest = ann.dest;
-              if (typeof dest === 'string') dest = await pdfDoc.getDestination(dest);
-              if (!dest || dest.length === 0) return;
-              const ref = dest[0];
-              let pageIndex = -1;
-              if (typeof ref === 'number') {
-                pageIndex = ref;
-              } else if (ref && typeof ref === 'object') {
-                try { pageIndex = await pdfDoc.getPageIndex(ref); } catch(e) {}
-                if (pageIndex < 0) {
-                  for (let p = 1; p <= pdfTotalPages; p++) {
-                    try {
-                      const pg = await pdfDoc.getPage(p);
-                      if (pg.ref && pg.ref.num === ref.num && pg.ref.gen === ref.gen) {
-                        pageIndex = p - 1; break;
-                      }
-                    } catch(e) {}
-                  }
-                }
+              let dest=ann.dest;
+              if(typeof dest==='string') dest=await pdfDoc.getDestination(dest);
+              if(!dest||dest.length===0) return;
+              const ref=dest[0]; let pageIndex=-1;
+              if(typeof ref==='number'){ pageIndex=ref; }
+              else if(ref&&typeof ref==='object'){
+                try{ pageIndex=await pdfDoc.getPageIndex(ref); }catch(e){}
+                if(pageIndex<0){ for(let p=1;p<=pdfTotalPages;p++){ try{ const pg=await pdfDoc.getPage(p); if(pg.ref&&pg.ref.num===ref.num&&pg.ref.gen===ref.gen){pageIndex=p-1;break;} }catch(e){} } }
               }
-              if (pageIndex >= 0) goToPage(pageIndex + 1);
-            } catch(err) { console.warn('PDF dest nav:', err); }
+              if(pageIndex>=0) goToPage(pageIndex+1);
+            } catch(err){ console.warn('PDF dest nav:',err); }
           });
-        } else if (ann.action?.actionType === 'Named') {
-          el.href = '#';
-          el.addEventListener('click', e => {
-            e.preventDefault();
-            ({NextPage:nextPage, PrevPage:prevPage, FirstPage:()=>goToPage(1), LastPage:()=>goToPage(pdfTotalPages)})[ann.action.action]?.();
-          });
+        } else if(ann.action?.actionType==='Named'){
+          el.href='#';
+          el.addEventListener('click',e=>{ e.preventDefault(); ({NextPage:nextPage,PrevPage:prevPage,FirstPage:()=>goToPage(1),LastPage:()=>goToPage(pdfTotalPages)})[ann.action.action]?.(); });
         } else return;
-
         linkLayer.appendChild(el);
       });
     }
-  } catch(e) { console.warn('PDF link render:', e); }
+  } catch(e){ console.warn('PDF link render:',e); }
   canvas.addEventListener('click',e=>{
     if(pdfCurrentTool!=='addtext')return;
     const r=canvas.getBoundingClientRect();
@@ -2228,11 +1883,8 @@ async function pdfZoomFit(){
   const wrap=document.getElementById('pdf-canvas-wrap');
   if(!pdfDoc)return;
   const page=await pdfDoc.getPage(1);
-  const rotation = (page.rotate + (pdfRotations[1] || 0)) % 360;
-  const vp=page.getViewport({scale:1, rotation});
-  const sidebarW = window.innerWidth <= 640 ? 0 : 340;
-  const availW = wrap.clientWidth > 0 ? wrap.clientWidth - 24 : window.innerWidth - sidebarW;
-  pdfScale=Math.max(0.5,Math.min(3,+(availW/vp.width).toFixed(2)));
+  const vp=page.getViewport({scale:1});
+  pdfScale=Math.max(0.5,+((wrap.clientWidth-64)/vp.width).toFixed(2));
   await renderAllPages();
 }
 
@@ -2425,21 +2077,7 @@ async function renderFormFields(pageNum, annoLayer, viewport) {
   } catch(e) { console.warn('Form fields:', e); }
 }
 
-/* ── Save PDF (PWA: downloads original unmodified file) ── */
-function downloadOriginalPdf() {
-  if (!pdfRawBytes) { toast('No PDF loaded'); return; }
-  const blob = new Blob([pdfRawBytes], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = pdfCurrentFilename || 'document.pdf';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast('PDF downloaded ✓');
-}
-
-/* ── Save PDF (legacy — not used in PWA) ── */
+/* ── Save PDF ── */
 async function savePdfEdits(){
   if(!pdfRawBytes){toast('No PDF loaded');return;}
   if(typeof PDFLib==='undefined'){toast('pdf-lib not loaded');return;}
@@ -2950,6 +2588,7 @@ function hideAll(){
   document.getElementById('reader').classList.remove('visible');
   document.getElementById('pdf-viewer').classList.remove('visible');
   document.getElementById('editor-screen').classList.remove('visible');
+  document.getElementById('docx-editor-screen').classList.remove('visible');
   document.getElementById('doc-edit-btn').style.display='none';
   document.getElementById('hdr-doc-title').textContent='Your reading library';
 }
@@ -3053,109 +2692,20 @@ function buildToc(){
     const item=document.createElement('div');item.className='toc-item';item.dataset.level=level;
     item.textContent=h.textContent;
     item.onclick=()=>{
+      // Smooth scroll to heading
       h.scrollIntoView({behavior:'smooth',block:'start'});
+      // Flash highlight on the heading
       h.classList.remove('section-jumped');
       void h.offsetWidth;
       h.classList.add('section-jumped');
       setTimeout(()=>h.classList.remove('section-jumped'),1500);
+      // Mark active in TOC
       list.querySelectorAll('.toc-item').forEach(i=>i.classList.remove('active'));
       item.classList.add('active');
       switchSbTab('contents');
     };
     list.appendChild(item);
   });
-}
-
-async function buildPdfToc() {
-  const list = document.getElementById('toc-list');
-  list.innerHTML = '<p class="toc-empty">Loading contents…</p>';
-  if (!pdfDoc) { list.innerHTML = '<p class="toc-empty">No PDF open</p>'; return; }
-  try {
-    const outline = await pdfDoc.getOutline();
-    if (outline && outline.length > 0) {
-      list.innerHTML = '';
-      await renderOutlineItems(outline, list, 0);
-      return;
-    }
-  } catch(e) {}
-  list.innerHTML = '<p class="toc-empty">Scanning for headings…</p>';
-  try {
-    const entries = [];
-    const pagesToScan = Math.min(pdfTotalPages, 30);
-    for (let pageNum = 1; pageNum <= pagesToScan; pageNum++) {
-      const page = await pdfDoc.getPage(pageNum);
-      const content = await page.getTextContent();
-      const sizes = content.items.filter(i => i.str.trim()).map(i => i.height || i.transform?.[3] || 12);
-      const avgSize = sizes.reduce((a,b) => a+b, 0) / (sizes.length || 1);
-      const threshold = avgSize * 1.4;
-      let lastText = '';
-      content.items.forEach(item => {
-        const size = item.height || item.transform?.[3] || 12;
-        const text = item.str.trim();
-        if (!text || text.length < 3 || text === lastText) return;
-        if (size >= threshold && text.length < 120) {
-          const level = size >= avgSize * 2 ? 1 : size >= avgSize * 1.6 ? 2 : 3;
-          entries.push({ text, pageNum, level });
-          lastText = text;
-        }
-      });
-    }
-    list.innerHTML = '';
-    if (!entries.length) { list.innerHTML = '<p class="toc-empty">No headings detected in this PDF</p>'; return; }
-    entries.forEach(entry => {
-      const item = document.createElement('div');
-      item.className = 'toc-item'; item.dataset.level = entry.level;
-      item.innerHTML = `<span style="opacity:0.5;font-size:0.65rem;margin-right:6px;">p.${entry.pageNum}</span>${entry.text}`;
-      item.onclick = () => {
-        goToPage(entry.pageNum);
-        list.querySelectorAll('.toc-item').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        switchSbTab('contents');
-      };
-      list.appendChild(item);
-    });
-  } catch(e) { list.innerHTML = '<p class="toc-empty">Could not read PDF structure</p>'; }
-}
-
-async function renderOutlineItems(items, container, depth) {
-  for (const item of items) {
-    const el = document.createElement('div');
-    el.className = 'toc-item'; el.dataset.level = Math.min(depth + 1, 3);
-    el.textContent = item.title || '(untitled)';
-    el.style.paddingLeft = (8 + depth * 12) + 'px';
-    el.onclick = async () => {
-      container.querySelectorAll('.toc-item').forEach(i => i.classList.remove('active'));
-      el.classList.add('active'); switchSbTab('contents');
-      if (!item.dest) return;
-      try {
-        let dest = item.dest;
-        if (typeof dest === 'string') dest = await pdfDoc.getDestination(dest);
-        if (!dest || dest.length === 0) return;
-        const ref = dest[0];
-        let pageIndex = -1;
-
-        if (typeof ref === 'number') {
-          pageIndex = ref;
-        } else if (ref && typeof ref === 'object') {
-          try { pageIndex = await pdfDoc.getPageIndex(ref); } catch(e) {}
-          if (pageIndex < 0) {
-            for (let p = 1; p <= pdfTotalPages; p++) {
-              try {
-                const pg = await pdfDoc.getPage(p);
-                if (pg.ref && pg.ref.num === ref.num && pg.ref.gen === ref.gen) {
-                  pageIndex = p - 1; break;
-                }
-              } catch(e) {}
-            }
-          }
-        }
-
-        if (pageIndex >= 0) goToPage(pageIndex + 1);
-      } catch(e) { console.warn('TOC nav:', e); }
-    };
-    container.appendChild(el);
-    if (item.items && item.items.length) await renderOutlineItems(item.items, container, depth + 1);
-  }
 }
 
 /* ── Search ── */
@@ -3262,32 +2812,19 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 /* ══════════════════════════════════════════
    FEATURE 1 — SPLASH SCREEN
 ══════════════════════════════════════════ */
-function dismissSplash() {
-  const name = document.getElementById('splash-name-input').value.trim();
-  if (name) localStorage.setItem('td-user-name', name);
-  const splash = document.getElementById('splash');
-  splash.classList.add('hidden');
-  setTimeout(() => splash.style.display = 'none', 500);
-  setGreeting(); // update greeting with name
-}
-
 window.addEventListener('load', () => {
   const splash = document.getElementById('splash');
-  const isFirstLaunch = !localStorage.getItem('td-user-name') && !localStorage.getItem('td-launched');
-  if (isFirstLaunch) {
-    // Show name prompt after brief logo display
-    setTimeout(() => {
-      document.getElementById('splash-name-wrap').style.display = 'flex';
-      setTimeout(() => document.getElementById('splash-name-input').focus(), 50);
-    }, 1200);
-    localStorage.setItem('td-launched', 'true');
-  } else {
-    // Returning user — auto dismiss after 1.5s
+  const start = Date.now();
+  const minDisplay = 2000;
+  function hideSplash() {
+    const elapsed = Date.now() - start;
+    const remaining = Math.max(0, minDisplay - elapsed);
     setTimeout(() => {
       splash.classList.add('hidden');
       setTimeout(() => splash.style.display = 'none', 500);
-    }, 1500);
+    }, remaining);
   }
+  hideSplash();
 });
 
 /* ══════════════════════════════════════════
@@ -3813,925 +3350,719 @@ function enterSigPlacementMode() {
 
   function placeSig(e) {
     if (!pendingSigDataUrl) return;
+    // Create a draggable signature image
     const img = document.createElement('img');
     img.src = pendingSigDataUrl;
-    img.style.cssText = `max-width: 200px; display: block; border: none; box-shadow: none; border-radius: 0; position: relative; cursor: move; margin: 0.5rem 0;`;
+    img.style.cssText = `
+      max-width: 200px; display: block;
+      border: none; box-shadow: none; border-radius: 0;
+      position: relative;
+      cursor: move;
+      margin: 0.5rem 0;
+    `;
     img.title = 'Drag to reposition · Double-click to remove';
-    img.addEventListener('dblclick', () => { if (confirm('Remove signature?')) img.remove(); });
+    img.addEventListener('dblclick', () => {
+      if (confirm('Remove signature?')) img.remove();
+    });
+
+    // Insert at click position — find nearest element
     const el = document.elementFromPoint(e.clientX, e.clientY);
     const target = el?.closest('p,h1,h2,h3,h4,blockquote,li') || body;
     target.after(img);
+
+    // Cleanup
     pendingSigDataUrl = null;
     body.style.cursor = '';
     body.removeEventListener('click', placeSig);
     toast('Signature placed ✓ — drag to reposition, double-click to remove');
   }
+
   body.addEventListener('click', placeSig);
 }
 
-/* ══════════════════════════════════════════
-   IS_STUDENT FLAG
-══════════════════════════════════════════ */
-const IS_STUDENT = !window.electronAPI;
-if (IS_STUDENT) {
-  document.body.classList.add('student');
-  // Update splash/about title
-  document.querySelectorAll('.splash-title, .about-title, .hdr-logo-text').forEach(el => {
-    if (el.classList.contains('hdr-logo-text')) {
-      el.innerHTML = 'Teq<span>Docs</span> <span style="font-size:0.5em;color:var(--accent);vertical-align:super;font-family:var(--font-ui);letter-spacing:0.05em;">STUDENT</span>';
+
+
+
+async function buildPdfToc() {
+  const list = document.getElementById('toc-list');
+  list.innerHTML = '<p class="toc-empty">Loading contents…</p>';
+  if (!pdfDoc) { list.innerHTML = '<p class="toc-empty">No PDF open</p>'; return; }
+
+  try {
+    // Try PDF outline/bookmarks first
+    const outline = await pdfDoc.getOutline();
+    if (outline && outline.length > 0) {
+      list.innerHTML = '';
+      await renderOutlineItems(outline, list, 0);
+      return;
     }
-  });
-  document.title = 'TeqDocs Student — Study Smarter';
-}
+  } catch(e) {}
 
-/* ══════════════════════════════════════════
-   STATS PANEL
-══════════════════════════════════════════ */
-let statsPanelOpen = false;
-const DAILY_GOAL_WORDS = 500;
-let wordsReadToday = parseInt(localStorage.getItem('td-words-today') || '0');
-const sessionStart = Date.now();
+  // Fallback: scan pages for large text (likely headings)
+  list.innerHTML = '<p class="toc-empty">Scanning for headings…</p>';
+  try {
+    const entries = [];
+    const pagesToScan = Math.min(pdfTotalPages, 30);
+    for (let pageNum = 1; pageNum <= pagesToScan; pageNum++) {
+      const page = await pdfDoc.getPage(pageNum);
+      const content = await page.getTextContent();
+      // Find items with larger-than-average font size
+      const sizes = content.items.filter(i => i.str.trim()).map(i => i.height || i.transform?.[3] || 12);
+      const avgSize = sizes.reduce((a,b) => a+b, 0) / (sizes.length || 1);
+      const threshold = avgSize * 1.4;
+      let lastText = '';
+      content.items.forEach(item => {
+        const size = item.height || item.transform?.[3] || 12;
+        const text = item.str.trim();
+        if (!text || text.length < 3 || text === lastText) return;
+        if (size >= threshold && text.length < 120) {
+          const level = size >= avgSize * 2 ? 1 : size >= avgSize * 1.6 ? 2 : 3;
+          entries.push({ text, pageNum, level });
+          lastText = text;
+        }
+      });
+    }
 
-// Check/reset daily goal
-(function checkDailyReset() {
-  const lastDate = localStorage.getItem('td-goal-date');
-  const today = new Date().toDateString();
-  if (lastDate !== today) {
-    localStorage.setItem('td-goal-date', today);
-    localStorage.setItem('td-words-today', '0');
-    wordsReadToday = 0;
+    list.innerHTML = '';
+    if (!entries.length) {
+      list.innerHTML = '<p class="toc-empty">No headings detected in this PDF</p>';
+      return;
+    }
+    entries.forEach(entry => {
+      const item = document.createElement('div');
+      item.className = 'toc-item';
+      item.dataset.level = entry.level;
+      item.innerHTML = `<span style="opacity:0.5;font-size:0.65rem;margin-right:6px;">p.${entry.pageNum}</span>${entry.text}`;
+      item.onclick = () => {
+        goToPage(entry.pageNum);
+        list.querySelectorAll('.toc-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        switchSbTab('contents');
+      };
+      list.appendChild(item);
+    });
+  } catch(e) {
+    list.innerHTML = '<p class="toc-empty">Could not read PDF structure</p>';
   }
-})();
-
-function toggleStatsPanel() {
-  statsPanelOpen = !statsPanelOpen;
-  document.getElementById('stats-panel').classList.toggle('open', statsPanelOpen);
-  document.getElementById('stats-btn').classList.toggle('active', statsPanelOpen);
-  if (statsPanelOpen) updateStatsPanel();
 }
 
-function updateStatsPanel() {
-  const pct = Math.min(100, Math.round((wordsReadToday / DAILY_GOAL_WORDS) * 100));
-  // Big ring
-  const circumference = 220;
-  document.getElementById('sp-ring-fill').style.strokeDashoffset = circumference - (pct / 100) * circumference;
-  document.getElementById('sp-ring-pct').textContent = pct + '%';
-  // Cards
-  document.getElementById('sp-daily-words').textContent = wordsReadToday.toLocaleString();
-  document.getElementById('sp-goal').textContent = DAILY_GOAL_WORDS.toLocaleString();
-  // Pages
-  if (pdfDoc) {
-    document.getElementById('sp-pages-read').textContent = pdfCurrentPage + ' / ' + pdfTotalPages;
-    const pagePct = Math.round((pdfCurrentPage / pdfTotalPages) * 100);
-    document.getElementById('sp-pages-pct').textContent = pagePct + '% through document';
+async function renderOutlineItems(items, container, depth) {
+  for (const item of items) {
+    const el = document.createElement('div');
+    el.className = 'toc-item';
+    el.dataset.level = Math.min(depth + 1, 3);
+    el.textContent = item.title || '(untitled)';
+    el.style.paddingLeft = (8 + depth * 12) + 'px';
+    el.onclick = async () => {
+      container.querySelectorAll('.toc-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+      switchSbTab('contents');
+      if (!item.dest) return;
+      try {
+        let dest = item.dest;
+        if (typeof dest === 'string') dest = await pdfDoc.getDestination(dest);
+        if (!dest || dest.length === 0) return;
+        const ref = dest[0];
+        let pageIndex = -1;
+
+        if (typeof ref === 'number') {
+          pageIndex = ref;
+        } else if (ref && typeof ref === 'object') {
+          try { pageIndex = await pdfDoc.getPageIndex(ref); } catch(e) {}
+          if (pageIndex < 0) {
+            for (let p = 1; p <= pdfTotalPages; p++) {
+              try {
+                const pg = await pdfDoc.getPage(p);
+                if (pg.ref && pg.ref.num === ref.num && pg.ref.gen === ref.gen) {
+                  pageIndex = p - 1; break;
+                }
+              } catch(e) {}
+            }
+          }
+        }
+
+        if (pageIndex >= 0) goToPage(pageIndex + 1);
+      } catch(e) { console.warn('TOC nav:', e); }
+    };
+    container.appendChild(el);
+    if (item.items && item.items.length) {
+      await renderOutlineItems(item.items, container, depth + 1);
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════
+   WORD (.docx) EDITOR  — full featured
+   ══════════════════════════════════════════════ */
+
+/* ── State ── */
+let docxCaseMode = 0; // 0=Sentence, 1=UPPER, 2=lower, 3=Title
+let docxFileHandle = null; // FileSystemFileHandle for save-in-place (File System Access API)
+let docxLineSpacing = 1.15;
+let docxParaSpacingBefore = 0;   // pt
+let docxParaSpacingAfter  = 8;   // pt (Word default)
+let docxPilcrowOn = false;
+let docxOriginalText = '';       // for case cycling
+
+/* ── Open editor ── */
+/* ── Save As: always opens picker regardless of cached handle ── */
+async function saveDocxFileAs() {
+  docxFileHandle = null; // clear handle so saveDocxFile opens picker
+  await saveDocxFile();
+}
+
+/* ── Keyboard shortcuts inside the docx editor ── */
+document.addEventListener('keydown', function(e) {
+  const screen = document.getElementById('docx-editor-screen');
+  if (!screen || !screen.classList.contains('visible')) return;
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (e.shiftKey) saveDocxFileAs();
+    else saveDocxFile();
+  }
+});
+
+function openDocxEditor(fileHandle) {
+  if (fileHandle) docxFileHandle = fileHandle;
+  hideAll();
+  const screen = document.getElementById('docx-editor-screen');
+  screen.classList.add('visible');
+  document.getElementById('docx-editor-title').value = currentFilename.replace(/\.docx$/i, '') || 'Untitled';
+  const el = document.getElementById('docx-content');
+  el.innerHTML = currentDocxHtml || '<p>Start typing\u2026</p>';
+  el.focus();
+  el.removeEventListener('input', onDocxInput);
+  el.addEventListener('input', onDocxInput);
+  el.removeEventListener('keyup', onDocxSelChange);
+  el.addEventListener('keyup', onDocxSelChange);
+  el.removeEventListener('mouseup', onDocxSelChange);
+  el.addEventListener('mouseup', onDocxSelChange);
+  updateDocxWordCount();
+  document.getElementById('docx-save-status').textContent = '● Unsaved';
+  // Show save method hint in status bar
+  const hasFS = 'showSaveFilePicker' in window;
+  const isElectron = !!window.electronAPI;
+  const method = isElectron ? 'Desktop — Ctrl+S to save' : hasFS ? 'Ctrl+S to save — Ctrl+Shift+S to Save As' : 'Firefox/Safari — saves as download';
+  document.getElementById('docx-save-method').textContent = method;
+  document.getElementById('hdr-doc-title').textContent = currentFilename;
+  applyLineSpacingToEditor(docxLineSpacing);
+}
+
+function onDocxInput() {
+  updateDocxWordCount();
+  document.getElementById('docx-save-status').textContent = '\u25CF Unsaved';
+}
+
+function onDocxSelChange() {
+  // Update toolbar active states
+  const cmds = [
+    ['bold',          'tb-bold'],
+    ['italic',        'tb-italic'],
+    ['underline',     'tb-underline'],
+    ['strikeThrough', 'tb-strike'],
+    ['subscript',     'tb-sub'],
+    ['superscript',   'tb-sup'],
+  ];
+  cmds.forEach(([cmd, id]) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.classList.toggle('active', document.queryCommandState(cmd));
+  });
+}
+
+function docxEditorBack() {
+  document.getElementById('docx-editor-screen').classList.remove('visible');
+  if (currentFileType === 'docx') {
+    document.getElementById('reader').classList.add('visible');
+    document.getElementById('doc-edit-btn').style.display = 'block';
   } else {
-    document.getElementById('sp-pages-read').textContent = '—';
-    document.getElementById('sp-pages-pct').textContent = 'Open a PDF to track pages';
-  }
-  // Session time
-  const mins = Math.round((Date.now() - sessionStart) / 60000);
-  document.getElementById('sp-session-time').textContent = mins < 60 ? mins + 'm' : Math.floor(mins/60) + 'h ' + (mins%60) + 'm';
-  // Doc name
-  document.getElementById('sp-doc-name').textContent = currentFilename || '—';
-}
-
-function trackWordCount(text) {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  wordsReadToday = Math.max(wordsReadToday, words);
-  localStorage.setItem('td-words-today', wordsReadToday);
-  updateStatusBar();
-  if (statsPanelOpen) updateStatsPanel();
-}
-
-/* ══════════════════════════════════════════
-   STATUS BAR
-══════════════════════════════════════════ */
-function updateStatusBar() {
-  const pct = Math.min(100, Math.round((wordsReadToday / DAILY_GOAL_WORDS) * 100));
-  const circumference = 63;
-  document.getElementById('sb-ring-fill').style.strokeDashoffset = circumference - (pct / 100) * circumference;
-  document.getElementById('sb-words').textContent = wordsReadToday.toLocaleString();
-  // Doc word count
-  if (currentFilename && currentMd) {
-    const dw = currentMd.trim().split(/\s+/).filter(Boolean).length;
-    document.getElementById('sb-doc-words').textContent = dw.toLocaleString();
-    document.getElementById('sb-doc-stat').style.display = 'flex';
-    document.getElementById('sb-doc-div').style.display = 'block';
+    document.getElementById('welcome').style.display = 'flex';
   }
 }
 
-function setGreeting() {
-  const hour = new Date().getHours();
-  const savedName = localStorage.getItem('td-user-name');
-  const name = savedName || (IS_STUDENT ? 'Student' : 'Scholar');
-  let msg;
-  if (hour < 12) msg = `Good morning, ${name}! Great time to study.`;
-  else if (hour < 17) msg = `Stay Focused, ${name}!`;
-  else if (hour < 21) msg = `Evening session, ${name}. Keep it up!`;
-  else msg = `Burning the midnight oil, ${name}?`;
-  document.getElementById('sb-greeting').textContent = msg;
-}
-setGreeting();
-updateStatusBar();
-
-// Patch renderDoc to track word count
-const _renderDocOrig2 = renderDoc;
-renderDoc = function() {
-  _renderDocOrig2();
-  trackWordCount(currentMd);
-  document.getElementById('sp-doc-name') && (document.getElementById('sp-doc-name').textContent = currentFilename);
-};
-
-/* ══════════════════════════════════════════
-   AMBIENT MODE
-══════════════════════════════════════════ */
-let ambientMode = false;
-function toggleAmbientMode() {
-  ambientMode = !ambientMode;
-  document.body.classList.toggle('ambient-mode', ambientMode);
-  document.getElementById('sb-ambient-btn').classList.toggle('active', ambientMode);
-  if (ambientMode) {
-    document.body.style.setProperty('--max-width', '580px');
-    document.body.style.setProperty('--line-height', '2.1');
-    document.body.style.setProperty('--font-size', '19px');
-    toast('🌙 Ambient reading on — relaxed spacing');
-  } else {
-    document.body.style.setProperty('--max-width', '680px');
-    document.body.style.setProperty('--line-height', '1.85');
-    document.body.style.setProperty('--font-size', '18px');
-    toast('Ambient reading off');
-  }
+/* ── execCommand wrapper ── */
+function execDoc(cmd, value) {
+  document.getElementById('docx-content').focus();
+  document.execCommand(cmd, false, value !== undefined ? value : null);
+  onDocxSelChange();
 }
 
-// Patch focus mode toggle to update status bar button
-const _origToggleFocus = toggleFocusMode;
-toggleFocusMode = function() {
-  _origToggleFocus();
-  document.getElementById('sb-focus-btn').classList.toggle('active', focusMode);
-};
-
-/* ══════════════════════════════════════════
-   FILE STATUS TAGS (cycle on click)
-══════════════════════════════════════════ */
-const STATUS_CYCLE = ['to-read', 'drafting', 'review', 'done'];
-const STATUS_LABELS = { 'to-read': 'To Read', 'drafting': 'Drafting', 'review': 'Review', 'done': 'Done' };
-
-function getFileStatuses() {
-  try { return JSON.parse(localStorage.getItem('td-file-statuses') || '{}'); } catch { return {}; }
-}
-function setFileStatus(name, status) {
-  const s = getFileStatuses();
-  s[name] = status;
-  localStorage.setItem('td-file-statuses', JSON.stringify(s));
-}
-function cycleFileStatus(name, el, e) {
-  e.stopPropagation();
-  const s = getFileStatuses();
-  const cur = s[name] || 'to-read';
-  const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length];
-  setFileStatus(name, next);
-  el.className = 'fc-status ' + next;
-  el.textContent = STATUS_LABELS[next];
-}
-function makeStatusTag(name) {
-  const s = getFileStatuses();
-  const cur = s[name] || 'to-read';
-  const el = document.createElement('span');
-  el.className = 'fc-status ' + cur;
-  el.textContent = STATUS_LABELS[cur];
-  el.title = 'Click to change status';
-  el.onclick = (e) => cycleFileStatus(name, el, e);
-  return el;
+/* ── Heading ── */
+function applyDocxHeading(tag) {
+  document.getElementById('docx-content').focus();
+  document.execCommand('formatBlock', false, tag || 'p');
+  document.getElementById('docx-heading-sel').value = '';
 }
 
-// Patch renderRecent and renderSaved to inject status tags
-const _origRenderRecent = renderRecent;
-renderRecent = function() {
-  _origRenderRecent();
-  document.querySelectorAll('#recent-list .file-card').forEach(card => {
-    const name = card.querySelector('.fc-name')?.textContent;
-    if (!name) return;
-    const meta = card.querySelector('.fc-meta');
-    if (meta && !meta.querySelector('.fc-status')) meta.appendChild(makeStatusTag(name));
+/* ── Font size (pt-based) ── */
+function setDocxFontSize(pt) {
+  // execCommand fontSize uses 1-7 slots; we use a span workaround for real pt values
+  document.getElementById('docx-content').focus();
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return;
+  document.execCommand('fontSize', false, '7');
+  // Replace the font size=7 spans with real pt
+  const el = document.getElementById('docx-content');
+  el.querySelectorAll('font[size="7"]').forEach(f => {
+    f.removeAttribute('size');
+    f.style.fontSize = pt + 'pt';
   });
-};
-const _origRenderSaved = renderSaved;
-renderSaved = function() {
-  _origRenderSaved();
-  document.querySelectorAll('#saved-list .file-card').forEach(card => {
-    const name = card.querySelector('.fc-name')?.textContent;
-    if (!name) return;
-    const meta = card.querySelector('.fc-meta');
-    if (meta && !meta.querySelector('.fc-status')) meta.appendChild(makeStatusTag(name));
+}
+
+let _lastFontSize = 12;
+function bumpFontSize(delta) {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return;
+  // Get current size from selection
+  const anchor = sel.anchorNode;
+  const el = anchor ? (anchor.nodeType === 3 ? anchor.parentElement : anchor) : null;
+  let current = _lastFontSize;
+  if (el) {
+    const cs = window.getComputedStyle(el);
+    const px = parseFloat(cs.fontSize);
+    if (px) current = Math.round(px * 0.75); // px to pt
+  }
+  const newSize = Math.max(6, Math.min(96, current + delta));
+  _lastFontSize = newSize;
+  setDocxFontSize(newSize);
+  // Update selector if close match
+  const sel2 = document.getElementById('docx-size-sel');
+  if (sel2) sel2.value = newSize;
+}
+
+/* ── Case cycling ── */
+function cycleCase() {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) return;
+  const text = sel.toString();
+  let transformed;
+  docxCaseMode = (docxCaseMode + 1) % 4;
+  switch(docxCaseMode) {
+    case 0: transformed = text.charAt(0).toUpperCase() + text.slice(1).toLowerCase(); break; // Sentence
+    case 1: transformed = text.toUpperCase(); break;
+    case 2: transformed = text.toLowerCase(); break;
+    case 3: transformed = text.replace(/\b\w/g, c => c.toUpperCase()); break; // Title Case
+  }
+  document.execCommand('insertText', false, transformed);
+}
+
+/* ── Text color ── */
+function applyTextColor(hex) {
+  execDoc('foreColor', hex);
+  document.getElementById('docx-fc-label').style.borderBottomColor = hex;
+}
+
+/* ── Highlight ── */
+function applyHighlight(hex) {
+  document.getElementById('docx-content').focus();
+  // backColor is the standard execCommand for highlight
+  document.execCommand('hiliteColor', false, hex);
+  document.getElementById('docx-hl-label').style.background = hex;
+}
+
+/* ── Line spacing ── */
+function applyLineSpacing(val) {
+  docxLineSpacing = parseFloat(val);
+  applyLineSpacingToEditor(docxLineSpacing);
+}
+
+function applyLineSpacingToEditor(val) {
+  document.getElementById('docx-content').style.lineHeight = val;
+}
+
+/* ── Paragraph spacing (visual only — tracked for export) ── */
+function addParaSpacing(delta) {
+  docxParaSpacingBefore = Math.max(0, docxParaSpacingBefore + delta);
+  // Apply to focused block
+  const sel = window.getSelection();
+  if (!sel || !sel.anchorNode) return;
+  let node = sel.anchorNode;
+  if (node.nodeType === 3) node = node.parentElement;
+  const block = node.closest('p,h1,h2,h3,h4,h5,h6,li,blockquote') || node;
+  block.style.marginTop = docxParaSpacingBefore + 'pt';
+}
+
+/* ── Pilcrow (show formatting marks) ── */
+function togglePilcrow() {
+  docxPilcrowOn = !docxPilcrowOn;
+  const el = document.getElementById('docx-content');
+  el.classList.toggle('show-pilcrow', docxPilcrowOn);
+  document.getElementById('tb-pilcrow').classList.toggle('active', docxPilcrowOn);
+}
+
+/* ── Link ── */
+function docxInsertLink() {
+  const url = prompt('Enter URL:');
+  if (url) execDoc('createLink', url);
+}
+
+/* ── Word count ── */
+function updateDocxWordCount() {
+  const el = document.getElementById('docx-content');
+  const words = (el.innerText || '').trim().split(/\s+/).filter(Boolean).length;
+  document.getElementById('docx-word-count').textContent = words.toLocaleString();
+}
+
+/* ══════════════════════════════
+   SAVE → .docx
+   ══════════════════════════════ */
+async function saveDocxFile() {
+  const statusEl = document.getElementById('docx-save-status');
+  statusEl.textContent = '\u23F3 Saving\u2026';
+
+  try {
+    const docxLib = window.docx;
+    if (!docxLib) { toast('docx.js not loaded \u2014 check network'); statusEl.textContent = '\u2715 Error'; return; }
+
+    const container = document.getElementById('docx-content');
+    const { doc, numbering } = domToDocxResult(container, docxLib);
+
+    const buffer = await docxLib.Packer.toBuffer(doc);
+    const arr = Array.from(new Uint8Array(buffer));
+    const filename = (document.getElementById('docx-editor-title').value.trim() || 'document') + '.docx';
+
+    if (window.electronAPI) {
+      // ── Electron: native OS save dialog ──
+      const result = await window.electronAPI.showSaveDialog(filename, JSON.stringify(arr));
+      if (result && result.success) {
+        statusEl.textContent = '\u2713 Saved';
+        toast('Saved: ' + result.filePath);
+      } else {
+        statusEl.textContent = '\u25CF Unsaved';
+      }
+    } else if ('showSaveFilePicker' in window) {
+      // ── Web: File System Access API (Chrome/Edge) ──
+      try {
+        let handle = docxFileHandle;
+        // If we don't have a handle yet, or user wants Save As, open picker
+        if (!handle) {
+          handle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{ description: 'Word Document', accept: { 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] } }],
+          });
+          docxFileHandle = handle; // cache for future Ctrl+S saves
+        }
+        const writable = await handle.createWritable();
+        await writable.write(new Uint8Array(arr));
+        await writable.close();
+        statusEl.textContent = '\u2713 Saved';
+        toast('Saved: ' + handle.name);
+        // Update title bar to reflect saved filename
+        document.getElementById('docx-editor-title').value = handle.name.replace(/\.docx$/i, '');
+      } catch(fsErr) {
+        if (fsErr.name === 'AbortError') {
+          statusEl.textContent = '\u25CF Unsaved';
+        } else {
+          throw fsErr; // rethrow to outer catch
+        }
+      }
+    } else {
+      // ── Fallback: browser download (Firefox / Safari) ──
+      const blob = new Blob([new Uint8Array(arr)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      statusEl.textContent = '\u2713 Downloaded';
+      toast('Downloaded \u2014 open in TeqDocs to edit again');
+    }
+  } catch(e) {
+    console.error('saveDocxFile error:', e);
+    statusEl.textContent = '\u2715 Error';
+    toast('Save failed: ' + e.message);
+  }
+}
+
+/* ══════════════════════════════
+   DOM → docx.js  (full fidelity)
+   ══════════════════════════════ */
+function domToDocxResult(container, docxLib) {
+  const {
+    Document, Packer, Paragraph, TextRun,
+    HeadingLevel, AlignmentType, UnderlineType,
+    ExternalHyperlink, ShadingType,
+    LineRuleType, convertInchesToTwip
+  } = docxLib;
+
+  const paragraphs = [];
+  const orderedListRef = 'ol-ref';
+  const numberingConfig = [{
+    reference: orderedListRef,
+    levels: Array.from({length: 9}, (_, i) => ({
+      level: i,
+      format: docxLib.LevelFormat ? docxLib.LevelFormat.DECIMAL : 'decimal',
+      text: `%${i+1}.`,
+      alignment: AlignmentType.LEFT,
+      style: { paragraph: { indent: { left: 720 * (i+1), hanging: 360 } } }
+    }))
+  }];
+
+  /* ── pt string → twip ── */
+  function ptToTwip(str) {
+    if (!str) return 0;
+    const n = parseFloat(str);
+    if (isNaN(n)) return 0;
+    return Math.round(n * 20); // 1pt = 20 twip
+  }
+
+  /* ── hex color → 6-char no-hash ── */
+  function hexColor(str) {
+    if (!str) return undefined;
+    return str.replace('#', '').toUpperCase().padStart(6, '0');
+  }
+
+  /* ── Parse RGB/hex string to 6-char hex ── */
+  function colorToHex(color) {
+    if (!color || color === 'transparent' || color === 'rgba(0, 0, 0, 0)') return undefined;
+    if (color.startsWith('#')) return hexColor(color);
+    const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (m) {
+      return [m[1],m[2],m[3]].map(n => parseInt(n).toString(16).padStart(2,'0')).join('').toUpperCase();
+    }
+    return undefined;
+  }
+
+  /* ── Highlight color map (Word only supports named highlights) ── */
+  const WORD_HIGHLIGHTS = {
+    'FFFF00': 'yellow', 'FF0000': 'red', '00FF00': 'green',
+    '0000FF': 'blue', 'FF00FF': 'magenta', '00FFFF': 'cyan',
+    '000000': 'black', 'FFFFFF': 'white', '808080': 'darkGray',
+    'C0C0C0': 'lightGray', '800000': 'darkRed', '808000': 'darkYellow',
+    '008000': 'darkGreen', '000080': 'darkBlue', '800080': 'darkMagenta',
+    '008080': 'darkCyan',
+  };
+  function nearestHighlight(hex) {
+    if (!hex) return undefined;
+    hex = hex.toUpperCase();
+    if (WORD_HIGHLIGHTS[hex]) return WORD_HIGHLIGHTS[hex];
+    // Find closest by distance
+    let best, bestDist = Infinity;
+    const r1 = parseInt(hex.slice(0,2),16), g1 = parseInt(hex.slice(2,4),16), b1 = parseInt(hex.slice(4,6),16);
+    for (const [k, v] of Object.entries(WORD_HIGHLIGHTS)) {
+      const r2 = parseInt(k.slice(0,2),16), g2 = parseInt(k.slice(2,4),16), b2 = parseInt(k.slice(4,6),16);
+      const d = Math.abs(r1-r2) + Math.abs(g1-g2) + Math.abs(b1-b2);
+      if (d < bestDist) { bestDist = d; best = v; }
+    }
+    return best;
+  }
+
+  /* ── Collect all computed run properties from an element ── */
+  function runPropsFromEl(el) {
+    const cs = window.getComputedStyle(el);
+    const fwNum = parseFloat(cs.fontWeight);
+    const fsPx = parseFloat(cs.fontSize);
+    const fsPt = fsPx ? Math.round(fsPx * 0.75) : undefined;
+
+    const fgHex  = colorToHex(cs.color);
+    const bgHex  = colorToHex(cs.backgroundColor);
+    const hlWord = bgHex ? nearestHighlight(bgHex) : undefined;
+
+    // Font name: strip quotes
+    const fontName = cs.fontFamily.split(',')[0].trim().replace(/['"]/g,'') || undefined;
+
+    return {
+      bold:      fwNum >= 700,
+      italics:   cs.fontStyle === 'italic',
+      underline: cs.textDecoration.includes('underline') ? { type: UnderlineType.SINGLE } : undefined,
+      strike:    cs.textDecoration.includes('line-through'),
+      subScript: el.closest('sub') !== null,
+      supScript: el.closest('sup') !== null,
+      color:     fgHex,
+      highlight: hlWord,
+      size:      fsPt ? fsPt * 2 : undefined, // docx.js uses half-points
+      font:      fontName ? { name: fontName } : undefined,
+    };
+  }
+
+  /* ── Build a TextRun from props + text ── */
+  function makeRun(text, props) {
+    if (!text) return null;
+    const opts = { text };
+    if (props.bold)      opts.bold      = true;
+    if (props.italics)   opts.italics   = true;
+    if (props.underline) opts.underline = props.underline;
+    if (props.strike)    opts.strike    = true;
+    if (props.subScript) opts.subScript = true;
+    if (props.supScript) opts.superScript = true;
+    if (props.color)     opts.color     = props.color;
+    if (props.highlight) opts.highlight = props.highlight;
+    if (props.size)      opts.size      = props.size;
+    if (props.font)      opts.font      = props.font;
+    return new TextRun(opts);
+  }
+
+  /* ── Merge inherited props (child wins) ── */
+  function mergeProps(parent, child) {
+    return {
+      bold:      child.bold      || parent.bold,
+      italics:   child.italics   || parent.italics,
+      underline: child.underline || parent.underline,
+      strike:    child.strike    || parent.strike,
+      subScript: child.subScript || parent.subScript,
+      supScript: child.supScript || parent.supScript,
+      color:     child.color     || parent.color,
+      highlight: child.highlight || parent.highlight,
+      size:      child.size      || parent.size,
+      font:      child.font      || parent.font,
+    };
+  }
+
+  /* ── Walk a node tree and emit TextRuns ── */
+  function runsFromNode(node, inheritedProps) {
+    const base = inheritedProps || {};
+    const runs = [];
+    if (node.nodeType === Node.TEXT_NODE) {
+      const t = node.textContent;
+      if (t) {
+        const r = makeRun(t, base);
+        if (r) runs.push(r);
+      }
+      return runs;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return runs;
+
+    const tag = node.tagName.toLowerCase();
+    if (tag === 'br') { runs.push(new TextRun({ text: '', break: 1 })); return runs; }
+    if (tag === 'img') return runs; // skip images for now
+
+    const elProps = runPropsFromEl(node);
+    const merged = mergeProps(base, elProps);
+
+    for (const child of node.childNodes) {
+      runs.push(...runsFromNode(child, merged));
+    }
+    return runs;
+  }
+
+  /* ── Heading level map ── */
+  function toHeadingLevel(tag) {
+    return { h1: HeadingLevel.HEADING_1, h2: HeadingLevel.HEADING_2,
+             h3: HeadingLevel.HEADING_3, h4: HeadingLevel.HEADING_4,
+             h5: HeadingLevel.HEADING_5, h6: HeadingLevel.HEADING_6 }[tag];
+  }
+
+  /* ── Alignment from computed style ── */
+  function alignFromEl(el) {
+    const ta = window.getComputedStyle(el).textAlign;
+    return { center: AlignmentType.CENTER, right: AlignmentType.RIGHT,
+             justify: AlignmentType.JUSTIFIED, justified: AlignmentType.JUSTIFIED }[ta] || AlignmentType.LEFT;
+  }
+
+  /* ── Paragraph spacing from inline styles ── */
+  function spacingFromEl(el) {
+    const mt = ptToTwip(el.style.marginTop);
+    const mb = ptToTwip(el.style.marginBottom);
+    const lhStr = el.style.lineHeight || String(docxLineSpacing);
+    const lhVal = parseFloat(lhStr);
+    // Convert line spacing multiplier → twip (240 = single, 480 = double)
+    const line = lhVal ? Math.round(lhVal * 240) : 276; // 1.15 default
+    return {
+      before: mt || ptToTwip(String(docxParaSpacingBefore)) || 0,
+      after:  mb || ptToTwip(String(docxParaSpacingAfter))  || 160,
+      line,
+      lineRule: LineRuleType ? LineRuleType.AUTO : 'auto',
+    };
+  }
+
+  /* ── Build a paragraph ── */
+  function makeParagraph(el, extraOpts) {
+    const runs = [];
+    for (const child of el.childNodes) runs.push(...runsFromNode(child, {}));
+    if (!runs.length) runs.push(new TextRun(''));
+
+    const tag = el.tagName.toLowerCase();
+    const hl = toHeadingLevel(tag);
+    const spacing = spacingFromEl(el);
+
+    const opts = {
+      children: runs,
+      alignment: alignFromEl(el),
+      spacing,
+      ...extraOpts,
+    };
+    if (hl) opts.heading = hl;
+    return new Paragraph(opts);
+  }
+
+  /* ── Process list (recursive) ── */
+  function processList(listEl, level) {
+    level = level || 0;
+    const isOrdered = listEl.tagName.toLowerCase() === 'ol';
+    for (const li of listEl.children) {
+      if (li.tagName.toLowerCase() !== 'li') continue;
+      const runs = [];
+      for (const child of li.childNodes) {
+        if (child.nodeType === Node.ELEMENT_NODE && ['ul','ol'].includes(child.tagName.toLowerCase())) continue;
+        runs.push(...runsFromNode(child, {}));
+      }
+      const spacing = spacingFromEl(li);
+      paragraphs.push(new Paragraph({
+        children: runs.length ? runs : [new TextRun('')],
+        spacing,
+        ...(isOrdered
+          ? { numbering: { reference: orderedListRef, level } }
+          : { bullet: { level } }
+        ),
+      }));
+      for (const child of li.children) {
+        if (['ul','ol'].includes(child.tagName.toLowerCase())) processList(child, level + 1);
+      }
+    }
+  }
+
+  /* ── Walk editor top-level nodes ── */
+  for (const child of container.childNodes) {
+    if (child.nodeType === Node.TEXT_NODE) {
+      const t = child.textContent.trim();
+      if (t) paragraphs.push(new Paragraph({ children: [new TextRun(t)], spacing: { line: Math.round(docxLineSpacing * 240) } }));
+      continue;
+    }
+    if (child.nodeType !== Node.ELEMENT_NODE) continue;
+    const tag = child.tagName.toLowerCase();
+
+    if (tag === 'ul' || tag === 'ol') { processList(child, 0); continue; }
+
+    if (tag === 'hr') {
+      paragraphs.push(new Paragraph({
+        children: [new TextRun('')],
+        border: { bottom: { style: 'single', size: 6, color: '888888', space: 1 } },
+      }));
+      continue;
+    }
+
+    if (tag === 'blockquote') {
+      const runs = [];
+      for (const c of child.childNodes) runs.push(...runsFromNode(c, { italics: true, color: '555555' }));
+      paragraphs.push(new Paragraph({
+        children: runs.length ? runs : [new TextRun('')],
+        indent: { left: 720 },
+        spacing: spacingFromEl(child),
+        border: { left: { style: 'single', size: 6, color: 'AAAAAA', space: 10 } },
+      }));
+      continue;
+    }
+
+    paragraphs.push(makeParagraph(child));
+  }
+
+  if (!paragraphs.length) paragraphs.push(new Paragraph({ children: [new TextRun('')] }));
+
+  const doc = new Document({
+    numbering: { config: numberingConfig },
+    sections: [{
+      properties: {
+        page: {
+          size: { width: 12240, height: 15840 },
+          margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+        }
+      },
+      children: paragraphs
+    }]
   });
-};
 
-// Re-render with tags on init
-renderRecent();
-renderSaved();
-
-// Session timer update
-setInterval(() => { if (statsPanelOpen) updateStatsPanel(); }, 30000);
-
-
+  return { doc, numbering: numberingConfig };
+}
 
 </script>
 </body>
 </html>
-<script>
-/* ══════════════════════════════════════════
-   POMODORO TIMER
-══════════════════════════════════════════ */
-let pomoState = 'idle';
-let pomoSeconds = 25 * 60;
-let pomoInterval = null;
-const POMO_WORK = 25 * 60;
-const POMO_BREAK = 5 * 60;
-
-function togglePomodoro() {
-  pomoState === 'idle' ? startPomodoro() : stopPomodoro();
-}
-function startPomodoro() {
-  pomoState = 'work';
-  pomoSeconds = POMO_WORK;
-  updatePomoDisplay();
-  document.getElementById('sb-pomodoro-btn').classList.add('pomo-running');
-  pomoInterval = setInterval(() => {
-    pomoSeconds--;
-    updatePomoDisplay();
-    if (pomoSeconds <= 0) {
-      const btn = document.getElementById('sb-pomodoro-btn');
-      if (pomoState === 'work') {
-        pomoState = 'break'; pomoSeconds = POMO_BREAK;
-        btn.classList.remove('pomo-running'); btn.classList.add('pomo-break');
-        toast('🍅 Pomodoro done! Take a 5 min break.');
-      } else {
-        pomoState = 'work'; pomoSeconds = POMO_WORK;
-        btn.classList.remove('pomo-break'); btn.classList.add('pomo-running');
-        toast('☀️ Break over! Back to work.');
-      }
-    }
-  }, 1000);
-}
-function stopPomodoro() {
-  clearInterval(pomoInterval); pomoInterval = null;
-  pomoState = 'idle'; pomoSeconds = POMO_WORK;
-  updatePomoDisplay();
-  document.getElementById('sb-pomodoro-btn').classList.remove('pomo-running','pomo-break');
-  toast('Pomodoro stopped');
-}
-function updatePomoDisplay() {
-  const m = Math.floor(pomoSeconds/60).toString().padStart(2,'0');
-  const s = (pomoSeconds%60).toString().padStart(2,'0');
-  document.getElementById('pomo-display').textContent = m+':'+s;
-}
-
-/* ══════════════════════════════════════════
-   FLASHCARDS
-══════════════════════════════════════════ */
-let flashcards = [], fcIndex = 0, fcFlipped = false;
-
-function openFlashcards() {
-  document.getElementById('flashcard-modal').classList.add('open');
-  flashcards.length ? showStudyWrap() : showGenerateWrap();
-}
-function closeFlashcards() {
-  document.getElementById('flashcard-modal').classList.remove('open');
-}
-function showGenerateWrap() {
-  document.getElementById('fc-generate-wrap').style.display = 'flex';
-  document.getElementById('fc-study-wrap').style.display = 'none';
-}
-function showStudyWrap() {
-  document.getElementById('fc-generate-wrap').style.display = 'none';
-  document.getElementById('fc-study-wrap').style.display = 'flex';
-  renderCard();
-}
-async function generateFlashcards() {
-  let docText = currentMd || document.getElementById('md-body')?.innerText || '';
-  if (!docText.trim() && typeof pdfDoc !== 'undefined' && pdfDoc) {
-    toast('Extracting PDF text…');
-    try {
-      let extracted = '';
-      const pagesToRead = Math.min(pdfTotalPages, 20);
-      for (let i = 1; i <= pagesToRead; i++) {
-        const page = await pdfDoc.getPage(i);
-        const content = await page.getTextContent();
-        extracted += content.items.map(item => item.str).join(' ') + '\n';
-      }
-      docText = extracted.trim();
-    } catch(e) { toast('Could not extract PDF text'); return; }
-  }
-  if (!docText.trim()) { toast('Open a document first'); return; }
-  const countEl = document.getElementById('fc-count');
-  const count = parseInt(countEl.value);
-  const proCode = localStorage.getItem('teqxus-pro-code') || '';
-  const btn = document.getElementById('fc-gen-btn');
-  btn.disabled = true; btn.textContent = '⏳ Generating…';
-  showStudyWrap();
-  document.getElementById('fc-card-text').textContent = `Generating ${count} flashcards…`;
-  try {
-    const res = await fetch('https://teqxus-backend-zszr.onrender.com/teqdocs/flashcards', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: docText, count, proCode })
-    });
-    const data = await res.json();
-    if (res.status === 403) {
-      toast(`🔒 ${data.message}`);
-      countEl.value = '40';
-      showGenerateWrap();
-      return;
-    }
-    if (!res.ok) throw new Error(data.error || 'Failed');
-    flashcards = data.flashcards;
-    fcIndex = 0; fcFlipped = false;
-    showStudyWrap();
-    toast(`✓ ${flashcards.length} flashcards ready${data.isPro ? ' (Pro)' : ''}`);
-  } catch(e) {
-    toast('Could not generate flashcards — check connection');
-    showGenerateWrap();
-  } finally {
-    btn.disabled = false; btn.textContent = '⚡ Generate Flashcards';
-  }
-}
-function renderCard() {
-  if (!flashcards.length) return;
-  fcFlipped = false;
-  document.getElementById('fc-card').classList.remove('flipped');
-  document.getElementById('fc-card-text').textContent = flashcards[fcIndex].q;
-  document.getElementById('fc-counter').textContent = (fcIndex+1)+' / '+flashcards.length;
-  document.getElementById('fc-progress-fill').style.width = (((fcIndex+1)/flashcards.length)*100)+'%';
-}
-function flipCard() {
-  if (!flashcards.length) return;
-  fcFlipped = !fcFlipped;
-  document.getElementById('fc-card').classList.toggle('flipped', fcFlipped);
-  document.getElementById('fc-card-text').textContent = fcFlipped ? flashcards[fcIndex].a : flashcards[fcIndex].q;
-}
-function nextCard() { if (fcIndex < flashcards.length-1) { fcIndex++; renderCard(); } else toast('🎉 End of deck!'); }
-function prevCard() { if (fcIndex > 0) { fcIndex--; renderCard(); } }
-
-document.addEventListener('keydown', e => {
-  if (!document.getElementById('flashcard-modal').classList.contains('open')) return;
-  if (e.key === 'ArrowRight') nextCard();
-  if (e.key === 'ArrowLeft') prevCard();
-  if (e.key === ' ') { e.preventDefault(); flipCard(); }
-});
-
-/* ══════════════════════════════════════════
-   READING HISTORY
-══════════════════════════════════════════ */
-let docOpenTime = null;
-
-function getReadingHistory() { try { return JSON.parse(localStorage.getItem('td-reading-history')||'[]'); } catch { return []; } }
-function saveReadingHistory(h) { localStorage.setItem('td-reading-history', JSON.stringify(h.slice(0,100))); }
-
-function startReadingSession(filename) { docOpenTime = Date.now(); }
-
-function endReadingSession() {
-  if (!docOpenTime || !currentFilename) return;
-  const mins = Math.round((Date.now()-docOpenTime)/60000);
-  if (mins < 1) { docOpenTime = null; return; }
-  let h = getReadingHistory();
-  const ex = h.find(x => x.name === currentFilename);
-  if (ex) { ex.totalMins = (ex.totalMins||0)+mins; ex.sessions = (ex.sessions||1)+1; ex.lastRead = Date.now(); }
-  else h.unshift({ name: currentFilename, totalMins: mins, sessions: 1, lastRead: Date.now() });
-  saveReadingHistory(h);
-  docOpenTime = null;
-}
-
-function openHistoryPanel() { renderHistoryPanel(); document.getElementById('history-panel').classList.add('open'); }
-function closeHistoryPanel() { document.getElementById('history-panel').classList.remove('open'); }
-
-function renderHistoryPanel() {
-  const list = document.getElementById('history-list');
-  const h = getReadingHistory();
-  if (!h.length) { list.innerHTML = '<div class="hp-empty">No reading history yet.<br>Open a document to start tracking.</div>'; return; }
-  const maxMins = Math.max(...h.map(x => x.totalMins));
-  list.innerHTML = '';
-  h.forEach(item => {
-    const d = Math.floor((Date.now()-item.lastRead)/86400000);
-    const ds = d===0?'Today':d===1?'Yesterday':d+'d ago';
-    const pct = Math.round((item.totalMins/maxMins)*100);
-    const el = document.createElement('div'); el.className = 'hp-item';
-    el.innerHTML = `<div class="hp-item-name" title="${item.name}">${item.name}</div><div class="hp-item-meta"><span>⏱ ${item.totalMins}m total</span><span>📖 ${item.sessions} session${item.sessions>1?'s':''}</span><span>${ds}</span></div><div class="hp-item-bar"><div class="hp-item-bar-fill" style="width:${pct}%"></div></div>`;
-    list.appendChild(el);
-  });
-}
-
-// Hook into file loading to track sessions
-const _origLoadPDFHist = loadPDF;
-loadPDF = async function(file) { endReadingSession(); await _origLoadPDFHist(file); startReadingSession(file.name); };
-
-window.addEventListener('beforeunload', endReadingSession);
-</script>
-<script>
-/* ══════════════════════════════════════════
-   PRO ACTIVATION
-══════════════════════════════════════════ */
-const BACKEND = 'https://teqxus-backend-zszr.onrender.com';
-
-function getDeviceId() {
-  let id = localStorage.getItem('td-device-id');
-  if (!id) {
-    id = 'td-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
-    localStorage.setItem('td-device-id', id);
-  }
-  return id;
-}
-
-function openProModal() {
-  document.getElementById('pro-modal').classList.add('open');
-  const proCode = localStorage.getItem('teqxus-pro-code');
-  if (proCode) {
-    document.getElementById('pro-active-state').style.display = 'flex';
-    document.getElementById('pro-inactive-state').style.display = 'none';
-  } else {
-    document.getElementById('pro-active-state').style.display = 'none';
-    document.getElementById('pro-inactive-state').style.display = 'flex';
-    setTimeout(() => document.getElementById('pro-code-input').focus(), 100);
-  }
-  document.getElementById('pro-msg').textContent = '';
-  document.getElementById('pro-msg').className = 'pro-msg';
-}
-
-function closeProModal() {
-  document.getElementById('pro-modal').classList.remove('open');
-}
-
-async function activatePro() {
-  const code = document.getElementById('pro-code-input').value.trim().toUpperCase();
-  if (!code) { showProMsg('Enter your Pro code', 'error'); return; }
-  const btn = document.getElementById('pro-activate-btn');
-  btn.disabled = true; btn.textContent = 'Verifying…';
-  showProMsg('', '');
-  try {
-    const res = await fetch(BACKEND + '/verify-pro', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, identifier: getDeviceId() })
-    });
-    const data = await res.json();
-    if (data.valid) {
-      localStorage.setItem('teqxus-pro-code', code);
-      updateProUI(true);
-      showProMsg('✓ ' + data.message, 'success');
-      // Switch to active state after brief delay
-      setTimeout(() => {
-        document.getElementById('pro-active-state').style.display = 'flex';
-        document.getElementById('pro-inactive-state').style.display = 'none';
-      }, 1200);
-      toast('⚡ TeqXus Pro activated!');
-      updateFlashcardDropdown(true);
-    } else {
-      showProMsg('✕ ' + data.message, 'error');
-    }
-  } catch(e) {
-    showProMsg('Connection failed — check your internet', 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '⚡ Activate Pro';
-  }
-}
-
-function deactivatePro() {
-  if (!confirm('Remove your Pro code from this device?')) return;
-  localStorage.removeItem('teqxus-pro-code');
-  updateProUI(false);
-  updateFlashcardDropdown(false);
-  document.getElementById('pro-active-state').style.display = 'none';
-  document.getElementById('pro-inactive-state').style.display = 'flex';
-  document.getElementById('pro-code-input').value = '';
-  toast('Pro code removed');
-}
-
-function showProMsg(msg, type) {
-  const el = document.getElementById('pro-msg');
-  el.textContent = msg;
-  el.className = 'pro-msg' + (type ? ' ' + type : '');
-}
-
-function updateProUI(isPro) {
-  const btn = document.getElementById('pro-btn');
-  if (isPro) {
-    btn.textContent = '⚡ Pro';
-    btn.classList.add('pro-active');
-    btn.title = 'TeqXus Pro — Active';
-  } else {
-    btn.textContent = '⚡ Pro';
-    btn.classList.remove('pro-active');
-    btn.title = 'Activate TeqXus Pro';
-  }
-}
-
-function updateFlashcardDropdown(isPro) {
-  const sel = document.getElementById('fc-count');
-  if (!sel) return;
-  sel.innerHTML = isPro
-    ? `<option value="20">20 cards</option>
-       <option value="40">40 cards</option>
-       <option value="60">60 cards</option>
-       <option value="80">80 cards</option>
-       <option value="100">100 cards</option>`
-    : `<option value="20">20 cards (Free)</option>
-       <option value="40">40 cards (Free)</option>
-       <option value="60">60 cards — 🔒 Pro</option>
-       <option value="80">80 cards — 🔒 Pro</option>
-       <option value="100">100 cards — 🔒 Pro</option>`;
-}
-
-// Init pro state on load
-(function initProState() {
-  const proCode = localStorage.getItem('teqxus-pro-code');
-  updateProUI(!!proCode);
-  updateFlashcardDropdown(!!proCode);
-})();
-
-// Close pro modal on overlay click
-document.getElementById('pro-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('pro-modal')) closeProModal();
-});
-
-// Escape closes pro modal
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('pro-modal').classList.contains('open')) closeProModal();
-});
-</script>
-<script>
-/* ══════════════════════════════════════════
-   AMBIENT MUSIC — Audio File Player
-══════════════════════════════════════════ */
-let currentAudio = null;
-let musicPlaying = false;
-let currentTrack = '';
-
-// Built-in tracks
-const BUILTIN_TRACKS = [
-  { value: 'rain',       label: '🌧 Rain',        src: 'sounds/rain.mp3' },
-  { value: 'lofi',       label: '🎵 Lo-fi',       src: 'sounds/lofi.mp3' },
-  { value: 'forest',     label: '🌲 Forest',      src: 'sounds/forest.mp3' },
-  { value: 'ocean',      label: '🌊 Ocean',       src: 'sounds/ocean.mp3' },
-  { value: 'white',      label: '⬜ White Noise', src: 'sounds/whitenoise.mp3' },
-];
-
-// User tracks stored in IndexedDB
-const DB_NAME = 'teqdocs-sounds';
-const DB_STORE = 'user-tracks';
-let db = null;
-
-function openSoundsDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = e => e.target.result.createObjectStore(DB_STORE, { keyPath: 'name' });
-    req.onsuccess = e => { db = e.target.result; resolve(db); };
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function getUserTracks() {
-  if (!db) await openSoundsDB();
-  return new Promise(resolve => {
-    const tx = db.transaction(DB_STORE, 'readonly');
-    const req = tx.objectStore(DB_STORE).getAll();
-    req.onsuccess = () => resolve(req.result || []);
-    req.onerror = () => resolve([]);
-  });
-}
-
-async function saveUserTrack(name, blob) {
-  if (!db) await openSoundsDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(DB_STORE, 'readwrite');
-    tx.objectStore(DB_STORE).put({ name, blob });
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-async function deleteUserTrack(name) {
-  if (!db) await openSoundsDB();
-  return new Promise((resolve) => {
-    const tx = db.transaction(DB_STORE, 'readwrite');
-    tx.objectStore(DB_STORE).delete(name);
-    tx.oncomplete = resolve;
-  });
-}
-
-async function buildTrackDropdown() {
-  const sel = document.getElementById('music-track-sel');
-  // Clear existing user tracks (keep first option + builtins)
-  const opts = Array.from(sel.options);
-  opts.forEach(o => { if (o.dataset.user) o.remove(); });
-
-  const userTracks = await getUserTracks();
-  if (userTracks.length > 0) {
-    const grp = document.createElement('optgroup');
-    grp.label = 'My Sounds';
-    userTracks.forEach(t => {
-      const o = document.createElement('option');
-      o.value = 'user:' + t.name;
-      o.textContent = '🎧 ' + t.name;
-      o.dataset.user = '1';
-      grp.appendChild(o);
-    });
-    sel.appendChild(grp);
-  }
-}
-
-async function handleUserTrackUpload(file) {
-  if (!file || !file.type.startsWith('audio/')) { toast('Please select an audio file'); return; }
-  const name = file.name.replace(/\.[^.]+$/, ''); // strip extension
-  const blob = file;
-  await saveUserTrack(name, blob);
-  await buildTrackDropdown();
-  // Auto-select and play
-  const sel = document.getElementById('music-track-sel');
-  sel.value = 'user:' + name;
-  changeTrack('user:' + name);
-  toast('✓ Track added: ' + name);
-}
-
-function stopMusic() {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
-    currentAudio = null;
-  }
-  musicPlaying = false;
-  currentTrack = '';
-  const playBtn = document.getElementById('music-play-btn');
-  const stopBtn = document.getElementById('music-stop-btn');
-  if (playBtn) { playBtn.textContent = '▶'; playBtn.classList.remove('playing'); }
-  if (stopBtn) stopBtn.style.display = 'none';
-  document.getElementById('music-track-sel').value = '';
-}
-
-async function playTrack(trackValue) {
-  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-
-  let src = null;
-  if (trackValue.startsWith('user:')) {
-    const name = trackValue.slice(5);
-    const userTracks = await getUserTracks();
-    const track = userTracks.find(t => t.name === name);
-    if (!track) { toast('Track not found'); return; }
-    src = URL.createObjectURL(track.blob);
-  } else {
-    const builtin = BUILTIN_TRACKS.find(t => t.value === trackValue);
-    if (!builtin) return;
-    src = builtin.src;
-  }
-
-  const audio = new Audio(src);
-  audio.loop = true;
-  audio.volume = parseFloat(document.getElementById('music-vol').value);
-  audio.play().catch(e => toast('Could not play audio: ' + e.message));
-  currentAudio = audio;
-  musicPlaying = true;
-  currentTrack = trackValue;
-
-  const playBtn = document.getElementById('music-play-btn');
-  const stopBtn = document.getElementById('music-stop-btn');
-  if (playBtn) { playBtn.textContent = '⏸'; playBtn.classList.add('playing'); }
-  if (stopBtn) stopBtn.style.display = 'inline-block';
-}
-
-function toggleMusic() {
-  const sel = document.getElementById('music-track-sel');
-  if (!sel.value) { toast('Pick a track first'); return; }
-  if (musicPlaying) {
-    if (currentAudio) { currentAudio.pause(); }
-    musicPlaying = false;
-    const playBtn = document.getElementById('music-play-btn');
-    if (playBtn) { playBtn.textContent = '▶'; playBtn.classList.remove('playing'); }
-  } else {
-    if (currentAudio) {
-      currentAudio.play();
-      musicPlaying = true;
-      const playBtn = document.getElementById('music-play-btn');
-      if (playBtn) { playBtn.textContent = '⏸'; playBtn.classList.add('playing'); }
-    } else {
-      playTrack(sel.value);
-    }
-  }
-}
-
-function changeTrack(trackValue) {
-  if (!trackValue) return;
-  playTrack(trackValue);
-}
-
-function setMusicVolume(val) {
-  if (currentAudio) currentAudio.volume = parseFloat(val);
-}
-
-// Init dropdown with user tracks on load
-openSoundsDB().then(() => buildTrackDropdown()).catch(() => {});
-
-/* ══════════════════════════════════════════
-   TEXT TO SPEECH — Web Speech API
-/* ══════════════════════════════════════════
-   TEXT TO SPEECH — Web Speech API
-══════════════════════════════════════════ */
-let ttsUtterance = null;
-let ttsChunks = [];
-let ttsChunkIndex = 0;
-let ttsPaused = false;
-let ttsActive = false;
-
-function getDocParagraphs() {
-  const body = document.getElementById('md-body');
-  if (!body) return [];
-  return Array.from(body.querySelectorAll('p,h1,h2,h3,h4,li,blockquote,td'))
-    .filter(el => el.textContent.trim().length > 0);
-}
-
-function getStartParagraph() {
-  // Priority 1: selected text
-  const sel = window.getSelection();
-  if (sel && sel.toString().trim().length > 10) return null; // handled separately
-
-  // Priority 2: nearest paragraph to scroll position
-  const content = document.getElementById('content');
-  const scrollTop = content ? content.scrollTop : 0;
-  const paras = getDocParagraphs();
-  if (!paras.length) return 0;
-
-  let closest = 0;
-  let closestDist = Infinity;
-  paras.forEach((p, i) => {
-    const rect = p.getBoundingClientRect();
-    const dist = Math.abs(rect.top - 100);
-    if (dist < closestDist) { closestDist = dist; closest = i; }
-  });
-  return closest;
-}
-
-function toggleTTS() {
-  if (ttsActive) { stopTTS(); return; }
-  startTTS();
-}
-
-function startTTS() {
-  if (!('speechSynthesis' in window)) { toast('Text-to-speech not supported in this browser'); return; }
-  window.speechSynthesis.cancel();
-
-  const sel = window.getSelection();
-  const selectedText = sel ? sel.toString().trim() : '';
-
-  let chunks = [];
-  if (selectedText.length > 10) {
-    // Read selected text only
-    chunks = [selectedText];
-  } else {
-    // Read from scroll position or beginning
-    const paras = getDocParagraphs();
-    if (!paras.length) { toast('No text to read'); return; }
-    const startIdx = getStartParagraph();
-    chunks = paras.slice(startIdx).map(p => p.textContent.trim()).filter(t => t.length > 0);
-  }
-
-  if (!chunks.length) { toast('Nothing to read'); return; }
-
-  ttsChunks = chunks;
-  ttsChunkIndex = 0;
-  ttsActive = true;
-  ttsPaused = false;
-
-  document.getElementById('tts-btn').classList.add('active');
-  document.getElementById('tts-btn').textContent = '🔊 Stop';
-  document.getElementById('sb-tts-controls').style.display = 'flex';
-
-  speakChunk();
-}
-
-function speakChunk() {
-  if (!ttsActive || ttsChunkIndex >= ttsChunks.length) {
-    if (ttsActive) { toast('✓ Done reading'); stopTTS(); }
-    return;
-  }
-  const text = ttsChunks[ttsChunkIndex];
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.rate = 0.95;
-  utt.pitch = 1;
-  utt.volume = 1;
-
-  // Prefer a natural voice
-  const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(v =>
-    /natural|enhanced|premium|neural/i.test(v.name) ||
-    /google|microsoft/i.test(v.name)
-  ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
-  if (preferred) utt.voice = preferred;
-
-  utt.onend = () => {
-    if (!ttsActive || ttsPaused) return;
-    ttsChunkIndex++;
-    updateTTSProgress();
-    speakChunk();
-  };
-  utt.onerror = (e) => { if (e.error !== 'canceled') { ttsChunkIndex++; speakChunk(); } };
-
-  ttsUtterance = utt;
-  window.speechSynthesis.speak(utt);
-  updateTTSProgress();
-}
-
-function pauseTTS() {
-  if (!ttsActive) return;
-  if (ttsPaused) {
-    ttsPaused = false;
-    window.speechSynthesis.resume();
-    document.getElementById('tts-pause-btn').textContent = '⏸';
-  } else {
-    ttsPaused = true;
-    window.speechSynthesis.pause();
-    document.getElementById('tts-pause-btn').textContent = '▶';
-  }
-}
-
-function stopTTS() {
-  ttsActive = false;
-  ttsPaused = false;
-  window.speechSynthesis.cancel();
-  ttsChunks = []; ttsChunkIndex = 0;
-  const btn = document.getElementById('tts-btn');
-  if (btn) { btn.classList.remove('active'); btn.textContent = '🔊 Listen'; }
-  document.getElementById('sb-tts-controls').style.display = 'none';
-  document.getElementById('tts-progress').textContent = '';
-}
-
-function updateTTSProgress() {
-  const total = ttsChunks.length;
-  const current = ttsChunkIndex + 1;
-  document.getElementById('tts-progress').textContent = `${current} / ${total}`;
-}
-
-// Stop TTS when switching documents
-const _origRenderDocTTS = typeof renderDoc === 'function' ? renderDoc : null;
-if (_origRenderDocTTS) {
-  renderDoc = function() { stopTTS(); _origRenderDocTTS(); };
-}
-
-// Voices may load async
-window.speechSynthesis.onvoiceschanged = () => {};
-</script>
-<script>
-/* ══════════════════════════════════════════
-   SOUNDS PANEL
-══════════════════════════════════════════ */
-function openSoundsPanel() {
-  renderSoundsList();
-  document.getElementById('sounds-panel').classList.add('open');
-}
-
-function closeSoundsPanel() {
-  document.getElementById('sounds-panel').classList.remove('open');
-}
-
-async function renderSoundsList() {
-  const list = document.getElementById('sp-track-list');
-  let userTracks = [];
-  try {
-    if (typeof getUserTracks === 'function') userTracks = await getUserTracks();
-  } catch(e) {}
-
-  if (!userTracks.length) {
-    list.innerHTML = '<div class="sp-empty">No custom tracks yet.<br>Add your own MP3 below.</div>';
-    return;
-  }
-  list.innerHTML = '';
-  userTracks.forEach(t => {
-    const el = document.createElement('div');
-    el.className = 'sp-track-item';
-    el.innerHTML = `<span>🎧 ${t.name}</span>
-      <button class="sp-track-del" title="Remove track" onclick="removeUserTrack('${t.name}')">✕</button>`;
-    el.onclick = (e) => {
-      if (e.target.classList.contains('sp-track-del')) return;
-      const sel = document.getElementById('music-track-sel');
-      sel.value = 'user:' + t.name;
-      changeTrack('user:' + t.name);
-      closeSoundsPanel();
-    };
-    list.appendChild(el);
-  });
-}
-
-async function removeUserTrack(name) {
-  if (typeof deleteUserTrack === 'function') await deleteUserTrack(name);
-  if (currentTrack === 'user:' + name) stopMusic();
-  await buildTrackDropdown();
-  renderSoundsList();
-  toast('Track removed');
-}
-
-// Close sounds panel when clicking outside
-document.addEventListener('click', e => {
-  const panel = document.getElementById('sounds-panel');
-  if (panel.classList.contains('open') &&
-      !panel.contains(e.target) &&
-      !e.target.closest('.sb-music-player')) {
-    closeSoundsPanel();
-  }
-});
-</script>
