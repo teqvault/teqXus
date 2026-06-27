@@ -14,7 +14,7 @@
 <script src="pdf.min.js"></script>
 <script src="pdf-lib.min.js"></script>
 <script src="mammoth.min.js"></script>
-<script src="docx.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 
 <style>
 :root {
