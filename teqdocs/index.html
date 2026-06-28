@@ -3716,13 +3716,19 @@ async function saveDocxFile() {
     const container = document.getElementById('docx-content');
     const { doc, numbering } = domToDocxResult(container, docxLib);
 
-    const buffer = await docxLib.Packer.toBuffer(doc);
-    const arr = Array.from(new Uint8Array(buffer));
     const filename = (document.getElementById('docx-editor-title').value.trim() || 'document') + '.docx';
+    const mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+    // toBase64String works in all browser environments (no Node.js Buffer needed)
+    const b64 = await docxLib.Packer.toBase64String(doc);
+    const raw = atob(b64);
+    const bytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    const docxBlob = new Blob([bytes], { type: mimeType });
 
     if (window.electronAPI) {
       // ── Electron: native OS save dialog ──
-      const result = await window.electronAPI.showSaveDialog(filename, JSON.stringify(arr));
+      const result = await window.electronAPI.showSaveDialog(filename, JSON.stringify(Array.from(bytes)));
       if (result && result.success) {
         statusEl.textContent = '\u2713 Saved';
         toast('Saved: ' + result.filePath);
@@ -3733,38 +3739,35 @@ async function saveDocxFile() {
       // ── Web: File System Access API (Chrome/Edge) ──
       try {
         let handle = docxFileHandle;
-        // If we don't have a handle yet, or user wants Save As, open picker
         if (!handle) {
           handle = await window.showSaveFilePicker({
             suggestedName: filename,
-            types: [{ description: 'Word Document', accept: { 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] } }],
+            types: [{ description: 'Word Document', accept: { [mimeType]: ['.docx'] } }],
           });
-          docxFileHandle = handle; // cache for future Ctrl+S saves
+          docxFileHandle = handle;
         }
         const writable = await handle.createWritable();
-        await writable.write(new Uint8Array(arr));
+        await writable.write(docxBlob);
         await writable.close();
         statusEl.textContent = '\u2713 Saved';
         toast('Saved: ' + handle.name);
-        // Update title bar to reflect saved filename
         document.getElementById('docx-editor-title').value = handle.name.replace(/\.docx$/i, '');
       } catch(fsErr) {
         if (fsErr.name === 'AbortError') {
           statusEl.textContent = '\u25CF Unsaved';
         } else {
-          throw fsErr; // rethrow to outer catch
+          throw fsErr;
         }
       }
     } else {
       // ── Fallback: browser download (Firefox / Safari) ──
-      const blob = new Blob([new Uint8Array(arr)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(docxBlob);
       const a = document.createElement('a');
       a.href = url; a.download = filename;
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
       statusEl.textContent = '\u2713 Downloaded';
-      toast('Downloaded \u2014 open in TeqDocs to edit again');
+      toast('Downloaded \u2014 check your Downloads folder');
     }
   } catch(e) {
     console.error('saveDocxFile error:', e);
