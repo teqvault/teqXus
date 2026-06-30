@@ -327,6 +327,129 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 #docx-content a { color: var(--accent); }
 #docx-content img { max-width: 100%; border-radius: 4px; }
 .dark #docx-editor-screen { background: var(--parchment); }
+/* ══════════════════════════════════════════
+   IMAGE HANDLING
+══════════════════════════════════════════ */
+/* Image panel (shows when image selected) */
+#img-toolbar {
+  display: none;
+  position: fixed;
+  z-index: 300;
+  background: var(--parchment);
+  border: 1px solid var(--parchment3);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  padding: 8px 12px;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  max-width: 620px;
+}
+#img-toolbar.visible { display: flex; }
+#img-toolbar label { font-size: 0.75rem; color: var(--ink2); }
+#img-toolbar input[type=number] { width: 58px; padding: 3px 5px; border: 1px solid var(--parchment3); border-radius: 4px; background: var(--parchment2); color: var(--ink); font-size: 0.82rem; }
+#img-toolbar input[type=color] { width: 28px; height: 24px; border: none; padding: 0; cursor: pointer; border-radius: 3px; }
+#img-toolbar input[type=range] { width: 70px; }
+.img-tb-btn { padding: 4px 9px; border-radius: 4px; border: 1px solid var(--parchment3); background: var(--parchment2); color: var(--ink); cursor: pointer; font-size: 0.78rem; white-space: nowrap; }
+.img-tb-btn:hover { background: var(--parchment3); }
+.img-tb-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.img-tb-sep { width: 1px; height: 20px; background: var(--parchment3); margin: 0 2px; }
+.img-lock-btn { font-size: 0.9rem; }
+
+/* Wrapper for each inserted image */
+.docx-img-wrap {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  line-height: 0;
+  vertical-align: bottom;
+}
+.docx-img-wrap.img-float-left  { float: left;  margin: 4px 12px 4px 0; }
+.docx-img-wrap.img-float-right { float: right; margin: 4px 0 4px 12px; }
+.docx-img-wrap.img-center { display: block; margin: 8px auto; }
+.docx-img-wrap img {
+  display: block;
+  max-width: 100%;
+  transition: box-shadow 0.15s;
+}
+.docx-img-wrap.selected img { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Resize handles */
+.img-handle {
+  display: none;
+  position: absolute;
+  width: 10px; height: 10px;
+  background: var(--accent);
+  border: 2px solid #fff;
+  border-radius: 2px;
+  z-index: 10;
+}
+.docx-img-wrap.selected .img-handle { display: block; }
+.img-handle.nw { top:-5px; left:-5px; cursor: nw-resize; }
+.img-handle.ne { top:-5px; right:-5px; cursor: ne-resize; }
+.img-handle.sw { bottom:-5px; left:-5px; cursor: sw-resize; }
+.img-handle.se { bottom:-5px; right:-5px; cursor: se-resize; }
+.img-handle.n  { top:-5px; left:50%; transform:translateX(-50%); cursor: n-resize; }
+.img-handle.s  { bottom:-5px; left:50%; transform:translateX(-50%); cursor: s-resize; }
+.img-handle.w  { left:-5px; top:50%; transform:translateY(-50%); cursor: w-resize; }
+.img-handle.e  { right:-5px; top:50%; transform:translateY(-50%); cursor: e-resize; }
+
+/* Rotate handle */
+.img-rotate-handle {
+  display: none;
+  position: absolute;
+  top: -28px; left: 50%;
+  transform: translateX(-50%);
+  width: 18px; height: 18px;
+  background: var(--accent);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: grab;
+  z-index: 10;
+  font-size: 11px;
+  line-height: 14px;
+  text-align: center;
+  color: #fff;
+}
+.docx-img-wrap.selected .img-rotate-handle { display: block; }
+
+/* Crop overlay */
+.docx-img-wrap.cropping { cursor: crosshair; }
+.crop-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.crop-mask {
+  position: absolute;
+  background: rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+/* ── Focus Mode ── */
+#docx-editor-screen.focus-mode .docx-toolbar,
+#docx-editor-screen.focus-mode .docx-editor-header { display: none !important; }
+#docx-editor-screen.focus-mode .docx-editor-body { background: #1a1a1a; padding: 60px 0; }
+#docx-editor-screen.focus-mode #docx-content { background: #fff; max-width: 760px; margin: 0 auto; padding: 60px 72px; box-shadow: 0 4px 40px rgba(0,0,0,0.5); min-height: 80vh; }
+#docx-editor-screen.focus-mode .docx-status-bar { background: #111; color: #666; }
+#docx-focus-exit { display: none; position: fixed; top: 18px; right: 24px; z-index: 999; background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer; backdrop-filter: blur(4px); }
+#docx-editor-screen.focus-mode #docx-focus-exit { display: block; }
+
+/* ── Find & Replace ── */
+#docx-fnr-bar { display: none; position: absolute; top: 0; right: 0; z-index: 200; background: var(--parchment); border: 1px solid var(--parchment3); border-radius: 0 0 0 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 10px 14px; gap: 8px; flex-direction: column; min-width: 320px; }
+#docx-fnr-bar.open { display: flex; }
+.fnr-row { display: flex; align-items: center; gap: 6px; }
+.fnr-input { flex: 1; padding: 5px 8px; border: 1px solid var(--parchment3); border-radius: 4px; font-size: 0.9rem; background: var(--parchment2); color: var(--ink); }
+.fnr-btn { padding: 5px 10px; border-radius: 4px; border: 1px solid var(--parchment3); background: var(--parchment2); color: var(--ink); cursor: pointer; font-size: 0.82rem; white-space: nowrap; }
+.fnr-btn:hover { background: var(--parchment3); }
+.fnr-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.fnr-close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--ink2); padding: 2px 6px; }
+.fnr-info { font-size: 0.78rem; color: var(--ink2); min-width: 60px; }
+
+/* ── T&Q Numbering ── */
+.docx-tb-btn.tq-active { background: var(--accent); color: #fff !important; }
+
 .docx-status-bar { display: flex; align-items: center; gap: 16px; padding: 5px 14px; background: var(--parchment2); border-top: 1px solid var(--parchment3); font-size: 0.72rem; color: var(--ink3); font-family: var(--font-ui); flex-shrink: 0; }
 /* Pilcrow / formatting marks */
 #docx-content.show-pilcrow p::after,
@@ -1062,8 +1185,25 @@ mark.current { background: var(--gold); color: #000; }
         <div class="docx-editor-header">
           <button class="docx-back-btn" onclick="docxEditorBack()">← Back</button>
           <input class="docx-editor-title" id="docx-editor-title" type="text" placeholder="Untitled document" autocomplete="off">
+          <button class="docx-tb-btn" onclick="toggleDocxFocus()" title="Focus mode (F11)" style="padding:4px 10px;font-size:0.82rem;">⛶ Focus</button>
+          <button class="docx-tb-btn" onclick="toggleFnR()" title="Find &amp; Replace (Ctrl+H)" style="padding:4px 10px;font-size:0.82rem;">🔍 Find</button>
           <button class="docx-save-btn" onclick="saveDocxFile()">💾 Save</button>
           <button class="docx-saveas-btn" onclick="saveDocxFileAs()" title="Save a copy with a new name">Save As…</button>
+        </div>
+        <!-- Find & Replace bar -->
+        <div id="docx-fnr-bar">
+          <div class="fnr-row">
+            <input class="fnr-input" id="fnr-find" placeholder="Find…" oninput="fnrHighlight()" onkeydown="if(event.key==='Enter')fnrNext()">
+            <button class="fnr-btn" onclick="fnrPrev()">↑</button>
+            <button class="fnr-btn" onclick="fnrNext()">↓</button>
+            <span class="fnr-info" id="fnr-count"></span>
+            <button class="fnr-close" onclick="closeFnR()" title="Close">✕</button>
+          </div>
+          <div class="fnr-row">
+            <input class="fnr-input" id="fnr-replace" placeholder="Replace with…" onkeydown="if(event.key==='Enter')fnrReplaceOne()">
+            <button class="fnr-btn" onclick="fnrReplaceOne()">Replace</button>
+            <button class="fnr-btn primary" onclick="fnrReplaceAll()">All</button>
+          </div>
         </div>
         <div class="docx-toolbar">
           <!-- Row 1: Heading + Font + Size + Size bumps -->
@@ -1127,6 +1267,8 @@ mark.current { background: var(--gold); color: #000; }
               <input type="color" id="docx-hilite-input" value="#FFFF00" oninput="applyHighlight(this.value)" title="Highlight color">
             </button>
             <button class="docx-tb-btn" onclick="execDoc('removeFormat')" title="Clear formatting">✕</button>
+            <div class="docx-tb-sep"></div>
+            <button class="docx-tb-btn" onclick="imgInsertFromFile()" title="Insert image">🖼 Image</button>
           </div>
           <!-- Row 2: Lists + Align + Indent + Spacing + Line spacing -->
           <div class="docx-tb-row">
@@ -1159,10 +1301,51 @@ mark.current { background: var(--gold); color: #000; }
             <button class="docx-tb-btn" onclick="docxInsertLink()"              title="Insert hyperlink">🔗</button>
             <button class="docx-tb-btn" onclick="execDoc('insertHorizontalRule')" title="Horizontal rule">—</button>
             <div class="docx-tb-sep"></div>
+            <!-- T&Q Hierarchical numbering -->
+            <div class="docx-tb-sep"></div>
+            <button class="docx-tb-btn" id="tb-tq" onclick="insertTQNumber()" title="T&Q paragraph number (Tab=indent, Shift+Tab=outdent)">¶1.</button>
             <!-- Pilcrow toggle -->
+            <div class="docx-tb-sep"></div>
             <button class="docx-tb-btn" id="tb-pilcrow" onclick="togglePilcrow()" title="Show/hide formatting marks">¶</button>
           </div>
         </div>
+        <!-- Image toolbar (contextual, appears when image selected) -->
+        <div id="img-toolbar">
+          <!-- Size -->
+          <label>W</label><input type="number" id="img-w" min="10" max="2000" oninput="imgSetSize('w',this.value)" title="Width (px)">
+          <label>H</label><input type="number" id="img-h" min="10" max="2000" oninput="imgSetSize('h',this.value)" title="Height (px)">
+          <button class="img-tb-btn img-lock-btn" id="img-lock-btn" onclick="imgToggleLock()" title="Lock/unlock aspect ratio">🔒</button>
+          <div class="img-tb-sep"></div>
+          <!-- Alignment / float -->
+          <button class="img-tb-btn" onclick="imgAlign('left')"   title="Float left">⬱L</button>
+          <button class="img-tb-btn" onclick="imgAlign('center')" title="Center">⬱C</button>
+          <button class="img-tb-btn" onclick="imgAlign('right')"  title="Float right">⬱R</button>
+          <button class="img-tb-btn" onclick="imgAlign('inline')" title="Inline">⬱I</button>
+          <div class="img-tb-sep"></div>
+          <!-- Border -->
+          <label>Border</label>
+          <input type="number" id="img-border-w" min="0" max="20" value="0" style="width:40px" oninput="imgSetBorder()" title="Border thickness (px)">
+          <input type="color" id="img-border-c" value="#000000" oninput="imgSetBorder()" title="Border color">
+          <div class="img-tb-sep"></div>
+          <!-- Rounded corners -->
+          <label>Radius</label>
+          <input type="number" id="img-radius" min="0" max="200" value="0" style="width:44px" oninput="imgSetRadius(this.value)" title="Corner radius (px)">
+          <div class="img-tb-sep"></div>
+          <!-- Opacity -->
+          <label>Opacity</label>
+          <input type="range" id="img-opacity" min="10" max="100" value="100" oninput="imgSetOpacity(this.value)" title="Opacity">
+          <div class="img-tb-sep"></div>
+          <!-- Shadow -->
+          <button class="img-tb-btn" id="img-shadow-btn" onclick="imgToggleShadow()" title="Drop shadow">Shadow</button>
+          <div class="img-tb-sep"></div>
+          <!-- Crop -->
+          <button class="img-tb-btn" id="img-crop-btn" onclick="imgStartCrop()" title="Crop image">✂ Crop</button>
+          <div class="img-tb-sep"></div>
+          <!-- Delete -->
+          <button class="img-tb-btn" onclick="imgDelete()" title="Delete image" style="color:#c0392b">🗑</button>
+        </div>
+
+        <button id="docx-focus-exit" onclick="toggleDocxFocus()" title="Exit focus mode">✕ Exit Focus (Esc)</button>
         <div class="docx-editor-body">
           <div id="docx-content" contenteditable="true" spellcheck="true"></div>
         </div>
@@ -1374,7 +1557,15 @@ async function loadDocx(file) {
         "b => strong",
         "i => em",
         "u => u",
-      ]
+      ],
+      convertImage: mammoth.images.imgElement(function(image) {
+        return image.read('base64').then(function(base64) {
+          return {
+            src: 'data:' + image.contentType + ';base64,' + base64,
+            'data-docx-image': 'true'
+          };
+        });
+      })
     });
     currentFilename=file.name;
     currentSavedId=null;
@@ -3530,6 +3721,36 @@ function openDocxEditor(fileHandle) {
   document.getElementById('docx-editor-title').value = currentFilename.replace(/\.docx$/i, '') || 'Untitled';
   const el = document.getElementById('docx-content');
   el.innerHTML = currentDocxHtml || '<p>Start typing\u2026</p>';
+  // Wrap any images that came from the docx file
+  el.querySelectorAll('img:not(.docx-img-wrap img)').forEach(img => {
+    if (img.closest('.docx-img-wrap')) return;
+    const wrap = document.createElement('span');
+    wrap.className = 'docx-img-wrap';
+    wrap.contentEditable = 'false';
+    wrap.setAttribute('data-img-name', img.alt || 'image');
+    ['nw','n','ne','w','e','sw','s','se'].forEach(pos => {
+      const h = document.createElement('div');
+      h.className = 'img-handle ' + pos;
+      h.setAttribute('data-handle', pos);
+      wrap.appendChild(h);
+    });
+    const rh = document.createElement('div');
+    rh.className = 'img-rotate-handle';
+    rh.title = 'Rotate';
+    rh.textContent = '\u21bb';
+    wrap.appendChild(rh);
+    img.onload = () => {
+      const maxW = 500;
+      const ratio = img.naturalWidth / (img.naturalHeight || 1);
+      const w = Math.min(img.naturalWidth, maxW);
+      img.style.width = w + 'px';
+      img.style.height = Math.round(w / ratio) + 'px';
+    };
+    img.draggable = false;
+    img.parentNode.insertBefore(wrap, img);
+    wrap.appendChild(img);
+    if (typeof imgAttachEvents === 'function') imgAttachEvents(wrap);
+  });
   el.focus();
   el.removeEventListener('input', onDocxInput);
   el.addEventListener('input', onDocxInput);
@@ -3926,7 +4147,19 @@ function domToDocxResult(container, docxLib) {
 
     const tag = node.tagName.toLowerCase();
     if (tag === 'br') { runs.push(new TextRun({ text: '', break: 1 })); return runs; }
-    if (tag === 'img') return runs; // skip images for now
+    if (tag === 'img') {
+      if (node.src && node.src.startsWith('data:') && typeof docxLib !== 'undefined' && docxLib.ImageRun) {
+        const w = parseInt(node.style.width) || node.naturalWidth || 100;
+        const h = parseInt(node.style.height) || node.naturalHeight || 100;
+        const base64 = node.src.split(',')[1];
+        const mimeMatch = node.src.match(/data:(image\/[\w+.-]+);/);
+        const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+        const typeMap = {'image/png':'png','image/jpeg':'jpg','image/jpg':'jpg','image/gif':'gif','image/bmp':'bmp','image/webp':'png'};
+        const ext = typeMap[mime] || 'png';
+        try { runs.push(new docxLib.ImageRun({ data: base64, transformation: { width: Math.round(w*0.75), height: Math.round(h*0.75) }, type: ext })); } catch(e) {}
+      }
+      return runs;
+    }
 
     const elProps = runPropsFromEl(node);
     const merged = mergeProps(base, elProps);
@@ -4045,6 +4278,44 @@ function domToDocxResult(container, docxLib) {
       continue;
     }
 
+    // ── Inline image wrap ──
+    if (child.classList && child.classList.contains('docx-img-wrap')) {
+      const imgEl = child.querySelector('img');
+      if (imgEl && imgEl.src && imgEl.src.startsWith('data:')) {
+        const w = parseInt(imgEl.style.width) || imgEl.naturalWidth || 200;
+        const h = parseInt(imgEl.style.height) || imgEl.naturalHeight || 200;
+        const base64 = imgEl.src.split(',')[1];
+        const mimeMatch = imgEl.src.match(/data:(image\/[\w+.-]+);/);
+        const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+        const typeMap = {'image/png':'png','image/jpeg':'jpg','image/jpg':'jpg','image/gif':'gif','image/bmp':'bmp','image/webp':'png'};
+        const ext = typeMap[mime] || 'png';
+        let alignment = AlignmentType.LEFT;
+        if (child.classList.contains('img-center')) alignment = AlignmentType.CENTER;
+        if (child.classList.contains('img-float-right')) alignment = AlignmentType.RIGHT;
+        try {
+          const run = new docxLib.ImageRun({ data: base64, transformation: { width: Math.round(w*0.75), height: Math.round(h*0.75) }, type: ext });
+          paragraphs.push(new Paragraph({ alignment, children: [run] }));
+        } catch(e) { console.warn('Image embed failed:', e); }
+      }
+      continue;
+    }
+    if (tag === 'img') {
+      const imgEl = child;
+      if (imgEl.src && imgEl.src.startsWith('data:')) {
+        const w = parseInt(imgEl.style.width) || imgEl.naturalWidth || 200;
+        const h = parseInt(imgEl.style.height) || imgEl.naturalHeight || 200;
+        const base64 = imgEl.src.split(',')[1];
+        const mimeMatch = imgEl.src.match(/data:(image\/[\w+.-]+);/);
+        const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+        const typeMap = {'image/png':'png','image/jpeg':'jpg','image/jpg':'jpg','image/gif':'gif','image/bmp':'bmp','image/webp':'png'};
+        const ext = typeMap[mime] || 'png';
+        try {
+          const run = new docxLib.ImageRun({ data: base64, transformation: { width: Math.round(w*0.75), height: Math.round(h*0.75) }, type: ext });
+          paragraphs.push(new Paragraph({ alignment: AlignmentType.LEFT, children: [run] }));
+        } catch(e) { console.warn('Image embed failed:', e); }
+      }
+      continue;
+    }
     paragraphs.push(makeParagraph(child));
   }
 
@@ -4063,8 +4334,225 @@ function domToDocxResult(container, docxLib) {
     }]
   });
 
+  // ── Serialize images ──
+  const imgItems = typeof imgSerializeForDocx === 'function' ? imgSerializeForDocx(container, docxLib) : [];
+  imgItems.forEach(({ wrap, run, alignment }) => {
+    paragraphs.push(new Paragraph({ alignment, children: [run] }));
+    wrap.remove();
+  });
   return { doc, numbering: numberingConfig };
 }
+
+
+/* ══════════════════════════════════════════
+   FOCUS MODE
+══════════════════════════════════════════ */
+function toggleDocxFocus() {
+  const screen = document.getElementById('docx-editor-screen');
+  screen.classList.toggle('focus-mode');
+  document.getElementById('docx-content').focus();
+}
+document.addEventListener('keydown', e => {
+  const screen = document.getElementById('docx-editor-screen');
+  if (!screen || !screen.classList.contains('visible')) return;
+  if (e.key === 'Escape' && screen.classList.contains('focus-mode')) {
+    screen.classList.remove('focus-mode');
+  }
+  if (e.key === 'F11' && screen.classList.contains('visible')) {
+    e.preventDefault();
+    toggleDocxFocus();
+  }
+});
+
+/* ══════════════════════════════════════════
+   FIND & REPLACE
+══════════════════════════════════════════ */
+let fnrMatches = [], fnrIndex = 0;
+
+function toggleFnR() {
+  const bar = document.getElementById('docx-fnr-bar');
+  bar.classList.toggle('open');
+  if (bar.classList.contains('open')) {
+    document.getElementById('fnr-find').focus();
+  } else {
+    fnrClearHighlights();
+  }
+}
+function closeFnR() {
+  document.getElementById('docx-fnr-bar').classList.remove('open');
+  fnrClearHighlights();
+}
+function fnrClearHighlights() {
+  const content = document.getElementById('docx-content');
+  content.querySelectorAll('mark.fnr-hl').forEach(m => {
+    const parent = m.parentNode;
+    parent.replaceChild(document.createTextNode(m.textContent), m);
+    parent.normalize();
+  });
+  fnrMatches = []; fnrIndex = 0;
+  document.getElementById('fnr-count').textContent = '';
+}
+function fnrHighlight() {
+  fnrClearHighlights();
+  const term = document.getElementById('fnr-find').value;
+  if (!term) return;
+  const content = document.getElementById('docx-content');
+  const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  const re = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  nodes.forEach(node => {
+    const text = node.textContent;
+    if (!re.test(text)) return;
+    re.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let last = 0, m;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+      const mark = document.createElement('mark');
+      mark.className = 'fnr-hl';
+      mark.style.cssText = 'background:#ffe066;color:#000;border-radius:2px;';
+      mark.textContent = m[0];
+      frag.appendChild(mark);
+      last = re.lastIndex;
+    }
+    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+  fnrMatches = Array.from(document.getElementById('docx-content').querySelectorAll('mark.fnr-hl'));
+  fnrIndex = 0;
+  fnrScrollTo(0);
+}
+function fnrScrollTo(i) {
+  fnrMatches.forEach((m, j) => m.style.background = j === i ? '#ff9900' : '#ffe066');
+  if (fnrMatches[i]) fnrMatches[i].scrollIntoView({ block: 'center' });
+  document.getElementById('fnr-count').textContent = fnrMatches.length ? (i+1)+'/'+fnrMatches.length : 'No results';
+}
+function fnrNext() {
+  if (!fnrMatches.length) { fnrHighlight(); return; }
+  fnrIndex = (fnrIndex + 1) % fnrMatches.length;
+  fnrScrollTo(fnrIndex);
+}
+function fnrPrev() {
+  if (!fnrMatches.length) return;
+  fnrIndex = (fnrIndex - 1 + fnrMatches.length) % fnrMatches.length;
+  fnrScrollTo(fnrIndex);
+}
+function fnrReplaceOne() {
+  if (!fnrMatches.length) { fnrHighlight(); return; }
+  const replacement = document.getElementById('fnr-replace').value;
+  const mark = fnrMatches[fnrIndex];
+  if (!mark) return;
+  mark.parentNode.replaceChild(document.createTextNode(replacement), mark);
+  fnrHighlight();
+}
+function fnrReplaceAll() {
+  const term = document.getElementById('fnr-find').value;
+  const replacement = document.getElementById('fnr-replace').value;
+  if (!term) return;
+  fnrClearHighlights();
+  const content = document.getElementById('docx-content');
+  const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  const re = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  let count = 0;
+  nodes.forEach(node => {
+    if (!re.test(node.textContent)) return;
+    re.lastIndex = 0;
+    node.textContent = node.textContent.replace(re, () => { count++; return replacement; });
+  });
+  toast('Replaced ' + count + ' occurrence' + (count !== 1 ? 's' : ''));
+  document.getElementById('fnr-count').textContent = count + ' replaced';
+}
+document.addEventListener('keydown', e => {
+  const screen = document.getElementById('docx-editor-screen');
+  if (!screen || !screen.classList.contains('visible')) return;
+  if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+    e.preventDefault();
+    toggleFnR();
+  }
+  if (e.key === 'Escape') {
+    const bar = document.getElementById('docx-fnr-bar');
+    if (bar && bar.classList.contains('open')) { closeFnR(); return; }
+  }
+});
+
+/* ══════════════════════════════════════════
+   T&Q HIERARCHICAL PARAGRAPH NUMBERING
+   Level 0: 1.   Level 1: a.   Level 2: (1)   Level 3: (a)
+══════════════════════════════════════════ */
+let tqActive = false;
+let tqCounters = [0, 0, 0, 0];
+let tqLevel = 0;
+
+function tqLabel(level, counters) {
+  const c = counters[level];
+  switch(level) {
+    case 0: return c + '. ';
+    case 1: return String.fromCharCode(96 + c) + '. ';
+    case 2: return '(' + c + ')  ';
+    case 3: return '(' + String.fromCharCode(96 + c) + ')  ';
+    default: return c + '. ';
+  }
+}
+function tqIndentPx(level) { return [0, 24, 48, 72][level] || 0; }
+
+function insertTQNumber() {
+  tqActive = !tqActive;
+  document.getElementById('tb-tq').classList.toggle('tq-active', tqActive);
+  if (tqActive) {
+    tqCounters = [0, 0, 0, 0];
+    tqLevel = 0;
+    tqInsertNext();
+    toast('T&Q numbering on — Tab=indent, Shift+Tab=outdent, Enter=next paragraph');
+  } else {
+    toast('T&Q numbering off');
+  }
+}
+function tqInsertNext() {
+  if (!tqActive) return;
+  tqCounters[tqLevel]++;
+  for (let i = tqLevel + 1; i < 4; i++) tqCounters[i] = 0;
+  const label = tqLabel(tqLevel, tqCounters);
+  const indent = tqIndentPx(tqLevel);
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  let block = range.startContainer;
+  while (block && block !== document.getElementById('docx-content') && !['P','DIV','H1','H2','H3','H4','H5','H6','LI'].includes(block.nodeName)) {
+    block = block.parentNode;
+  }
+  if (!block || block === document.getElementById('docx-content')) {
+    document.execCommand('insertHTML', false, '<p style="margin-left:'+indent+'px"><b>'+label+'</b></p>');
+  } else {
+    block.style.marginLeft = indent + 'px';
+    const labelNode = document.createElement('b');
+    labelNode.textContent = label;
+    labelNode.setAttribute('data-tq', 'label');
+    block.insertBefore(labelNode, block.firstChild);
+    const r = document.createRange();
+    r.setStartAfter(labelNode);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
+  }
+}
+document.addEventListener('keydown', e => {
+  if (!tqActive) return;
+  const content = document.getElementById('docx-content');
+  if (!content || !content.contains(document.activeElement) && document.activeElement !== content) return;
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    tqLevel = e.shiftKey ? Math.max(0, tqLevel - 1) : Math.min(3, tqLevel + 1);
+    toast('Level ' + (tqLevel + 1) + ': ' + ['1.', 'a.', '(1)', '(a)'][tqLevel]);
+  }
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    document.execCommand('insertParagraph');
+    tqInsertNext();
+  }
+});
 
 </script>
 </body>
