@@ -256,10 +256,10 @@
   <div class="model-bar" id="model-bar">
     <div class="chip active" onclick="selectModel(this,'claude-haiku','Claude Haiku')">🆓 Claude Haiku</div>
     <div class="chip" onclick="selectModel(this,'llama-free','Llama 3.3')">⚡ Llama 3.3</div>
-    <div class="chip pro-only" onclick="selectModel(this,'claude-sonnet','Claude Sonnet 4')">✨ Claude Sonnet 🔒</div>
+    <div class="chip" onclick="selectModel(this,'meta-llama/llama-4-maverick','Llama 4')">🦙 Llama 4</div>
+    <div class="chip" onclick="selectModel(this,'qwen/qwen3-235b-a22b','Qwen3')">Qwen3</div>
+    <div class="chip pro-only" onclick="selectModel(this,'claude-sonnet','Claude Sonnet 5')">✨ Claude Sonnet 🔒</div>
     <div class="chip pro-only" onclick="selectModel(this,'gemini-pro','Gemini Pro')">🌟 Gemini Pro 🔒</div>
-    <div class="chip pro-only" onclick="selectModel(this,'meta-llama/llama-4-maverick','Llama 4')">🦙 Llama 4 🔒</div>
-    <div class="chip pro-only" onclick="selectModel(this,'qwen/qwen3-235b-a22b','Qwen3')">Qwen3 🔒</div>
   </div>
 
   <!-- LANG BAR -->
@@ -285,7 +285,7 @@
       <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:10px;height:6px;overflow:hidden;">
         <div id="limit-progress" style="height:100%;border-radius:10px;background:var(--teal);transition:width 0.3s;width:100%;"></div>
       </div>
-      <span class="limit-count" id="limit-count">30</span>
+      <span class="limit-count" id="limit-count">50</span>
     </div>
     <span class="upgrade-link" onclick="showUpgrade()" id="upgrade-link">Go Pro</span>
   </div>
@@ -294,12 +294,12 @@
   <div class="upgrade-screen" id="upgrade-screen">
     <div class="upgrade-icon">⚡</div>
     <div class="upgrade-title">Go <span>Pro</span></div>
-    <div class="upgrade-sub">You've used all 30 free messages today. Upgrade to keep the conversation going — unlimited, everywhere.</div>
+    <div class="upgrade-sub">You've used all 50 free messages today. Upgrade to keep the conversation going — unlimited, everywhere.</div>
     <div class="upgrade-price">$2.99</div>
     <div class="upgrade-period">per month · cancel anytime</div>
     <div class="upgrade-features">
       <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Unlimited messages daily</div>
-      <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Claude Sonnet 4 — Anthropic's most powerful model</div>
+      <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Claude Sonnet 5 — Anthropic's most powerful model</div>
       <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>Longer, more detailed responses</div>
       <div class="upgrade-feature"><div class="upgrade-feature-dot">✓</div>No ads · Support TeqXus AI 🌍</div>
     </div>
@@ -496,7 +496,7 @@
     // Set default model
     if (pro) {
       model = 'claude-sonnet';
-      modelName = 'Claude Sonnet 4';
+      modelName = 'Claude Sonnet 5';
       document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.chip.pro-only')[0].classList.add('active');
     }
@@ -632,7 +632,7 @@
         try {
           const parsed = JSON.parse(data);
           if (parsed.type === 'meta' && parsed.remaining != null) {
-            updateLimitBar(parsed.remaining, isPro() ? 500 : 30);
+            updateLimitBar(parsed.remaining, isPro() ? 500 : 50);
           } else if (parsed.type === 'done') {
             break;
           } else if (parsed.type === 'error') {
@@ -783,8 +783,8 @@
   }
 
   // MESSAGE LIMIT — tracked server-side
-  let msgsRemaining = 30;
-  let msgLimit = 30;
+  let msgsRemaining = 50;
+  let msgLimit = 50;
 
   function updateLimitBar(remaining, limit) {
     if (remaining !== undefined) msgsRemaining = remaining;
@@ -921,7 +921,7 @@
 
   checkSetup();
   updateStatus();
-  updateLimitBar(isPro() ? 500 : 30, isPro() ? 500 : 30);
+  updateLimitBar(isPro() ? 500 : 50, isPro() ? 500 : 50);
   applyProStatus();
 
   // Render random prompts after all functions defined
