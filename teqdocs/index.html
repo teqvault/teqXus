@@ -295,16 +295,18 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 .docx-editor-header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--parchment3); background: var(--parchment2); flex-shrink: 0; }
 .docx-editor-title { flex: 1; background: transparent; border: none; color: var(--ink); font-size: 1rem; font-weight: 700; font-family: var(--font-serif); outline: none; min-width: 0; }
 .docx-editor-title::placeholder { color: var(--ink3); font-style: italic; }
-.docx-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: opacity 0.15s; }
-.docx-save-btn:hover { opacity: 0.85; }
+.docx-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s; }
+.docx-save-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.15); }
+.docx-save-btn:active { transform: scale(0.96); box-shadow: none; }
 .docx-saveas-btn { background: none; border: 1px solid var(--parchment3); color: var(--ink2); border-radius: 8px; padding: 6px 12px; font-size: 0.82rem; font-weight: 600; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
 .docx-saveas-btn:hover { border-color: var(--accent); color: var(--accent); }
 .docx-back-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 1.1rem; padding: 4px; font-family: var(--font-ui); transition: opacity 0.15s; }
 .docx-back-btn:hover { opacity: 0.7; }
 .docx-toolbar { display: flex; flex-direction: column; gap: 2px; padding: 5px 10px; border-bottom: 1px solid var(--parchment3); background: var(--parchment); flex-shrink: 0; }
 .docx-tb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
-.docx-tb-btn { background: none; border: 1px solid transparent; border-radius: 5px; padding: 3px 7px; font-size: 0.8rem; color: var(--ink2); cursor: pointer; font-family: var(--font-ui); line-height: 1.4; transition: background 0.1s, border-color 0.1s; min-width: 26px; text-align: center; white-space: nowrap; }
+.docx-tb-btn { background: none; border: 1px solid transparent; border-radius: 5px; padding: 3px 7px; font-size: 0.8rem; color: var(--ink2); cursor: pointer; font-family: var(--font-ui); line-height: 1.4; transition: background 0.1s, border-color 0.1s, transform 0.12s; min-width: 26px; text-align: center; white-space: nowrap; }
 .docx-tb-btn:hover { background: var(--parchment2); border-color: var(--parchment3); }
+.docx-tb-btn:active { transform: scale(0.94); }
 .docx-tb-btn.active { background: var(--parchment3); border-color: var(--accent); color: var(--accent); }
 .docx-tb-sep { width: 1px; height: 18px; background: var(--parchment3); margin: 0 3px; flex-shrink: 0; }
 .docx-sel { background: var(--parchment2); border: 1px solid var(--parchment3); border-radius: 5px; padding: 3px 5px; font-size: 0.78rem; color: var(--ink); font-family: var(--font-ui); cursor: pointer; }
@@ -480,11 +482,12 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 .editor-back:hover { opacity: 0.7; }
 .editor-title-input { flex: 1; background: transparent; border: none; color: var(--ink); font-size: 1rem; font-weight: 700; font-family: var(--font-serif); outline: none; min-width: 0; letter-spacing: -0.01em; }
 .editor-title-input::placeholder { color: var(--ink3); font-style: italic; }
-.editor-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: opacity 0.15s, transform 0.1s; }
-.editor-save-btn:hover { opacity: 0.9; }
-.editor-save-btn:active { transform: scale(0.96); }
+.editor-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s; }
+.editor-save-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.15); }
+.editor-save-btn:active { transform: scale(0.96); box-shadow: none; }
 .editor-dl-btn { background: none; border: 1px solid var(--parchment3); border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; color: var(--ink3); font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
-.editor-dl-btn:hover { border-color: var(--accent); color: var(--accent); }
+.editor-dl-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+.editor-dl-btn:active { transform: scale(0.96); }
 
 /* Floating format toolbar */
 .fmt-bar {
@@ -791,6 +794,16 @@ mark.current { background: var(--gold); color: #000; }
 #autosave-indicator.saving { color: var(--gold); }
 #autosave-indicator.saved { color: #3ecf64; }
 
+/* ── SAVE STATUS "JUICE" ── */
+#autosave-indicator, #docx-save-status { display: inline-block; }
+#docx-save-status { color: var(--ink3); font-size: 0.8rem; font-weight: 600; transition: color 0.25s ease; }
+#autosave-indicator.saving, #docx-save-status.saving { animation: tqPulseSaving 1s ease-in-out infinite; }
+#autosave-indicator.saved, #docx-save-status.saved { color: #3ecf64; animation: tqPopSaved 0.42s cubic-bezier(.34,1.56,.64,1); }
+#autosave-indicator.error, #docx-save-status.error { color: #e35d5d; animation: tqShake 0.4s ease; }
+@keyframes tqPulseSaving { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes tqPopSaved { 0% { transform: scale(0.8); } 55% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes tqShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+
 /* ── ABOUT PANEL ── */
 #about-panel { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 800; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 #about-panel.open { display: flex; }
@@ -838,8 +851,8 @@ mark.current { background: var(--gold); color: #000; }
 .modal-btn.secondary { background: var(--parchment3); color: var(--ink); }
 
 /* ── TOAST ── */
-#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--ink); border-radius: 20px; padding: 9px 20px; font-size: 0.82rem; font-weight: 600; color: var(--parchment); z-index: 600; opacity: 0; transition: opacity 0.2s; white-space: nowrap; pointer-events: none; box-shadow: var(--shadow); }
-#toast.show { opacity: 1; }
+#toast { position: fixed; bottom: 24px; left: 50%; background: var(--ink); border-radius: 20px; padding: 9px 20px; font-size: 0.82rem; font-weight: 600; color: var(--parchment); z-index: 600; opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.94); transition: opacity 0.25s ease, transform 0.32s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; pointer-events: none; box-shadow: var(--shadow); }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 
 /* ── DROP OVERLAY ── */
 #drop-overlay { position: fixed; inset: 0; z-index: 700; background: rgba(245,240,232,0.92); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 16px; backdrop-filter: blur(8px); }
@@ -965,8 +978,8 @@ mark.current { background: var(--gold); color: #000; }
       <!-- Library panel -->
       <div class="sb-panel active" id="sb-library">
         <div class="sb-section">
-          <button class="sb-open-btn" onclick="document.getElementById('file-input').click()">📂 Open File</button>
-          <button class="sb-new-btn" onclick="openEditor(null)">✏️ New MD File</button>
+          <button class="sb-open-btn" onclick="openFilePicker()">📂 Open File</button>
+          <button class="sb-new-btn" onclick="newDocument()">✏️ New MD File</button>
           <div class="sb-label">Recent</div>
           <div id="recent-list"></div>
           <div class="sb-label" style="margin-top:12px">Saved Files</div>
@@ -1008,8 +1021,8 @@ mark.current { background: var(--gold); color: #000; }
         <div class="welcome-title">Teq<span>Docs</span></div>
         <p class="welcome-sub">Your beautiful reading & writing companion. Open Markdown or PDF files to get started.</p>
         <div class="welcome-actions">
-          <button class="wa-btn primary" onclick="document.getElementById('file-input').click()">📂 Open File</button>
-          <button class="wa-btn secondary" onclick="openEditor(null)">✏️ New Document</button>
+          <button class="wa-btn primary" onclick="openFilePicker()">📂 Open File</button>
+          <button class="wa-btn secondary" onclick="newDocument()">✏️ New Document</button>
         </div>
         <div class="welcome-formats">
           <span class="wf-badge">📝 Markdown</span>
@@ -1135,6 +1148,7 @@ mark.current { background: var(--gold); color: #000; }
           <input class="editor-title-input" id="editor-title" type="text" placeholder="Untitled document" autocomplete="off" spellcheck="false">
           <button class="editor-dl-btn" onclick="downloadCurrent()" title="Download">⬇</button>
           <button class="editor-save-btn" onclick="saveFile()">Save</button>
+          <button class="editor-dl-btn" onclick="saveFile(true)" title="Choose a new file/location">Save As…</button>
         </div>
         <div class="preview-toggle">
           <button class="pv-btn active" id="pv-write" onclick="setMode('write')">✏ Write</button>
@@ -1529,19 +1543,53 @@ function toggleSidebar() {
 }
 
 /* ── File open ── */
+// Chrome/Edge support window.showOpenFilePicker, which — unlike a plain
+// <input type="file"> — hands back a FileSystemFileHandle we can keep and
+// write back to later. That's what lets Save skip the dialog on repeat
+// saves. Firefox/Safari don't support it, so they fall back to the classic
+// hidden <input type="file"> and will still see a save dialog each time —
+// that's a browser limitation, not something this app can work around.
+async function openFilePicker() {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        types: [{
+          description: 'Documents',
+          accept: {
+            'text/markdown': ['.md', '.markdown'],
+            'text/plain': ['.txt'],
+            'application/pdf': ['.pdf'],
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+          },
+        }],
+        multiple: false,
+      });
+      const file = await handle.getFile();
+      const lower = file.name.toLowerCase();
+      docxFileHandle = lower.endsWith('.docx') ? handle : null;
+      mdFileHandle = (lower.endsWith('.md') || lower.endsWith('.markdown') || lower.endsWith('.txt')) ? handle : null;
+      loadFileByType(file);
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return; // person cancelled the picker
+      // Unexpected error — fall back to the classic file input below
+    }
+  }
+  document.getElementById('file-input').click();
+}
 document.getElementById('file-input').addEventListener('change',e=>{
-  const file=e.target.files[0]; if(file) loadFileByType(file); e.target.value='';
+  const file=e.target.files[0]; if(file){ docxFileHandle=null; mdFileHandle=null; loadFileByType(file); } e.target.value='';
 });
 document.addEventListener('dragover',e=>{e.preventDefault();document.getElementById('drop-overlay').classList.add('active');});
 document.addEventListener('dragleave',e=>{if(!e.relatedTarget)document.getElementById('drop-overlay').classList.remove('active');});
 document.addEventListener('drop',e=>{
   e.preventDefault();document.getElementById('drop-overlay').classList.remove('active');
-  const file=e.dataTransfer.files[0]; if(file) loadFileByType(file);
+  const file=e.dataTransfer.files[0]; if(file){ docxFileHandle=null; mdFileHandle=null; loadFileByType(file); }
 });
 function loadFileByType(file) {
   const name=file.name.toLowerCase();
   if(name.endsWith('.pdf')) loadPDF(file);
-  else if(name.endsWith('.docx')) { docxFileHandle = null; loadDocx(file); }
+  else if(name.endsWith('.docx')) loadDocx(file);
   else loadMD(file);
 }
 function loadMD(file) {
@@ -1643,7 +1691,7 @@ function renderSaved() {
 }
 function openSavedFile(id) {
   const f=getSaved().find(x=>x.id===id);if(!f)return;
-  currentMd=f.content;currentFilename=f.name;currentSavedId=id;currentFileType='md';
+  currentMd=f.content;currentFilename=f.name;currentSavedId=id;currentFileType='md';currentFilePath=null;mdFileHandle=null;
   renderDoc();document.getElementById('doc-edit-btn').style.display='block';
 }
 function deleteFile(id) {
@@ -1651,7 +1699,12 @@ function deleteFile(id) {
   putSaved(getSaved().filter(f=>f.id!==id));renderSaved();toast('File deleted');
 }
 function openEditorById(id) {
-  const f=getSaved().find(x=>x.id===id);if(f)openEditor(f);
+  const f=getSaved().find(x=>x.id===id);if(f){ currentFilePath=null; mdFileHandle=null; openEditor(f); }
+}
+function newDocument() {
+  currentFilePath=null;
+  mdFileHandle=null;
+  openEditor(null);
 }
 
 /* ── Recent ── */
@@ -1675,12 +1728,14 @@ function renderRecent(){
         if(type==='pdf'||type==='docx'){
           // Can't reopen binary from localStorage — prompt user to reopen
           toast(`Please reopen "${f.name}" from your files`);
-          document.getElementById('file-input').click();
+          openFilePicker();
         } else if(f.content){
           currentMd=f.content;
           currentFilename=f.name;
           currentSavedId=null;
           currentFileType='md';
+          currentFilePath=null;
+          mdFileHandle=null;
           renderDoc();
         }
       };
@@ -1710,18 +1765,92 @@ function setMode(mode){
   if(mode==='write'){ta.style.display='block';pv.classList.remove('visible');}
   else{ta.style.display='none';pv.classList.add('visible');document.getElementById('editor-preview-body').innerHTML=parseMd(ta.value);highlightCode('editor-preview-body');}
 }
-function saveFile(){
+function saveFile(forceDialog){
   const title=document.getElementById('editor-title').value.trim();
-  if(!title){showModal('Name your file','my-notes.md',name=>{document.getElementById('editor-title').value=name.endsWith('.md')?name:name+'.md';doSave();});return;}
-  doSave();
+  if(!title){showModal('Name your file','my-notes.md',name=>{document.getElementById('editor-title').value=name.endsWith('.md')?name:name+'.md';doSave(forceDialog);});return;}
+  doSave(forceDialog);
 }
-function doSave(){
+async function doSave(forceDialog, silent){
+  clearTimeout(autosaveTimer);
   const name=document.getElementById('editor-title').value.trim()||'Untitled.md';
   const content=document.getElementById('md-editor').value;
+  const ind=document.getElementById('autosave-indicator');
+  const isTextExt = f => /\.(md|markdown|txt)$/i.test(f||'');
+
+  if (window.electronAPI) {
+    const canSaveDirect = !forceDialog && currentFilePath && isTextExt(currentFilePath);
+    if (canSaveDirect) {
+      if (ind) { ind.textContent = '⏳ Saving…'; ind.className = 'saving'; }
+      const result = await window.electronAPI.saveFileDirect(currentFilePath, content);
+      if (result && result.success) {
+        currentFilename = name;
+        addRecent(name, content, 'md');
+        if (ind) { ind.textContent = silent ? '✓ Autosaved' : '✓ Saved'; ind.className = 'saved'; }
+        if (!silent) toast('Saved ✓');
+      } else {
+        if (ind) { ind.textContent = '✕ Error'; ind.className = ''; }
+        toast('Save failed: ' + (result && result.error ? result.error : 'unknown error'));
+      }
+      return;
+    }
+    const filename = isTextExt(name) ? name : name + '.md';
+    const result = await window.electronAPI.showSaveDialog(filename, content);
+    if (result && result.success) {
+      currentFilePath = result.filePath;
+      currentFilename = result.filePath.split(/[\\/]/).pop();
+      currentSavedId = null;
+      addRecent(currentFilename, content, 'md');
+      if (ind) { ind.textContent = '✓ Saved'; ind.className = 'saved'; }
+      toast('Saved: ' + result.filePath);
+    } else if (ind) {
+      ind.textContent = '● Unsaved'; ind.className = '';
+    }
+    return;
+  }
+
+  // ── Web: reuse a captured handle from the file picker so repeat saves skip the dialog ──
+  if (!forceDialog && mdFileHandle) {
+    try {
+      const writable = await mdFileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      currentFilename = mdFileHandle.name;
+      addRecent(currentFilename, content, 'md');
+      if (ind) { ind.textContent = silent ? '✓ Autosaved' : '✓ Saved'; ind.className = 'saved'; }
+      if (!silent) toast('Saved: ' + mdFileHandle.name);
+      return;
+    } catch (e) { /* fall through below */ }
+  }
+  if ('showSaveFilePicker' in window) {
+    try {
+      const filename = isTextExt(name) ? name : name + '.md';
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md', '.markdown'], 'text/plain': ['.txt'] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      mdFileHandle = handle;
+      currentFilename = handle.name;
+      currentSavedId = null;
+      addRecent(currentFilename, content, 'md');
+      if (ind) { ind.textContent = '✓ Saved'; ind.className = 'saved'; }
+      toast('Saved: ' + handle.name);
+      return;
+    } catch (fsErr) {
+      if (fsErr.name === 'AbortError') { if (ind) { ind.textContent = '● Unsaved'; ind.className = ''; } return; }
+    }
+  }
+
+  // ── Firefox/Safari/no filesystem access — keep it in the in-app note library ──
   let files=getSaved();
   if(currentSavedId){files=files.map(f=>f.id===currentSavedId?{...f,name,content,date:Date.now()}:f);}
   else{const id='f'+Date.now();currentSavedId=id;files.unshift({id,name,content,date:Date.now()});}
-  putSaved(files);addRecent(name,content,'md');toast('Saved ✓');renderSaved();
+  putSaved(files);addRecent(name,content,'md');
+  if (ind) { ind.textContent = silent ? '✓ Autosaved' : '✓ Saved'; ind.className = 'saved'; }
+  if(!silent) toast('Saved ✓');
+  renderSaved();
 }
 function downloadCurrent(){
   const name=document.getElementById('editor-title').value.trim()||'document.md';
@@ -2999,26 +3128,34 @@ function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 
 /* ── Electron ── */
 let currentFilePath=null;
+let mdFileHandle=null; // FileSystemFileHandle for save-in-place on .md/.txt (web, File System Access API)
 if(window.electronAPI){
   document.querySelectorAll('.drop-hint').forEach(el=>el.style.display='none');
   window.electronAPI.onFileOpened(({filename,content,filePath})=>{
     currentMd=content;currentFilename=filename;currentSavedId=null;currentFilePath=filePath;
     addRecent(filename,content,'md');renderDoc();document.getElementById('doc-edit-btn').style.display='block';
   });
-  window.electronAPI.onNewFile(()=>openEditor(null));
+  window.electronAPI.onNewFile(()=>newDocument());
   window.electronAPI.onSaveRequest(async()=>{
+    const isDocxEd=document.getElementById('docx-editor-screen')?.classList.contains('visible');
+    if(isDocxEd){ saveDocxFile(); return; }
     const isEd=document.getElementById('editor-screen').classList.contains('visible');
-    const content=isEd?document.getElementById('md-editor').value:currentMd;
-    const name=isEd?(document.getElementById('editor-title').value.trim()||'Untitled.md'):currentFilename;
-    const result=await window.electronAPI.showSaveDialog(name,content);
-    if(result.success)toast('Saved to disk ✓');
+    if(isEd){ saveFile(); return; } // saves straight to disk if this file has a known path, else prompts once
+    if(currentFilePath){
+      const result=await window.electronAPI.saveFileDirect(currentFilePath,currentMd);
+      if(result.success)toast('Saved to disk ✓'); else toast('Save failed: '+(result.error||'unknown error'));
+      return;
+    }
+    const result=await window.electronAPI.showSaveDialog(currentFilename,currentMd);
+    if(result.success){ currentFilePath=result.filePath; toast('Saved to disk ✓'); }
   });
   window.electronAPI.onSaveAsRequest(async()=>{
+    const isDocxEd=document.getElementById('docx-editor-screen')?.classList.contains('visible');
+    if(isDocxEd){ saveDocxFile(true); return; }
     const isEd=document.getElementById('editor-screen').classList.contains('visible');
-    const content=isEd?document.getElementById('md-editor').value:currentMd;
-    const name=isEd?(document.getElementById('editor-title').value.trim()||'Untitled.md'):currentFilename;
-    const result=await window.electronAPI.showSaveDialog(name,content);
-    if(result.success)toast('Saved ✓');
+    if(isEd){ saveFile(true); return; }
+    const result=await window.electronAPI.showSaveDialog(currentFilename,currentMd);
+    if(result.success){ currentFilePath=result.filePath; toast('Saved ✓'); }
   });
   window.triggerDownload=async function(filename,content){const result=await window.electronAPI.showSaveDialog(filename,content);if(result.success)toast('Saved to disk ✓');};
 }
@@ -3189,11 +3326,11 @@ document.getElementById('md-editor').addEventListener('input', () => {
   ind.className = '';
   clearTimeout(autosaveTimer);
   autosaveTimer = setTimeout(() => {
-    if (currentSavedId) {
-      doSave();
-      ind.textContent = '✓ Autosaved';
-      ind.className = 'saved';
-      setTimeout(() => { ind.textContent = '● Saved'; }, 2000);
+    const hasDiskTarget = window.electronAPI
+      ? (currentFilePath && /\.(md|markdown|txt)$/i.test(currentFilePath))
+      : !!mdFileHandle;
+    if (currentSavedId || hasDiskTarget) {
+      doSave(false, true);
     }
   }, 3000);
 });
@@ -3785,7 +3922,8 @@ function openDocxEditor(fileHandle) {
   el.removeEventListener('mouseup', onDocxSelChange);
   el.addEventListener('mouseup', onDocxSelChange);
   updateDocxWordCount();
-  document.getElementById('docx-save-status').textContent = '● Unsaved';
+  const initStatus = document.getElementById('docx-save-status');
+  initStatus.textContent = '● Unsaved'; initStatus.className = '';
   // Show save method hint in status bar
   const hasFS = 'showSaveFilePicker' in window;
   const isElectron = !!window.electronAPI;
@@ -3795,9 +3933,32 @@ function openDocxEditor(fileHandle) {
   applyLineSpacingToEditor(docxLineSpacing);
 }
 
+let docxAutosaveTimer = null;
+const DOCX_AUTOSAVE_DELAY_MS = 2500;
+
 function onDocxInput() {
   updateDocxWordCount();
-  document.getElementById('docx-save-status').textContent = '\u25CF Unsaved';
+  const st = document.getElementById('docx-save-status');
+  st.textContent = '\u25CF Unsaved'; st.className = '';
+  scheduleDocxAutosave();
+}
+
+function scheduleDocxAutosave() {
+  clearTimeout(docxAutosaveTimer);
+  docxAutosaveTimer = setTimeout(autosaveDocx, DOCX_AUTOSAVE_DELAY_MS);
+}
+
+async function autosaveDocx() {
+  // Only autosave silently once we already have a writable handle for this
+  // exact file (captured when it was opened via the file picker). A
+  // document that's never been saved, or one opened through the classic
+  // file input (Firefox/Safari, or drag-and-drop), still waits for the
+  // person to choose a location via Save / Save As.
+  if (window.electronAPI || !docxFileHandle) return;
+  const statusEl = document.getElementById('docx-save-status');
+  const wasUnsaved = statusEl && statusEl.textContent.includes('Unsaved');
+  if (!wasUnsaved) return; // nothing changed since the last save
+  await saveDocxFile(false, true); // reuses the existing direct-save path — no dialog, no toast
 }
 
 function onDocxSelChange() {
@@ -3952,13 +4113,15 @@ function updateDocxWordCount() {
 /* ══════════════════════════════
    SAVE → .docx
    ══════════════════════════════ */
-async function saveDocxFile(forceDialog) {
+async function saveDocxFile(forceDialog, silent) {
+  clearTimeout(docxAutosaveTimer);
   const statusEl = document.getElementById('docx-save-status');
-  statusEl.textContent = '\u23F3 Saving\u2026';
+  const setStatus = (text, cls) => { statusEl.textContent = text; statusEl.className = cls || ''; };
+  setStatus('\u23F3 Saving\u2026', 'saving');
 
   try {
     const docxLib = window.docx;
-    if (!docxLib) { toast('docx.js not loaded \u2014 check network'); statusEl.textContent = '\u2715 Error'; return; }
+    if (!docxLib) { toast('docx.js not loaded \u2014 check network'); setStatus('\u2715 Error', 'error'); return; }
 
     const container = document.getElementById('docx-content');
     const { doc, numbering } = domToDocxResult(container, docxLib);
@@ -3980,10 +4143,10 @@ async function saveDocxFile(forceDialog) {
       if (canSaveDirect) {
         const result = await window.electronAPI.saveFileDirect(currentFilePath, JSON.stringify(Array.from(bytes)));
         if (result && result.success) {
-          statusEl.textContent = '\u2713 Saved';
-          toast('Saved \u2713');
+          setStatus(silent ? '\u2713 Autosaved' : '\u2713 Saved', 'saved');
+          if (!silent) toast('Saved \u2713');
         } else {
-          statusEl.textContent = '\u2715 Error';
+          setStatus('\u2715 Error', 'error');
           toast('Save failed: ' + (result && result.error ? result.error : 'unknown error'));
         }
       } else {
@@ -3991,10 +4154,10 @@ async function saveDocxFile(forceDialog) {
         if (result && result.success) {
           currentFilePath = result.filePath;
           currentFilename = result.filePath.split(/[\\/]/).pop();
-          statusEl.textContent = '\u2713 Saved';
+          setStatus('\u2713 Saved', 'saved');
           toast('Saved: ' + result.filePath);
         } else {
-          statusEl.textContent = '\u25CF Unsaved';
+          setStatus('\u25CF Unsaved', '');
         }
       }
     } else if ('showSaveFilePicker' in window) {
@@ -4011,12 +4174,12 @@ async function saveDocxFile(forceDialog) {
         const writable = await handle.createWritable();
         await writable.write(docxBlob);
         await writable.close();
-        statusEl.textContent = '\u2713 Saved';
-        toast('Saved: ' + handle.name);
+        setStatus(silent ? '\u2713 Autosaved' : '\u2713 Saved', 'saved');
+        if (!silent) toast('Saved: ' + handle.name);
         document.getElementById('docx-editor-title').value = handle.name.replace(/\.docx$/i, '');
       } catch(fsErr) {
         if (fsErr.name === 'AbortError') {
-          statusEl.textContent = '\u25CF Unsaved';
+          setStatus('\u25CF Unsaved', '');
         } else {
           throw fsErr;
         }
@@ -4028,12 +4191,12 @@ async function saveDocxFile(forceDialog) {
       a.href = url; a.download = filename;
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
-      statusEl.textContent = '\u2713 Downloaded';
+      setStatus('\u2713 Downloaded', 'saved');
       toast('Downloaded \u2014 check your Downloads folder');
     }
   } catch(e) {
     console.error('saveDocxFile error:', e);
-    statusEl.textContent = '\u2715 Error';
+    setStatus('\u2715 Error', 'error');
     toast('Save failed: ' + e.message);
   }
 }
@@ -4592,6 +4755,22 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     document.execCommand('insertParagraph');
     tqInsertNext();
+  }
+});
+
+/* ── Guard against losing unsaved edits on close/reload ── */
+window.addEventListener('beforeunload', (e) => {
+  const mdInd = document.getElementById('autosave-indicator');
+  const isEd = document.getElementById('editor-screen')?.classList.contains('visible');
+  const mdDirty = isEd && mdInd && mdInd.textContent.includes('Unsaved');
+
+  const docxStatus = document.getElementById('docx-save-status');
+  const isDocxEd = document.getElementById('docx-editor-screen')?.classList.contains('visible');
+  const docxDirty = isDocxEd && docxStatus && docxStatus.textContent.includes('Unsaved');
+
+  if (mdDirty || docxDirty) {
+    e.preventDefault();
+    e.returnValue = '';
   }
 });
 
