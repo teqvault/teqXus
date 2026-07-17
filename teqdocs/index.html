@@ -298,6 +298,8 @@ body.focus-mode:hover .doc-info-bar { opacity: 1; pointer-events: all; }
 .docx-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 0.82rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s; }
 .docx-save-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.15); }
 .docx-save-btn:active { transform: scale(0.96); box-shadow: none; }
+.docx-saveas-btn { background: none; border: 1px solid var(--parchment3); color: var(--ink2); border-radius: 8px; padding: 6px 12px; font-size: 0.82rem; font-weight: 600; font-family: var(--font-ui); cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
+.docx-saveas-btn:hover { border-color: var(--accent); color: var(--accent); }
 .docx-back-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 1.1rem; padding: 4px; font-family: var(--font-ui); transition: opacity 0.15s; }
 .docx-back-btn:hover { opacity: 0.7; }
 .docx-toolbar { display: flex; flex-direction: column; gap: 2px; padding: 5px 10px; border-bottom: 1px solid var(--parchment3); background: var(--parchment); flex-shrink: 0; }
@@ -976,7 +978,7 @@ mark.current { background: var(--gold); color: #000; }
       <!-- Library panel -->
       <div class="sb-panel active" id="sb-library">
         <div class="sb-section">
-          <button class="sb-open-btn" onclick="document.getElementById('file-input').click()">📂 Open File</button>
+          <button class="sb-open-btn" onclick="openFilePicker()">📂 Open File</button>
           <button class="sb-new-btn" onclick="newDocument()">✏️ New MD File</button>
           <div class="sb-label">Recent</div>
           <div id="recent-list"></div>
@@ -1019,7 +1021,7 @@ mark.current { background: var(--gold); color: #000; }
         <div class="welcome-title">Teq<span>Docs</span></div>
         <p class="welcome-sub">Your beautiful reading & writing companion. Open Markdown or PDF files to get started.</p>
         <div class="welcome-actions">
-          <button class="wa-btn primary" onclick="document.getElementById('file-input').click()">📂 Open File</button>
+          <button class="wa-btn primary" onclick="openFilePicker()">📂 Open File</button>
           <button class="wa-btn secondary" onclick="newDocument()">✏️ New Document</button>
         </div>
         <div class="welcome-formats">
@@ -1206,9 +1208,9 @@ mark.current { background: var(--gold); color: #000; }
           <button class="docx-back-btn" onclick="docxEditorBack()">← Back</button>
           <input class="docx-editor-title" id="docx-editor-title" type="text" placeholder="Untitled document" autocomplete="off">
           <button class="docx-tb-btn" onclick="toggleDocxFocus()" title="Focus mode (F11)" style="padding:4px 10px;font-size:0.82rem;">⛶ Focus</button>
-          <button class="docx-tb-btn" onclick="toggleFnR()" title="Find & Replace (Ctrl+H)" style="padding:4px 10px;font-size:0.82rem;">🔍 Find</button>
+          <button class="docx-tb-btn" onclick="toggleFnR()" title="Find &amp; Replace (Ctrl+H)" style="padding:4px 10px;font-size:0.82rem;">🔍 Find</button>
           <button class="docx-save-btn" onclick="saveDocxFile()">💾 Save</button>
-          <button class="docx-tb-btn" onclick="saveDocxFile(true)" title="Choose a new file/location" style="padding:4px 10px;font-size:0.82rem;">Save As…</button>
+          <button class="docx-saveas-btn" onclick="saveDocxFileAs()" title="Save a copy with a new name">Save As…</button>
         </div>
         <!-- Find & Replace bar -->
         <div id="docx-fnr-bar">
@@ -1371,6 +1373,7 @@ mark.current { background: var(--gold); color: #000; }
         </div>
         <div class="docx-status-bar">
           <span>📃 Word (.docx)</span>
+          <span id="docx-save-method" style="color:var(--accent);font-style:italic"></span>
           <span>📝 <span id="docx-word-count">0</span> words</span>
           <span id="docx-save-status">● Unsaved</span>
         </div>
@@ -1540,20 +1543,50 @@ function toggleSidebar() {
 }
 
 /* ── File open ── */
+// Chrome/Edge support window.showOpenFilePicker, which — unlike a plain
+// <input type="file"> — hands back a FileSystemFileHandle we can keep and
+// write back to later. That's what lets Save skip the dialog on repeat
+// saves. Firefox/Safari don't support it, so they fall back to the classic
+// hidden <input type="file"> and will still see a save dialog each time —
+// that's a browser limitation, not something this app can work around.
+async function openFilePicker() {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        types: [{
+          description: 'Documents',
+          accept: {
+            'text/markdown': ['.md', '.markdown'],
+            'text/plain': ['.txt'],
+            'application/pdf': ['.pdf'],
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+          },
+        }],
+        multiple: false,
+      });
+      const file = await handle.getFile();
+      const lower = file.name.toLowerCase();
+      docxFileHandle = lower.endsWith('.docx') ? handle : null;
+      mdFileHandle = (lower.endsWith('.md') || lower.endsWith('.markdown') || lower.endsWith('.txt')) ? handle : null;
+      loadFileByType(file);
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return; // person cancelled the picker
+      // Unexpected error — fall back to the classic file input below
+    }
+  }
+  document.getElementById('file-input').click();
+}
 document.getElementById('file-input').addEventListener('change',e=>{
-  const file=e.target.files[0]; if(file) loadFileByType(file); e.target.value='';
+  const file=e.target.files[0]; if(file){ docxFileHandle=null; mdFileHandle=null; loadFileByType(file); } e.target.value='';
 });
 document.addEventListener('dragover',e=>{e.preventDefault();document.getElementById('drop-overlay').classList.add('active');});
 document.addEventListener('dragleave',e=>{if(!e.relatedTarget)document.getElementById('drop-overlay').classList.remove('active');});
 document.addEventListener('drop',e=>{
   e.preventDefault();document.getElementById('drop-overlay').classList.remove('active');
-  const file=e.dataTransfer.files[0]; if(file) loadFileByType(file);
+  const file=e.dataTransfer.files[0]; if(file){ docxFileHandle=null; mdFileHandle=null; loadFileByType(file); }
 });
 function loadFileByType(file) {
-  // Electron exposes the real on-disk path on dropped/browsed File objects —
-  // capture it so Save can write straight back to this file instead of
-  // always prompting a Save dialog.
-  currentFilePath = (window.electronAPI && file.path) ? file.path : null;
   const name=file.name.toLowerCase();
   if(name.endsWith('.pdf')) loadPDF(file);
   else if(name.endsWith('.docx')) loadDocx(file);
@@ -1658,7 +1691,7 @@ function renderSaved() {
 }
 function openSavedFile(id) {
   const f=getSaved().find(x=>x.id===id);if(!f)return;
-  currentMd=f.content;currentFilename=f.name;currentSavedId=id;currentFileType='md';currentFilePath=null;
+  currentMd=f.content;currentFilename=f.name;currentSavedId=id;currentFileType='md';currentFilePath=null;mdFileHandle=null;
   renderDoc();document.getElementById('doc-edit-btn').style.display='block';
 }
 function deleteFile(id) {
@@ -1666,10 +1699,11 @@ function deleteFile(id) {
   putSaved(getSaved().filter(f=>f.id!==id));renderSaved();toast('File deleted');
 }
 function openEditorById(id) {
-  const f=getSaved().find(x=>x.id===id);if(f){ currentFilePath=null; openEditor(f); }
+  const f=getSaved().find(x=>x.id===id);if(f){ currentFilePath=null; mdFileHandle=null; openEditor(f); }
 }
 function newDocument() {
   currentFilePath=null;
+  mdFileHandle=null;
   openEditor(null);
 }
 
@@ -1694,13 +1728,14 @@ function renderRecent(){
         if(type==='pdf'||type==='docx'){
           // Can't reopen binary from localStorage — prompt user to reopen
           toast(`Please reopen "${f.name}" from your files`);
-          document.getElementById('file-input').click();
+          openFilePicker();
         } else if(f.content){
           currentMd=f.content;
           currentFilename=f.name;
           currentSavedId=null;
           currentFileType='md';
           currentFilePath=null;
+          mdFileHandle=null;
           renderDoc();
         }
       };
@@ -1743,8 +1778,6 @@ async function doSave(forceDialog, silent){
   const isTextExt = f => /\.(md|markdown|txt)$/i.test(f||'');
 
   if (window.electronAPI) {
-    // ── This file has a known home on disk — write straight back to it.
-    //    Only prompt for a location on a never-saved file, or an explicit "Save As…". ──
     const canSaveDirect = !forceDialog && currentFilePath && isTextExt(currentFilePath);
     if (canSaveDirect) {
       if (ind) { ind.textContent = '⏳ Saving…'; ind.className = 'saving'; }
@@ -1765,7 +1798,7 @@ async function doSave(forceDialog, silent){
     if (result && result.success) {
       currentFilePath = result.filePath;
       currentFilename = result.filePath.split(/[\\/]/).pop();
-      currentSavedId = null; // it's a real disk file now, not an internal library note
+      currentSavedId = null;
       addRecent(currentFilename, content, 'md');
       if (ind) { ind.textContent = '✓ Saved'; ind.className = 'saved'; }
       toast('Saved: ' + result.filePath);
@@ -1775,9 +1808,8 @@ async function doSave(forceDialog, silent){
     return;
   }
 
-  // ── Web build (no Electron): use a captured writable handle if this file
-  //     was opened via the file picker, so repeat saves skip the dialog too. ──
-  if (!forceDialog && typeof mdFileHandle !== 'undefined' && mdFileHandle) {
+  // ── Web: reuse a captured handle from the file picker so repeat saves skip the dialog ──
+  if (!forceDialog && mdFileHandle) {
     try {
       const writable = await mdFileHandle.createWritable();
       await writable.write(content);
@@ -1799,7 +1831,7 @@ async function doSave(forceDialog, silent){
       const writable = await handle.createWritable();
       await writable.write(content);
       await writable.close();
-      if (typeof mdFileHandle !== 'undefined') mdFileHandle = handle;
+      mdFileHandle = handle;
       currentFilename = handle.name;
       currentSavedId = null;
       addRecent(currentFilename, content, 'md');
@@ -1808,12 +1840,10 @@ async function doSave(forceDialog, silent){
       return;
     } catch (fsErr) {
       if (fsErr.name === 'AbortError') { if (ind) { ind.textContent = '● Unsaved'; ind.className = ''; } return; }
-      // fall through to the internal library below on unexpected errors
     }
   }
 
-  // ── No filesystem access available at all — keep it in the in-app note
-  //     library so nothing is lost. ──
+  // ── Firefox/Safari/no filesystem access — keep it in the in-app note library ──
   let files=getSaved();
   if(currentSavedId){files=files.map(f=>f.id===currentSavedId?{...f,name,content,date:Date.now()}:f);}
   else{const id='f'+Date.now();currentSavedId=id;files.unshift({id,name,content,date:Date.now()});}
@@ -3133,35 +3163,12 @@ function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 
 /* ── Electron ── */
 let currentFilePath=null;
+let mdFileHandle=null; // FileSystemFileHandle for save-in-place on .md/.txt (web, File System Access API)
 if(window.electronAPI){
   document.querySelectorAll('.drop-hint').forEach(el=>el.style.display='none');
-  window.electronAPI.onFileOpened(async ({filename, content, filePath, isBinary})=>{
-    currentFilename = filename;
-    currentSavedId = null;
-    currentFilePath = filePath;
-    const lower = filename.toLowerCase();
-    if (isBinary && lower.endsWith('.docx')) {
-      // Convert base64 back to ArrayBuffer and load as docx
-      const raw = atob(content);
-      const bytes = new Uint8Array(raw.length);
-      for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
-      const ab = bytes.buffer;
-      // Create a synthetic File-like object that loadDocx can use
-      const blob = new Blob([ab], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const syntheticFile = new File([blob], filename, { type: blob.type });
-      await loadDocx(syntheticFile);
-    } else if (isBinary && lower.endsWith('.pdf')) {
-      // PDF binary — pass as base64 string to existing PDF handler
-      currentMd = content;
-      addRecent(filename, content, 'pdf');
-      renderDoc();
-      document.getElementById('doc-edit-btn').style.display = 'block';
-    } else {
-      currentMd = content;
-      addRecent(filename, content, 'md');
-      renderDoc();
-      document.getElementById('doc-edit-btn').style.display = 'block';
-    }
+  window.electronAPI.onFileOpened(({filename,content,filePath})=>{
+    currentMd=content;currentFilename=filename;currentSavedId=null;currentFilePath=filePath;
+    addRecent(filename,content,'md');renderDoc();document.getElementById('doc-edit-btn').style.display='block';
   });
   window.electronAPI.onNewFile(()=>newDocument());
   window.electronAPI.onSaveRequest(async()=>{
@@ -3169,7 +3176,6 @@ if(window.electronAPI){
     if(isDocxEd){ saveDocxFile(); return; }
     const isEd=document.getElementById('editor-screen').classList.contains('visible');
     if(isEd){ saveFile(); return; } // saves straight to disk if this file has a known path, else prompts once
-    // Reading view of a file opened from disk: save silently to its known path
     if(currentFilePath){
       const result=await window.electronAPI.saveFileDirect(currentFilePath,currentMd);
       if(result.success)toast('Saved to disk ✓'); else toast('Save failed: '+(result.error||'unknown error'));
@@ -3357,7 +3363,7 @@ document.getElementById('md-editor').addEventListener('input', () => {
   autosaveTimer = setTimeout(() => {
     const hasDiskTarget = window.electronAPI
       ? (currentFilePath && /\.(md|markdown|txt)$/i.test(currentFilePath))
-      : (typeof mdFileHandle !== 'undefined' && !!mdFileHandle);
+      : !!mdFileHandle;
     if (currentSavedId || hasDiskTarget) {
       doSave(false, true);
     }
@@ -3880,6 +3886,7 @@ async function renderOutlineItems(items, container, depth) {
 
 /* ── State ── */
 let docxCaseMode = 0; // 0=Sentence, 1=UPPER, 2=lower, 3=Title
+let docxFileHandle = null; // FileSystemFileHandle for save-in-place (File System Access API)
 let docxLineSpacing = 1.15;
 let docxParaSpacingBefore = 0;   // pt
 let docxParaSpacingAfter  = 8;   // pt (Word default)
@@ -3887,7 +3894,25 @@ let docxPilcrowOn = false;
 let docxOriginalText = '';       // for case cycling
 
 /* ── Open editor ── */
-function openDocxEditor() {
+/* ── Save As: always opens picker regardless of cached handle ── */
+async function saveDocxFileAs() {
+  docxFileHandle = null; // clear handle so saveDocxFile opens picker (web)
+  await saveDocxFile(true); // forceDialog=true covers the Electron branch too
+}
+
+/* ── Keyboard shortcuts inside the docx editor ── */
+document.addEventListener('keydown', function(e) {
+  const screen = document.getElementById('docx-editor-screen');
+  if (!screen || !screen.classList.contains('visible')) return;
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (e.shiftKey) saveDocxFileAs();
+    else saveDocxFile();
+  }
+});
+
+function openDocxEditor(fileHandle) {
+  if (fileHandle) docxFileHandle = fileHandle;
   hideAll();
   const screen = document.getElementById('docx-editor-screen');
   screen.classList.add('visible');
@@ -3896,38 +3921,22 @@ function openDocxEditor() {
   el.innerHTML = currentDocxHtml || '<p>Start typing\u2026</p>';
   // Wrap any images that came from the docx file
   el.querySelectorAll('img:not(.docx-img-wrap img)').forEach(img => {
-    if (img.closest('.docx-img-wrap')) return; // already wrapped
+    if (img.closest('.docx-img-wrap')) return;
     const wrap = document.createElement('span');
     wrap.className = 'docx-img-wrap';
     wrap.contentEditable = 'false';
     wrap.setAttribute('data-img-name', img.alt || 'image');
-    // Transfer styles
-    if (img.style.cssText) wrap.style.cssText = img.style.cssText;
-    // Resize handles
     ['nw','n','ne','w','e','sw','s','se'].forEach(pos => {
       const h = document.createElement('div');
       h.className = 'img-handle ' + pos;
       h.setAttribute('data-handle', pos);
       wrap.appendChild(h);
     });
-    // Rotate handle
     const rh = document.createElement('div');
     rh.className = 'img-rotate-handle';
     rh.title = 'Rotate';
-    rh.textContent = '↻';
+    rh.textContent = '\u21bb';
     wrap.appendChild(rh);
-    // Clear inline styles on img, set sensible defaults
-    const naturalW = img.naturalWidth || img.width || 0;
-    const naturalH = img.naturalHeight || img.height || 0;
-    if (!img.style.width && naturalW > 0) {
-      const maxW = 500;
-      const w = Math.min(naturalW, maxW);
-      const h = naturalH ? Math.round(w * (naturalH / naturalW)) : w;
-      img.style.width = w + 'px';
-      img.style.height = h + 'px';
-    }
-    img.draggable = false;
-    img.removeAttribute('style'); // will be re-set below
     img.onload = () => {
       const maxW = 500;
       const ratio = img.naturalWidth / (img.naturalHeight || 1);
@@ -3935,10 +3944,10 @@ function openDocxEditor() {
       img.style.width = w + 'px';
       img.style.height = Math.round(w / ratio) + 'px';
     };
-    // Insert wrap in place of img
+    img.draggable = false;
     img.parentNode.insertBefore(wrap, img);
     wrap.appendChild(img);
-    imgAttachEvents(wrap);
+    if (typeof imgAttachEvents === 'function') imgAttachEvents(wrap);
   });
   el.focus();
   el.removeEventListener('input', onDocxInput);
@@ -3949,7 +3958,12 @@ function openDocxEditor() {
   el.addEventListener('mouseup', onDocxSelChange);
   updateDocxWordCount();
   const initStatus = document.getElementById('docx-save-status');
-  initStatus.textContent = '\u25CF Unsaved'; initStatus.className = '';
+  initStatus.textContent = '● Unsaved'; initStatus.className = '';
+  // Show save method hint in status bar
+  const hasFS = 'showSaveFilePicker' in window;
+  const isElectron = !!window.electronAPI;
+  const method = isElectron ? 'Desktop — Ctrl+S to save' : hasFS ? 'Ctrl+S to save — Ctrl+Shift+S to Save As' : 'Firefox/Safari — saves as download';
+  document.getElementById('docx-save-method').textContent = method;
   document.getElementById('hdr-doc-title').textContent = currentFilename;
   applyLineSpacingToEditor(docxLineSpacing);
 }
@@ -3970,13 +3984,12 @@ function scheduleDocxAutosave() {
 }
 
 async function autosaveDocx() {
-  // Only autosave silently when we already know exactly where this file
-  // lives on disk (Electron: a known .docx path; Web: a captured file
-  // handle). A document that's never been saved still waits for the
+  // Only autosave silently once we already have a writable handle for this
+  // exact file (captured when it was opened via the file picker). A
+  // document that's never been saved, or one opened through the classic
+  // file input (Firefox/Safari, or drag-and-drop), still waits for the
   // person to choose a location via Save / Save As.
-  const canAutosave = (window.electronAPI && currentFilePath && currentFilePath.toLowerCase().endsWith('.docx'))
-    || (!window.electronAPI && typeof docxFileHandle !== 'undefined' && docxFileHandle);
-  if (!canAutosave) return;
+  if (window.electronAPI || !docxFileHandle) return;
   const statusEl = document.getElementById('docx-save-status');
   const wasUnsaved = statusEl && statusEl.textContent.includes('Unsaved');
   if (!wasUnsaved) return; // nothing changed since the last save
@@ -4139,11 +4152,11 @@ async function saveDocxFile(forceDialog, silent) {
   clearTimeout(docxAutosaveTimer);
   const statusEl = document.getElementById('docx-save-status');
   const setStatus = (text, cls) => { statusEl.textContent = text; statusEl.className = cls || ''; };
-  setStatus('⏳ Saving…', 'saving');
+  setStatus('\u23F3 Saving\u2026', 'saving');
 
   try {
     const docxLib = window.docx;
-    if (!docxLib) { toast('docx.js not loaded — check network'); setStatus('✕ Error', 'error'); return; }
+    if (!docxLib) { toast('docx.js not loaded \u2014 check network'); setStatus('\u2715 Error', 'error'); return; }
 
     const container = document.getElementById('docx-content');
     const { doc, numbering } = domToDocxResult(container, docxLib);
@@ -4151,6 +4164,7 @@ async function saveDocxFile(forceDialog, silent) {
     const filename = (document.getElementById('docx-editor-title').value.trim() || 'document') + '.docx';
     const mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
+    // toBase64String works in all browser environments (no Node.js Buffer needed)
     const b64 = await docxLib.Packer.toBase64String(doc);
     const raw = atob(b64);
     const bytes = new Uint8Array(raw.length);
@@ -4164,10 +4178,10 @@ async function saveDocxFile(forceDialog, silent) {
       if (canSaveDirect) {
         const result = await window.electronAPI.saveFileDirect(currentFilePath, JSON.stringify(Array.from(bytes)));
         if (result && result.success) {
-          setStatus(silent ? '✓ Autosaved' : '✓ Saved', 'saved');
-          if (!silent) toast('Saved ✓');
+          setStatus(silent ? '\u2713 Autosaved' : '\u2713 Saved', 'saved');
+          if (!silent) toast('Saved \u2713');
         } else {
-          setStatus('✕ Error', 'error');
+          setStatus('\u2715 Error', 'error');
           toast('Save failed: ' + (result && result.error ? result.error : 'unknown error'));
         }
       } else {
@@ -4175,15 +4189,16 @@ async function saveDocxFile(forceDialog, silent) {
         if (result && result.success) {
           currentFilePath = result.filePath;
           currentFilename = result.filePath.split(/[\\/]/).pop();
-          setStatus('✓ Saved', 'saved');
+          setStatus('\u2713 Saved', 'saved');
           toast('Saved: ' + result.filePath);
         } else {
-          setStatus('● Unsaved', '');
+          setStatus('\u25CF Unsaved', '');
         }
       }
     } else if ('showSaveFilePicker' in window) {
+      // ── Web: File System Access API (Chrome/Edge) ──
       try {
-        let handle = forceDialog ? null : docxFileHandle;
+        let handle = docxFileHandle;
         if (!handle) {
           handle = await window.showSaveFilePicker({
             suggestedName: filename,
@@ -4194,29 +4209,29 @@ async function saveDocxFile(forceDialog, silent) {
         const writable = await handle.createWritable();
         await writable.write(docxBlob);
         await writable.close();
-        setStatus(silent ? '✓ Autosaved' : '✓ Saved', 'saved');
+        setStatus(silent ? '\u2713 Autosaved' : '\u2713 Saved', 'saved');
         if (!silent) toast('Saved: ' + handle.name);
         document.getElementById('docx-editor-title').value = handle.name.replace(/\.docx$/i, '');
       } catch(fsErr) {
         if (fsErr.name === 'AbortError') {
-          setStatus('● Unsaved', '');
+          setStatus('\u25CF Unsaved', '');
         } else {
           throw fsErr;
         }
       }
     } else {
+      // ── Fallback: browser download (Firefox / Safari) ──
       const url = URL.createObjectURL(docxBlob);
       const a = document.createElement('a');
       a.href = url; a.download = filename;
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
-      setStatus('✓ Downloaded', 'saved');
-      toast('Downloaded — check your Downloads folder');
+      setStatus('\u2713 Downloaded', 'saved');
+      toast('Downloaded \u2014 check your Downloads folder');
     }
-
   } catch(e) {
     console.error('saveDocxFile error:', e);
-    setStatus('✕ Error', 'error');
+    setStatus('\u2715 Error', 'error');
     toast('Save failed: ' + e.message);
   }
 }
@@ -4372,7 +4387,6 @@ function domToDocxResult(container, docxLib) {
     const tag = node.tagName.toLowerCase();
     if (tag === 'br') { runs.push(new TextRun({ text: '', break: 1 })); return runs; }
     if (tag === 'img') {
-      // Inline image inside a paragraph — embed as ImageRun
       if (node.src && node.src.startsWith('data:') && typeof docxLib !== 'undefined' && docxLib.ImageRun) {
         const w = parseInt(node.style.width) || node.naturalWidth || 100;
         const h = parseInt(node.style.height) || node.naturalHeight || 100;
@@ -4381,13 +4395,7 @@ function domToDocxResult(container, docxLib) {
         const mime = mimeMatch ? mimeMatch[1] : 'image/png';
         const typeMap = {'image/png':'png','image/jpeg':'jpg','image/jpg':'jpg','image/gif':'gif','image/bmp':'bmp','image/webp':'png'};
         const ext = typeMap[mime] || 'png';
-        try {
-          runs.push(new docxLib.ImageRun({
-            data: base64,
-            transformation: { width: Math.round(w * 0.75), height: Math.round(h * 0.75) },
-            type: ext,
-          }));
-        } catch(e) { /* skip bad image */ }
+        try { runs.push(new docxLib.ImageRun({ data: base64, transformation: { width: Math.round(w*0.75), height: Math.round(h*0.75) }, type: ext })); } catch(e) {}
       }
       return runs;
     }
@@ -4518,26 +4526,18 @@ function domToDocxResult(container, docxLib) {
         const base64 = imgEl.src.split(',')[1];
         const mimeMatch = imgEl.src.match(/data:(image\/[\w+.-]+);/);
         const mime = mimeMatch ? mimeMatch[1] : 'image/png';
-        const typeMap = { 'image/png':'png','image/jpeg':'jpg','image/jpg':'jpg','image/gif':'gif','image/bmp':'bmp','image/webp':'png' };
+        const typeMap = {'image/png':'png','image/jpeg':'jpg','image/jpg':'jpg','image/gif':'gif','image/bmp':'bmp','image/webp':'png'};
         const ext = typeMap[mime] || 'png';
         let alignment = AlignmentType.LEFT;
         if (child.classList.contains('img-center')) alignment = AlignmentType.CENTER;
         if (child.classList.contains('img-float-right')) alignment = AlignmentType.RIGHT;
         try {
-          const run = new docxLib.ImageRun({
-            data: base64,
-            transformation: { width: Math.round(w * 0.75), height: Math.round(h * 0.75) },
-            type: ext,
-          });
+          const run = new docxLib.ImageRun({ data: base64, transformation: { width: Math.round(w*0.75), height: Math.round(h*0.75) }, type: ext });
           paragraphs.push(new Paragraph({ alignment, children: [run] }));
-        } catch(imgErr) {
-          console.warn('Image embed failed:', imgErr);
-        }
+        } catch(e) { console.warn('Image embed failed:', e); }
       }
       continue;
     }
-
-    // ── Plain <img> tag (fallback, e.g. not wrapped) ──
     if (tag === 'img') {
       const imgEl = child;
       if (imgEl.src && imgEl.src.startsWith('data:')) {
@@ -4549,19 +4549,12 @@ function domToDocxResult(container, docxLib) {
         const typeMap = {'image/png':'png','image/jpeg':'jpg','image/jpg':'jpg','image/gif':'gif','image/bmp':'bmp','image/webp':'png'};
         const ext = typeMap[mime] || 'png';
         try {
-          const run = new docxLib.ImageRun({
-            data: base64,
-            transformation: { width: Math.round(w * 0.75), height: Math.round(h * 0.75) },
-            type: ext,
-          });
+          const run = new docxLib.ImageRun({ data: base64, transformation: { width: Math.round(w*0.75), height: Math.round(h*0.75) }, type: ext });
           paragraphs.push(new Paragraph({ alignment: AlignmentType.LEFT, children: [run] }));
-        } catch(imgErr) {
-          console.warn('Image embed failed:', imgErr);
-        }
+        } catch(e) { console.warn('Image embed failed:', e); }
       }
       continue;
     }
-
     paragraphs.push(makeParagraph(child));
   }
 
@@ -4580,8 +4573,12 @@ function domToDocxResult(container, docxLib) {
     }]
   });
 
-  // Images are now serialized inline in document order above.
-
+  // ── Serialize images ──
+  const imgItems = typeof imgSerializeForDocx === 'function' ? imgSerializeForDocx(container, docxLib) : [];
+  imgItems.forEach(({ wrap, run, alignment }) => {
+    paragraphs.push(new Paragraph({ alignment, children: [run] }));
+    wrap.remove();
+  });
   return { doc, numbering: numberingConfig };
 }
 
@@ -4592,7 +4589,6 @@ function domToDocxResult(container, docxLib) {
 function toggleDocxFocus() {
   const screen = document.getElementById('docx-editor-screen');
   screen.classList.toggle('focus-mode');
-  const on = screen.classList.contains('focus-mode');
   document.getElementById('docx-content').focus();
 }
 document.addEventListener('keydown', e => {
@@ -4669,7 +4665,7 @@ function fnrHighlight() {
 function fnrScrollTo(i) {
   fnrMatches.forEach((m, j) => m.style.background = j === i ? '#ff9900' : '#ffe066');
   if (fnrMatches[i]) fnrMatches[i].scrollIntoView({ block: 'center' });
-  document.getElementById('fnr-count').textContent = fnrMatches.length ? `${i+1}/${fnrMatches.length}` : 'No results';
+  document.getElementById('fnr-count').textContent = fnrMatches.length ? (i+1)+'/'+fnrMatches.length : 'No results';
 }
 function fnrNext() {
   if (!fnrMatches.length) { fnrHighlight(); return; }
@@ -4703,13 +4699,11 @@ function fnrReplaceAll() {
   nodes.forEach(node => {
     if (!re.test(node.textContent)) return;
     re.lastIndex = 0;
-    const newText = node.textContent.replace(re, () => { count++; return replacement; });
-    node.textContent = newText;
+    node.textContent = node.textContent.replace(re, () => { count++; return replacement; });
   });
-  toast(`Replaced ${count} occurrence${count !== 1 ? 's' : ''}`);
-  document.getElementById('fnr-count').textContent = `${count} replaced`;
+  toast('Replaced ' + count + ' occurrence' + (count !== 1 ? 's' : ''));
+  document.getElementById('fnr-count').textContent = count + ' replaced';
 }
-// Wire Ctrl+H to open Find & Replace
 document.addEventListener('keydown', e => {
   const screen = document.getElementById('docx-editor-screen');
   if (!screen || !screen.classList.contains('visible')) return;
@@ -4728,7 +4722,7 @@ document.addEventListener('keydown', e => {
    Level 0: 1.   Level 1: a.   Level 2: (1)   Level 3: (a)
 ══════════════════════════════════════════ */
 let tqActive = false;
-let tqCounters = [0, 0, 0, 0]; // counters per level
+let tqCounters = [0, 0, 0, 0];
 let tqLevel = 0;
 
 function tqLabel(level, counters) {
@@ -4741,9 +4735,7 @@ function tqLabel(level, counters) {
     default: return c + '. ';
   }
 }
-function tqIndentPx(level) {
-  return [0, 24, 48, 72][level] || 0;
-}
+function tqIndentPx(level) { return [0, 24, 48, 72][level] || 0; }
 
 function insertTQNumber() {
   tqActive = !tqActive;
@@ -4752,37 +4744,32 @@ function insertTQNumber() {
     tqCounters = [0, 0, 0, 0];
     tqLevel = 0;
     tqInsertNext();
-    toast('T&Q numbering on — Tab to indent, Shift+Tab to outdent, Enter for next paragraph');
+    toast('T&Q numbering on — Tab=indent, Shift+Tab=outdent, Enter=next paragraph');
   } else {
     toast('T&Q numbering off');
   }
 }
-
 function tqInsertNext() {
   if (!tqActive) return;
   tqCounters[tqLevel]++;
-  // Reset deeper levels
   for (let i = tqLevel + 1; i < 4; i++) tqCounters[i] = 0;
   const label = tqLabel(tqLevel, tqCounters);
   const indent = tqIndentPx(tqLevel);
   const sel = window.getSelection();
   if (!sel.rangeCount) return;
   const range = sel.getRangeAt(0);
-  // Find or create a block element
   let block = range.startContainer;
   while (block && block !== document.getElementById('docx-content') && !['P','DIV','H1','H2','H3','H4','H5','H6','LI'].includes(block.nodeName)) {
     block = block.parentNode;
   }
   if (!block || block === document.getElementById('docx-content')) {
-    document.execCommand('insertHTML', false, `<p style="margin-left:${indent}px"><b>${label}</b></p>`);
+    document.execCommand('insertHTML', false, '<p style="margin-left:'+indent+'px"><b>'+label+'</b></p>');
   } else {
     block.style.marginLeft = indent + 'px';
-    // Insert label at start of block
     const labelNode = document.createElement('b');
     labelNode.textContent = label;
     labelNode.setAttribute('data-tq', 'label');
     block.insertBefore(labelNode, block.firstChild);
-    // Move cursor after label
     const r = document.createRange();
     r.setStartAfter(labelNode);
     r.collapse(true);
@@ -4790,19 +4777,13 @@ function tqInsertNext() {
     sel.addRange(r);
   }
 }
-
-// Handle Tab/Shift+Tab/Enter in T&Q mode
-document.getElementById && document.addEventListener('keydown', e => {
+document.addEventListener('keydown', e => {
   if (!tqActive) return;
   const content = document.getElementById('docx-content');
   if (!content || !content.contains(document.activeElement) && document.activeElement !== content) return;
   if (e.key === 'Tab') {
     e.preventDefault();
-    if (e.shiftKey) {
-      tqLevel = Math.max(0, tqLevel - 1);
-    } else {
-      tqLevel = Math.min(3, tqLevel + 1);
-    }
+    tqLevel = e.shiftKey ? Math.max(0, tqLevel - 1) : Math.min(3, tqLevel + 1);
     toast('Level ' + (tqLevel + 1) + ': ' + ['1.', 'a.', '(1)', '(a)'][tqLevel]);
   }
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -4812,21 +4793,28 @@ document.getElementById && document.addEventListener('keydown', e => {
   }
 });
 
-/* ── Guard against losing unsaved edits on close/reload ── */
-window.addEventListener('beforeunload', (e) => {
-  const mdInd = document.getElementById('autosave-indicator');
-  const isEd = document.getElementById('editor-screen')?.classList.contains('visible');
-  const mdDirty = isEd && mdInd && mdInd.textContent.includes('Unsaved');
+/* ── Guard against losing unsaved edits on close/reload ──
+   Only wired up for real browser use. In the Electron-packaged build of
+   this same code, main.js intercepts window close with a proper native
+   dialog instead — Electron doesn't render any UI for a renderer-side
+   beforeunload prompt, so leaving this active there just silently blocks
+   the window from closing with no explanation. */
+if (!window.electronAPI) {
+  window.addEventListener('beforeunload', (e) => {
+    const mdInd = document.getElementById('autosave-indicator');
+    const isEd = document.getElementById('editor-screen')?.classList.contains('visible');
+    const mdDirty = isEd && mdInd && mdInd.textContent.includes('Unsaved');
 
-  const docxStatus = document.getElementById('docx-save-status');
-  const isDocxEd = document.getElementById('docx-editor-screen')?.classList.contains('visible');
-  const docxDirty = isDocxEd && docxStatus && docxStatus.textContent.includes('Unsaved');
+    const docxStatus = document.getElementById('docx-save-status');
+    const isDocxEd = document.getElementById('docx-editor-screen')?.classList.contains('visible');
+    const docxDirty = isDocxEd && docxStatus && docxStatus.textContent.includes('Unsaved');
 
-  if (mdDirty || docxDirty) {
-    e.preventDefault();
-    e.returnValue = '';
-  }
-});
+    if (mdDirty || docxDirty) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+}
 
 </script>
 </body>
