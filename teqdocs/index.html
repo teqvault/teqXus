@@ -1737,6 +1737,7 @@ function renderRecent(){
           currentFilePath=null;
           mdFileHandle=null;
           renderDoc();
+          document.getElementById('doc-edit-btn').style.display='block';
         }
       };
       list.appendChild(el);
@@ -1925,6 +1926,11 @@ function calcReadTime(text){const words=text.trim().split(/\s+/).filter(Boolean)
 /* ── Reader ── */
 function renderDoc(){
   hideAll();
+  // renderDoc() only ever displays a markdown document, so the Edit button
+  // should always be visible here — regardless of which of the several
+  // "open a document" code paths called us. hideAll() hides it as part of
+  // its generic screen reset; this puts it back for this specific case.
+  document.getElementById('doc-edit-btn').style.display='block';
   const body=document.getElementById('md-body');
   body.classList.remove('docx-preview-host');
   body.innerHTML=parseMd(currentMd);
