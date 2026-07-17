@@ -2821,21 +2821,48 @@ async function enterCACPlacementMode(result, reason) {
 
 async function convertPdfToDocx() {
   if (!pdfRawBytes) { toast('No PDF loaded'); return; }
+
+  // A page opened via file:// (double-clicking index.html instead of running
+  // it through Electron or a local server) gets origin 'null', which the
+  // backend's CORS policy rejects before the request even goes through.
+  // Surface that clearly instead of letting it show up as "Failed to fetch".
+  if (!window.electronAPI && location.protocol === 'file:') {
+    toast('Can\'t reach the conversion service from a file:// page — serve this app over http(s), or use the desktop app.');
+    return;
+  }
+
   toast('Converting PDF to Word document…');
 
-  try {
-    const blob = new Blob([pdfRawBytes], { type: 'application/pdf' });
-    const formData = new FormData();
-    formData.append('file', blob, pdfCurrentFilename);
+  const CONVERT_URL = 'https://teqxus-backend-zszr.onrender.com/convert-pdf';
+  const attemptConvert = async (timeoutMs) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const blob = new Blob([pdfRawBytes], { type: 'application/pdf' });
+      const formData = new FormData();
+      formData.append('file', blob, pdfCurrentFilename);
+      return await fetch(CONVERT_URL, { method: 'POST', body: formData, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  };
 
-    const res = await fetch('https://teqxus-backend-zszr.onrender.com/convert-pdf', {
-      method: 'POST',
-      body: formData
-    });
+  try {
+    let res;
+    try {
+      res = await attemptConvert(15000); // short first try, in case the service is already awake
+    } catch (firstErr) {
+      // Render's free tier spins services down after ~15 min idle — the first
+      // request after that has to wake it back up, which can take 30-60s.
+      // Retry once with a longer timeout instead of failing immediately.
+      toast('Conversion service is waking up — this can take a minute…');
+      res = await attemptConvert(70000);
+    }
 
     if (!res.ok) {
-      const err = await res.json();
-      toast('Conversion failed: ' + (err.message || err.error));
+      let message = res.status + ' ' + res.statusText;
+      try { const err = await res.json(); message = err.message || err.error || message; } catch(_) {}
+      toast('Conversion failed: ' + message);
       return;
     }
 
@@ -2861,7 +2888,15 @@ async function convertPdfToDocx() {
     }
   } catch(e) {
     console.error('Convert error:', e);
-    toast('Conversion error: ' + e.message);
+    if (e.name === 'AbortError') {
+      toast('Conversion timed out — the service may be waking up or temporarily down. Try again in a minute.');
+    } else if (e instanceof TypeError) {
+      // fetch() throws a bare TypeError for both network failures and CORS
+      // blocks — browsers deliberately don't expose which, for security reasons.
+      toast('Can\'t reach the conversion service — check your internet connection. If this keeps happening, the service may be down.');
+    } else {
+      toast('Conversion error: ' + e.message);
+    }
   }
 }
 
