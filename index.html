@@ -32,7 +32,7 @@
   #space-bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
   #space-bg::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 15% 25%, rgba(62,207,160,0.22) 0%, transparent 45%), radial-gradient(ellipse at 88% 75%, rgba(88,28,220,0.18) 0%, transparent 40%), radial-gradient(ellipse at 50% 5%, rgba(24,95,165,0.15) 0%, transparent 38%), radial-gradient(ellipse at 75% 40%, rgba(62,207,160,0.08) 0%, transparent 30%); }
   #star-canvas { display: none; }
-  .topbar, .model-bar, .lang-bar, .limit-bar, .queue-banner, .view, .tab-bar, .upgrade-screen { position: relative; z-index: 1; }
+  .topbar, .model-bar, .lang-bar, .queue-banner, .view, .tab-bar, .upgrade-screen { position: relative; z-index: 1; }
 
   /* TEQDOCS BUTTON */
   .teqdocs-btn {
@@ -56,13 +56,17 @@
   .teqdocs-btn .td-icon { font-size: 14px; line-height: 1; }
   .teqdocs-btn .td-label { font-size: 11px; font-weight: 700; color: var(--teal); letter-spacing: 0.03em; }
 
-  /* Mobile: move to bottom-right so it doesn't cover the header */
+  /* Mobile: anchor to the input bar itself (not the viewport) so it always
+     sits just above it, regardless of tab-bar height or textarea growth,
+     and never covers the header or the send button. */
   @media (max-width: 600px) {
     .teqdocs-btn {
+      position: absolute;
       top: auto;
-      bottom: 80px;
+      bottom: 100%;
       left: auto;
-      right: 12px;
+      right: 0;
+      margin-bottom: 10px;
     }
   }
 
@@ -151,7 +155,7 @@
   .share-btn:active { border-color: var(--teal); color: var(--teal); }
 
   /* INPUT */
-  .input-bar { padding: 10px 14px 12px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-end; background: var(--navy2); flex-shrink: 0; }
+  .input-bar { position: relative; padding: 10px 14px 12px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-end; background: var(--navy2); flex-shrink: 0; }
   .input-wrap { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; display: flex; align-items: flex-end; padding: 2px 4px 2px 16px; transition: border-color 0.2s; }
   .input-wrap:focus-within { border-color: var(--border2); }
   .input-wrap textarea { flex: 1; background: transparent; border: none; padding: 8px 0; font-size: 14px; resize: none; max-height: 90px; color: var(--text); font-family: inherit; outline: none; line-height: 1.4; }
@@ -192,14 +196,6 @@
   .pro-input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 10px; font-size: 13px; font-family: inherit; outline: none; margin-top: 8px; }
   .pro-input:focus { border-color: var(--border2); }
 
-  /* MESSAGE LIMIT */
-  .limit-bar { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 6px 16px; display: flex !important; align-items: center; justify-content: space-between; flex-shrink: 0; }
-  .limit-text { font-size: 12px; color: var(--text-muted); }
-  .limit-count { font-size: 12px; font-weight: 600; color: var(--teal); }
-  .limit-count.warning { color: var(--amber); }
-  .limit-count.empty { color: var(--danger); }
-  .limit-bar .upgrade-link { font-size: 11px; color: var(--teal); border: 1px solid var(--border2); border-radius: 8px; padding: 3px 9px; cursor: pointer; background: var(--teal-glow); }
-
   /* UPGRADE SCREEN */
   .upgrade-screen { position: absolute; inset: 0; background: rgba(10,22,40,0.97); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; text-align: center; }
   .upgrade-screen.show { display: flex; }
@@ -225,12 +221,6 @@
 </head>
 <body>
 <div id="app">
-
-  <!-- TEQDOCS LINK -->
-  <a class="teqdocs-btn" href="https://teqxus.app/teqdocs" target="_blank" rel="noopener" aria-label="Open TeqDocs">
-    <span class="td-icon">📖</span>
-    <span class="td-label">TeqDocs</span>
-  </a>
 
   <!-- TOP BAR -->
   <div class="topbar">
@@ -278,18 +268,6 @@
     ⏳ <span id="queue-text">1 message queued</span> — will send when back online
   </div>
 
-  <!-- LIMIT BAR -->
-  <div class="limit-bar" id="limit-bar">
-    <span class="limit-text" id="limit-label">Messages</span>
-    <div style="display:flex;align-items:center;gap:10px;flex:1;margin:0 10px;">
-      <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:10px;height:6px;overflow:hidden;">
-        <div id="limit-progress" style="height:100%;border-radius:10px;background:var(--teal);transition:width 0.3s;width:100%;"></div>
-      </div>
-      <span class="limit-count" id="limit-count">50</span>
-    </div>
-    <span class="upgrade-link" onclick="showUpgrade()" id="upgrade-link">Go Pro</span>
-  </div>
-
   <!-- UPGRADE SCREEN -->
   <div class="upgrade-screen" id="upgrade-screen">
     <div class="upgrade-icon">⚡</div>
@@ -332,6 +310,11 @@
       </div>
     </div>
     <div class="input-bar">
+      <!-- TEQDOCS LINK -->
+      <a class="teqdocs-btn" href="https://teqxus.app/teqdocs" target="_blank" rel="noopener" aria-label="Open TeqDocs">
+        <span class="td-icon">📖</span>
+        <span class="td-label">TeqDocs</span>
+      </a>
       <div class="input-wrap">
         <textarea id="msg" rows="1" placeholder="Ask anything..." oninput="resize(this)" onkeydown="onKey(event)"></textarea>
       </div>
@@ -488,11 +471,6 @@
       c.classList.toggle('unlocked', pro);
       c.innerHTML = c.innerHTML.replace(' 🔒', '');
     });
-    // Update limit bar
-    const limitBar = document.getElementById('limit-bar');
-    if (pro) {
-      updateLimitBar(500, 500);
-    }
     // Set default model
     if (pro) {
       model = 'claude-sonnet';
@@ -631,9 +609,7 @@
         const data = line.slice(6);
         try {
           const parsed = JSON.parse(data);
-          if (parsed.type === 'meta' && parsed.remaining != null) {
-            updateLimitBar(parsed.remaining, isPro() ? 500 : 50);
-          } else if (parsed.type === 'done') {
+          if (parsed.type === 'done') {
             break;
           } else if (parsed.type === 'error') {
             throw new Error(parsed.message);
@@ -782,31 +758,7 @@
     if (name === 'history') renderHistory();
   }
 
-  // MESSAGE LIMIT — tracked server-side
-  let msgsRemaining = 50;
-  let msgLimit = 50;
-
-  function updateLimitBar(remaining, limit) {
-    if (remaining !== undefined) msgsRemaining = remaining;
-    if (limit !== undefined) msgLimit = limit;
-    const el = document.getElementById('limit-count');
-    const bar = document.getElementById('limit-progress');
-    const label = document.getElementById('limit-label');
-    const upgradeLink = document.getElementById('upgrade-link');
-    if (!el) return;
-
-    const pct = Math.max(0, Math.min(100, (msgsRemaining / msgLimit) * 100));
-    el.textContent = msgsRemaining;
-
-    if (bar) {
-      bar.style.width = pct + '%';
-      bar.style.background = pct > 30 ? 'var(--teal)' : pct > 10 ? 'var(--amber)' : 'var(--danger)';
-    }
-    if (label) label.textContent = isPro() ? 'Pro messages' : 'Free messages';
-    if (upgradeLink) upgradeLink.style.display = isPro() ? 'none' : 'block';
-
-    el.className = 'limit-count' + (msgsRemaining <= 5 ? ' warning' : '') + (msgsRemaining === 0 ? ' empty' : '');
-  }
+  // MESSAGE LIMIT — tracked server-side, but never surfaced in the UI
 
   function showUpgrade() {
     document.getElementById('upgrade-screen').classList.add('show');
@@ -921,7 +873,6 @@
 
   checkSetup();
   updateStatus();
-  updateLimitBar(isPro() ? 500 : 50, isPro() ? 500 : 50);
   applyProStatus();
 
   // Render random prompts after all functions defined
