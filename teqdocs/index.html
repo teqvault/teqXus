@@ -850,6 +850,23 @@ mark.current { background: var(--gold); color: #000; }
 .modal-btn.primary { background: var(--accent); color: #fff; }
 .modal-btn.secondary { background: var(--parchment3); color: var(--ink); }
 
+/* ── VERSION HISTORY ── */
+#version-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+#version-modal.open { display: flex; }
+.version-box { background: var(--parchment2); border-radius: var(--radius); padding: 1.5rem; width: 100%; max-width: 460px; max-height: 70vh; border: 1px solid var(--parchment3); display: flex; flex-direction: column; }
+.version-box-title { font-weight: 700; font-size: 1rem; margin-bottom: 1rem; font-family: var(--font-serif); color: var(--ink); display: flex; align-items: center; justify-content: space-between; }
+.version-box-close { background: none; border: none; color: var(--ink3); font-size: 1.1rem; cursor: pointer; padding: 2px 6px; }
+.version-box-close:hover { color: var(--accent); }
+.version-list { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.version-empty { font-size: 0.85rem; color: var(--ink3); font-style: italic; padding: 1rem 0.2rem; }
+.version-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--parchment); border: 1px solid var(--parchment3); border-radius: 8px; padding: 10px 12px; }
+.version-meta { display: flex; flex-direction: column; gap: 2px; }
+.version-date { font-size: 0.85rem; font-weight: 600; color: var(--ink); }
+.version-words { font-size: 0.72rem; color: var(--ink3); }
+.version-restore-btn { background: none; border: 1px solid var(--parchment3); border-radius: 7px; padding: 5px 12px; font-size: 0.78rem; font-weight: 600; color: var(--ink3); cursor: pointer; font-family: var(--font-ui); white-space: nowrap; transition: all 0.15s; }
+.version-restore-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+.version-restore-btn:active { transform: scale(0.96); }
+
 /* ── TOAST ── */
 #toast { position: fixed; bottom: 24px; left: 50%; background: var(--ink); border-radius: 20px; padding: 9px 20px; font-size: 0.82rem; font-weight: 600; color: var(--parchment); z-index: 600; opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.94); transition: opacity 0.25s ease, transform 0.32s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; pointer-events: none; box-shadow: var(--shadow); }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
@@ -1043,6 +1060,7 @@ mark.current { background: var(--gold); color: #000; }
           </div>
           <div class="dib-actions">
             <button class="dib-btn" id="doc-edit-btn" onclick="openEditorFromReader()" style="display:none">✏️ Edit</button>
+            <button class="dib-btn" onclick="openVersionHistory()" title="Version history">🕒 History</button>
             <button class="dib-btn" onclick="addBookmark()" title="Add bookmark (Ctrl+M)">🔖 Bookmark</button>
             <button class="dib-btn" onclick="openSigPanel()" title="Add signature">✍ Sign</button>
             <button class="dib-btn" id="doc-export-btn" onclick="toggleExportMenu()">Export ▾</button>
@@ -1147,6 +1165,7 @@ mark.current { background: var(--gold); color: #000; }
           <button class="editor-back" onclick="editorBack()">← Back</button>
           <input class="editor-title-input" id="editor-title" type="text" placeholder="Untitled document" autocomplete="off" spellcheck="false">
           <button class="editor-dl-btn" onclick="downloadCurrent()" title="Download">⬇</button>
+          <button class="editor-dl-btn" onclick="openVersionHistory()" title="Version history">🕒 History</button>
           <button class="editor-save-btn" onclick="saveFile()">Save</button>
           <button class="editor-dl-btn" onclick="saveFile(true)" title="Choose a new file/location">Save As…</button>
         </div>
@@ -1484,6 +1503,17 @@ mark.current { background: var(--gold); color: #000; }
   </div>
 </div>
 
+<!-- Version History -->
+<div id="version-modal">
+  <div class="version-box">
+    <div class="version-box-title">
+      Version History
+      <button class="version-box-close" onclick="closeVersionHistory()" title="Close">✕</button>
+    </div>
+    <div class="version-list" id="version-list"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <input type="file" id="file-input" accept=".md,.markdown,.txt,.pdf,.docx">
 
@@ -1711,6 +1741,169 @@ function newDocument() {
 function addRecent(name,content,type='md'){
   try{let r=JSON.parse(localStorage.getItem('teqdocs-recent')||'[]');r=r.filter(x=>x.name!==name);r.unshift({name,content,date:Date.now(),type});r=r.slice(0,5);localStorage.setItem('teqdocs-recent',JSON.stringify(r));}catch(e){}
 }
+
+/* ── Version History ──
+   A lightweight safety net on top of autosave: every successful save takes a
+   timestamped snapshot (throttled so rapid autosaves don't flood it), kept
+   per-document, so a bad edit that got autosaved over the good version can
+   still be recovered. */
+const MAX_VERSIONS_PER_DOC = 15;
+const MAX_TRACKED_DOCS = 25;
+const MIN_SNAPSHOT_INTERVAL_MS = 2 * 60 * 1000; // don't snapshot more than once per 2 min
+
+function wordCount(text){ const t=(text||'').trim(); return t ? t.split(/\s+/).length : 0; }
+
+function getVersionKey(){
+  if (currentFilePath) return 'path:' + currentFilePath;
+  if (currentSavedId) return 'id:' + currentSavedId;
+  return null; // brand-new, never-saved document — nothing stable to key on yet
+}
+function getVersionIndex(){ try{ return JSON.parse(localStorage.getItem('teqdocs-version-index')||'[]'); } catch(e){ return []; } }
+function putVersionIndex(idx){ try{ localStorage.setItem('teqdocs-version-index', JSON.stringify(idx)); } catch(e){} }
+function getVersions(key){ try{ return JSON.parse(localStorage.getItem('teqdocs-versions:'+key)||'[]'); } catch(e){ return []; } }
+function putVersions(key, versions){
+  try {
+    localStorage.setItem('teqdocs-versions:'+key, JSON.stringify(versions));
+  } catch(e) {
+    // Storage quota hit — drop the older half and retry once. Snapshotting
+    // is a best-effort safety net, not something worth failing the save over.
+    try {
+      const trimmed = versions.slice(-Math.ceil(versions.length/2));
+      localStorage.setItem('teqdocs-versions:'+key, JSON.stringify(trimmed));
+    } catch(e2) { /* give up silently */ }
+  }
+}
+
+function snapshotVersion(name, content){
+  const key = getVersionKey();
+  if (!key || !content || !content.trim()) return;
+
+  let versions = getVersions(key);
+  const now = Date.now();
+  const last = versions[versions.length-1];
+  if (last && (now - last.ts) < MIN_SNAPSHOT_INTERVAL_MS) return; // too soon since the last snapshot
+  if (last && last.content === content) return; // nothing actually changed
+
+  versions.push({ ts: now, content, words: wordCount(content) });
+  if (versions.length > MAX_VERSIONS_PER_DOC) versions = versions.slice(-MAX_VERSIONS_PER_DOC);
+  putVersions(key, versions);
+
+  // Track this document in the index (most-recently-touched last), evicting
+  // the oldest-touched document's whole history if we're over the cap.
+  let idx = getVersionIndex().filter(d => d.key !== key);
+  idx.push({ key, name, ts: now });
+  if (idx.length > MAX_TRACKED_DOCS) {
+    const evicted = idx.shift();
+    try { localStorage.removeItem('teqdocs-versions:'+evicted.key); } catch(e) {}
+  }
+  putVersionIndex(idx);
+}
+function htmlToText(html){
+  const div = document.createElement('div');
+  div.innerHTML = html || '';
+  return div.textContent || '';
+}
+function snapshotDocxVersion(name, html){
+  // Same storage/throttle/eviction logic as snapshotVersion — just derives
+  // an accurate word count from the HTML instead of counting markup as words.
+  const key = getVersionKey();
+  if (!key || !html) return;
+  const text = htmlToText(html);
+  if (!text.trim()) return;
+
+  let versions = getVersions(key);
+  const now = Date.now();
+  const last = versions[versions.length-1];
+  if (last && (now - last.ts) < MIN_SNAPSHOT_INTERVAL_MS) return;
+  if (last && last.content === html) return;
+
+  versions.push({ ts: now, content: html, words: wordCount(text), isHtml: true });
+  if (versions.length > MAX_VERSIONS_PER_DOC) versions = versions.slice(-MAX_VERSIONS_PER_DOC);
+  putVersions(key, versions);
+
+  let idx = getVersionIndex().filter(d => d.key !== key);
+  idx.push({ key, name, ts: now });
+  if (idx.length > MAX_TRACKED_DOCS) {
+    const evicted = idx.shift();
+    try { localStorage.removeItem('teqdocs-versions:'+evicted.key); } catch(e) {}
+  }
+  putVersionIndex(idx);
+}
+
+function openVersionHistory(){
+  const key = getVersionKey();
+  const listEl = document.getElementById('version-list');
+  if (!key) {
+    listEl.innerHTML = '<div class="version-empty">Save this document at least once to start tracking version history.</div>';
+  } else {
+    const versions = getVersions(key);
+    if (!versions.length) {
+      listEl.innerHTML = '<div class="version-empty">No earlier versions yet — they\'ll appear here as you keep saving.</div>';
+    } else {
+      listEl.innerHTML = versions.slice().reverse().map((v, i) => {
+        const realIndex = versions.length - 1 - i;
+        const d = new Date(v.ts);
+        const dateStr = d.toLocaleDateString(undefined,{month:'short',day:'numeric'}) + ' \u00B7 ' + d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+        return `<div class="version-item">
+          <div class="version-meta"><span class="version-date">${dateStr}</span><span class="version-words">${v.words.toLocaleString()} words</span></div>
+          <button class="version-restore-btn" onclick="restoreVersion(${realIndex})">Restore</button>
+        </div>`;
+      }).join('');
+    }
+  }
+  document.getElementById('version-modal').classList.add('open');
+}
+function closeVersionHistory(){
+  document.getElementById('version-modal').classList.remove('open');
+}
+function restoreVersion(index){
+  const key = getVersionKey();
+  if (!key) return;
+  const versions = getVersions(key);
+  const v = versions[index];
+  if (!v) return;
+  if (!confirm('Restore this version? Your current content will be saved to history first, so this can be undone.')) return;
+
+  const isDocxEd = document.getElementById('docx-editor-screen')?.classList.contains('visible');
+  const isEd = document.getElementById('editor-screen')?.classList.contains('visible');
+
+  // Safety net on the safety net: snapshot the current state before
+  // overwriting it, bypassing the normal throttle so it's never skipped.
+  let existing = getVersions(key);
+  if (isDocxEd) {
+    const currentHtml = document.getElementById('docx-content').innerHTML;
+    existing.push({ ts: Date.now(), content: currentHtml, words: wordCount(htmlToText(currentHtml)), isHtml: true });
+  } else if (isEd) {
+    const currentText = document.getElementById('md-editor').value;
+    existing.push({ ts: Date.now(), content: currentText, words: wordCount(currentText) });
+  } else if (currentFileType === 'docx') {
+    existing.push({ ts: Date.now(), content: currentDocxHtml || '', words: wordCount(htmlToText(currentDocxHtml || '')), isHtml: true });
+  } else {
+    existing.push({ ts: Date.now(), content: currentMd, words: wordCount(currentMd) });
+  }
+  if (existing.length > MAX_VERSIONS_PER_DOC) existing = existing.slice(-MAX_VERSIONS_PER_DOC);
+  putVersions(key, existing);
+
+  closeVersionHistory();
+
+  if (isDocxEd) {
+    document.getElementById('docx-content').innerHTML = v.content;
+    onDocxInput();
+  } else if (isEd) {
+    const el = document.getElementById('md-editor');
+    el.value = v.content;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  } else if (currentFileType === 'docx') {
+    // Reader is showing a read-only docx preview — open the editor, then apply the restored version
+    openDocxEditor();
+    document.getElementById('docx-content').innerHTML = v.content;
+    onDocxInput();
+  } else {
+    currentMd = v.content;
+    openEditor({ id: currentSavedId, name: currentFilename, content: v.content });
+  }
+  toast('Version restored \u2014 remember to Save');
+}
 function renderRecent(){
   const list=document.getElementById('recent-list');
   try{
@@ -1786,6 +1979,7 @@ async function doSave(forceDialog, silent){
       if (result && result.success) {
         currentFilename = name;
         addRecent(name, content, 'md');
+      snapshotVersion(currentFilename, content);
         if (ind) { ind.textContent = silent ? '✓ Autosaved' : '✓ Saved'; ind.className = 'saved'; }
         if (!silent) toast('Saved ✓');
       } else {
@@ -1801,6 +1995,7 @@ async function doSave(forceDialog, silent){
       currentFilename = result.filePath.split(/[\\/]/).pop();
       currentSavedId = null;
       addRecent(currentFilename, content, 'md');
+      snapshotVersion(currentFilename, content);
       if (ind) { ind.textContent = '✓ Saved'; ind.className = 'saved'; }
       toast('Saved: ' + result.filePath);
     } else if (ind) {
@@ -1817,6 +2012,7 @@ async function doSave(forceDialog, silent){
       await writable.close();
       currentFilename = mdFileHandle.name;
       addRecent(currentFilename, content, 'md');
+      snapshotVersion(currentFilename, content);
       if (ind) { ind.textContent = silent ? '✓ Autosaved' : '✓ Saved'; ind.className = 'saved'; }
       if (!silent) toast('Saved: ' + mdFileHandle.name);
       return;
@@ -1836,6 +2032,7 @@ async function doSave(forceDialog, silent){
       currentFilename = handle.name;
       currentSavedId = null;
       addRecent(currentFilename, content, 'md');
+      snapshotVersion(currentFilename, content);
       if (ind) { ind.textContent = '✓ Saved'; ind.className = 'saved'; }
       toast('Saved: ' + handle.name);
       return;
@@ -1849,6 +2046,7 @@ async function doSave(forceDialog, silent){
   if(currentSavedId){files=files.map(f=>f.id===currentSavedId?{...f,name,content,date:Date.now()}:f);}
   else{const id='f'+Date.now();currentSavedId=id;files.unshift({id,name,content,date:Date.now()});}
   putSaved(files);addRecent(name,content,'md');
+  snapshotVersion(name, content);
   if (ind) { ind.textContent = silent ? '✓ Autosaved' : '✓ Saved'; ind.className = 'saved'; }
   if(!silent) toast('Saved ✓');
   renderSaved();
@@ -3012,14 +3210,8 @@ function exportText(){
   triggerDownload((currentFilename.replace(/\.md$/i,'')||'document')+'.txt',t,'text/plain');
   toast('Exported as text ✓');
 }
-function exportPDF(){
-  closeExportMenu();
-  // Open a clean print window with the document content
-  const title = currentFilename.replace(/\.(md|txt|docx)$/i,'') || 'document';
-  const isDarkMode = document.body.classList.contains('dark');
-  const content = document.getElementById('md-body').innerHTML;
-  const printWin = window.open('','_blank');
-  printWin.document.write(`<!DOCTYPE html>
+function buildPdfExportHtml(title, content, includeAutoPrint){
+  return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -3061,9 +3253,44 @@ function exportPDF(){
 </head>
 <body>
 <div class="page">${content}</div>
-<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}}<\/script>
+${includeAutoPrint ? '<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}}<\/script>' : ''}
 </body>
-</html>`);
+</html>`;
+}
+
+async function exportPDF(){
+  closeExportMenu();
+  const title = currentFilename.replace(/\.(md|txt|docx)$/i,'') || 'document';
+  const content = document.getElementById('md-body').innerHTML;
+
+  if (window.electronAPI && window.electronAPI.exportHtmlToPDF) {
+    // Render headlessly and write the PDF directly — this sidesteps the OS
+    // print dialog / "Print to PDF" driver entirely, which is what was
+    // hanging or silently failing on longer documents. Much more reliable
+    // regardless of document size.
+    toast('Generating PDF…');
+    const html = buildPdfExportHtml(title, content, false);
+    try {
+      const result = await window.electronAPI.exportHtmlToPDF(html, title + '.pdf');
+      if (result && result.success) {
+        toast('Saved: ' + result.filePath);
+      } else if (result && result.error) {
+        toast('PDF export failed: ' + result.error);
+      }
+      // result.success === false with no error means the person cancelled the save dialog — no toast needed
+    } catch(e) {
+      toast('PDF export failed: ' + e.message);
+    }
+    return;
+  }
+
+  // Web fallback (no Electron — real browser use) — use the browser's own print dialog
+  const printWin = window.open('','_blank');
+  if (!printWin) {
+    toast('Pop-up blocked — allow pop-ups for this page to export PDF');
+    return;
+  }
+  printWin.document.write(buildPdfExportHtml(title, content, true));
   printWin.document.close();
   toast('Print dialog opening…');
 }
@@ -4165,6 +4392,7 @@ async function saveDocxFile(forceDialog, silent) {
     if (!docxLib) { toast('docx.js not loaded \u2014 check network'); setStatus('\u2715 Error', 'error'); return; }
 
     const container = document.getElementById('docx-content');
+    const contentSnapshot = container.innerHTML;
     const { doc, numbering } = domToDocxResult(container, docxLib);
 
     const filename = (document.getElementById('docx-editor-title').value.trim() || 'document') + '.docx';
@@ -4184,6 +4412,7 @@ async function saveDocxFile(forceDialog, silent) {
       if (canSaveDirect) {
         const result = await window.electronAPI.saveFileDirect(currentFilePath, JSON.stringify(Array.from(bytes)));
         if (result && result.success) {
+          snapshotDocxVersion(currentFilename, contentSnapshot);
           setStatus(silent ? '\u2713 Autosaved' : '\u2713 Saved', 'saved');
           if (!silent) toast('Saved \u2713');
         } else {
@@ -4195,6 +4424,7 @@ async function saveDocxFile(forceDialog, silent) {
         if (result && result.success) {
           currentFilePath = result.filePath;
           currentFilename = result.filePath.split(/[\\/]/).pop();
+          snapshotDocxVersion(currentFilename, contentSnapshot);
           setStatus('\u2713 Saved', 'saved');
           toast('Saved: ' + result.filePath);
         } else {
@@ -4215,6 +4445,7 @@ async function saveDocxFile(forceDialog, silent) {
         const writable = await handle.createWritable();
         await writable.write(docxBlob);
         await writable.close();
+        snapshotDocxVersion(handle.name, contentSnapshot);
         setStatus(silent ? '\u2713 Autosaved' : '\u2713 Saved', 'saved');
         if (!silent) toast('Saved: ' + handle.name);
         document.getElementById('docx-editor-title').value = handle.name.replace(/\.docx$/i, '');
