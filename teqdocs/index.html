@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="TeqDocs">
+<meta name="description" content="TeqDocs is a document reader and editor for Markdown, Word (.docx), and PDF files. Read, edit, and organize documents with bookmarks, highlights, version history, and file access from Google Drive, OneDrive, and Dropbox.">
 <title>TeqDocs</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="atom-one-dark.min.css">
@@ -867,6 +868,16 @@ mark.current { background: var(--gold); color: #000; }
 .version-restore-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 .version-restore-btn:active { transform: scale(0.96); }
 
+/* ── OPEN FROM CLOUD ── */
+#cloud-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+#cloud-modal.open { display: flex; }
+.cloud-provider-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+.cloud-provider-btn { display: flex; align-items: center; gap: 10px; background: var(--parchment); border: 1px solid var(--parchment3); border-radius: 8px; padding: 12px 14px; font-size: 0.9rem; font-weight: 600; color: var(--ink); cursor: pointer; font-family: var(--font-ui); transition: all 0.15s; text-align: left; }
+.cloud-provider-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+.cloud-provider-btn:active { transform: scale(0.98); }
+.cloud-provider-icon { font-size: 1.2rem; }
+.cloud-hint { font-size: 0.72rem; color: var(--ink3); font-style: italic; margin-top: 8px; text-align: center; }
+
 /* ── TOAST ── */
 #toast { position: fixed; bottom: 24px; left: 50%; background: var(--ink); border-radius: 20px; padding: 9px 20px; font-size: 0.82rem; font-weight: 600; color: var(--parchment); z-index: 600; opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.94); transition: opacity 0.25s ease, transform 0.32s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; pointer-events: none; box-shadow: var(--shadow); }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
@@ -904,6 +915,14 @@ mark.current { background: var(--gold); color: #000; }
 </style>
 </head>
 <body>
+
+<noscript>
+  <div style="max-width:600px;margin:60px auto;padding:24px;font-family:sans-serif;line-height:1.6;color:#1c1a16;">
+    <h1>TeqDocs</h1>
+    <p>TeqDocs is a document reader and editor for Markdown, Word (.docx), and PDF files. Read, edit, and organize your documents with bookmarks, highlights, version history, and file access from Google Drive, OneDrive, and Dropbox.</p>
+    <p>This app requires JavaScript to run — please enable it in your browser.</p>
+  </div>
+</noscript>
 
 <div id="drop-overlay">
   <div class="drop-icon">📚</div>
@@ -996,6 +1015,7 @@ mark.current { background: var(--gold); color: #000; }
       <div class="sb-panel active" id="sb-library">
         <div class="sb-section">
           <button class="sb-open-btn" onclick="openFilePicker()">📂 Open File</button>
+          <button class="sb-open-btn" onclick="openCloudModal()" style="background:none;border:1px solid var(--parchment3);color:var(--ink2);">☁️ Open from Cloud</button>
           <button class="sb-new-btn" onclick="newDocument()">✏️ New MD File</button>
           <div class="sb-label">Recent</div>
           <div id="recent-list"></div>
@@ -1036,9 +1056,10 @@ mark.current { background: var(--gold); color: #000; }
       <div id="welcome">
         <div class="welcome-book">📚</div>
         <div class="welcome-title">Teq<span>Docs</span></div>
-        <p class="welcome-sub">Your beautiful reading & writing companion. Open Markdown or PDF files to get started.</p>
+        <p class="welcome-sub">TeqDocs is a document reader and editor for Markdown, Word, and PDF files — with bookmarks, highlights, version history, and cloud file access built in.</p>
         <div class="welcome-actions">
           <button class="wa-btn primary" onclick="openFilePicker()">📂 Open File</button>
+          <button class="wa-btn secondary" onclick="openCloudModal()">☁️ Open from Cloud</button>
           <button class="wa-btn secondary" onclick="newDocument()">✏️ New Document</button>
         </div>
         <div class="welcome-formats">
@@ -1514,6 +1535,28 @@ mark.current { background: var(--gold); color: #000; }
   </div>
 </div>
 
+<!-- Open from Cloud -->
+<div id="cloud-modal">
+  <div class="version-box">
+    <div class="version-box-title">
+      Open from Cloud
+      <button class="version-box-close" onclick="closeCloudModal()" title="Close">✕</button>
+    </div>
+    <div class="cloud-provider-list">
+      <button class="cloud-provider-btn" onclick="openGoogleDrivePicker()">
+        <span class="cloud-provider-icon">🟢</span> Google Drive
+      </button>
+      <button class="cloud-provider-btn" onclick="openOneDrivePicker()">
+        <span class="cloud-provider-icon">🔵</span> OneDrive
+      </button>
+      <button class="cloud-provider-btn" onclick="openDropboxPicker()">
+        <span class="cloud-provider-icon">🔷</span> Dropbox
+      </button>
+    </div>
+    <div class="cloud-hint">Files open as a copy — use Save As to keep any changes.</div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <input type="file" id="file-input" accept=".md,.markdown,.txt,.pdf,.docx">
 
@@ -1606,6 +1649,170 @@ async function openFilePicker() {
     }
   }
   document.getElementById('file-input').click();
+}
+
+/* ── Cloud storage integration ──
+   Each provider requires registering a free developer app to get an API key
+   — fill those in below. Until configured, clicking that provider shows a
+   toast explaining what's missing instead of a confusing error.
+
+   Google Drive: console.cloud.google.com → APIs & Services → Credentials.
+     Enable the "Google Drive API" and the "Google Picker API" for your
+     project, then create an OAuth 2.0 Client ID (Web application — add this
+     app's URL under Authorized JavaScript origins) and an API key.
+   OneDrive: portal.azure.com → App registrations → New registration
+     (or the older account.live.com/developers/applications). Add this app's
+     URL as a redirect URI (or http://localhost while testing locally). */
+const CLOUD_CONFIG = {
+  googleClientId: '82010673747-ncf14j7en7pv1c1pps6715e9v94fcd95.apps.googleusercontent.com',
+  googleApiKey: 'AIzaSyAfRKfSh9WHxN9Dt58tAKDlU7gGRaVkuhU',
+  oneDriveClientId: 'YOUR_ONEDRIVE_APPLICATION_ID',
+};
+function isCloudConfigured(value){ return !!value && !value.startsWith('YOUR_'); }
+
+let cloudScriptsLoaded = { google: false, googlePicker: false, oneDrive: false };
+function loadScriptOnce(src, flagKey, attrs){
+  return new Promise((resolve, reject) => {
+    if (cloudScriptsLoaded[flagKey]) return resolve();
+    const s = document.createElement('script');
+    s.src = src;
+    if (attrs) Object.entries(attrs).forEach(([k,v]) => s.setAttribute(k, v));
+    s.onload = () => { cloudScriptsLoaded[flagKey] = true; resolve(); };
+    s.onerror = () => reject(new Error('Failed to load ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+function openCloudModal(){ document.getElementById('cloud-modal').classList.add('open'); }
+function closeCloudModal(){ document.getElementById('cloud-modal').classList.remove('open'); }
+
+/* Feed a file fetched from a cloud provider into the same pipeline used for
+   local files. There's no writable handle back to the cloud copy — this is
+   deliberately "open a copy", not a live sync; Save As is how changes persist. */
+function openCloudFile(blob, filename){
+  const file = new File([blob], filename, { type: blob.type });
+  closeCloudModal();
+  docxFileHandle = null; mdFileHandle = null;
+  loadFileByType(file);
+  toast('Opened from cloud \u2014 use Save As to keep any changes');
+}
+
+/* ── Google Drive ── */
+async function openGoogleDrivePicker(){
+  if (!isCloudConfigured(CLOUD_CONFIG.googleClientId) || !isCloudConfigured(CLOUD_CONFIG.googleApiKey)) {
+    toast('Google Drive isn\u2019t configured yet \u2014 add your API key in CLOUD_CONFIG');
+    return;
+  }
+  try {
+    toast('Connecting to Google Drive\u2026');
+    await loadScriptOnce('https://accounts.google.com/gsi/client', 'google');
+    await loadScriptOnce('https://apis.google.com/js/api.js', 'googlePicker');
+
+    const tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLOUD_CONFIG.googleClientId,
+      // drive.file (not drive.readonly): scoped to only the files the person
+      // explicitly picks through the Picker below, not their whole Drive.
+      // Google classifies this as non-sensitive — no verification review,
+      // no 100-user cap, no "unverified app" warning screen for other users.
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: (tokenResponse) => {
+        if (tokenResponse.error) { toast('Google Drive sign-in failed'); return; }
+        const accessToken = tokenResponse.access_token;
+        gapi.load('picker', () => {
+          const picker = new google.picker.PickerBuilder()
+            .addView(google.picker.ViewId.DOCS)
+            .setOAuthToken(accessToken)
+            .setDeveloperKey(CLOUD_CONFIG.googleApiKey)
+            .setCallback(async (data) => {
+              if (data.action !== google.picker.Action.PICKED) return;
+              const fileMeta = data.docs[0];
+              toast('Downloading ' + fileMeta.name + '\u2026');
+              try {
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileMeta.id}?alt=media`, {
+                  headers: { Authorization: 'Bearer ' + accessToken },
+                });
+                if (!res.ok) throw new Error('Download failed (' + res.status + ')');
+                openCloudFile(await res.blob(), fileMeta.name);
+              } catch(e) {
+                toast('Google Drive download failed: ' + e.message);
+              }
+            })
+            .build();
+          picker.setVisible(true);
+        });
+      },
+    });
+    tokenClient.requestAccessToken();
+  } catch(e) {
+    toast('Google Drive connection failed: ' + e.message);
+  }
+}
+
+/* ── OneDrive ── */
+async function openOneDrivePicker(){
+  if (!isCloudConfigured(CLOUD_CONFIG.oneDriveClientId)) {
+    toast('OneDrive isn\u2019t configured yet \u2014 add your Application ID in CLOUD_CONFIG');
+    return;
+  }
+  try {
+    await loadScriptOnce('https://js.live.net/v7.2/OneDrive.js', 'oneDrive');
+    OneDrive.open({
+      clientId: CLOUD_CONFIG.oneDriveClientId,
+      action: 'download',
+      multiSelect: false,
+      advanced: { filter: '.docx,.md,.markdown,.txt,.pdf' },
+      success: async (response) => {
+        const item = response.value[0];
+        const downloadUrl = item['@content.downloadUrl'] || item['@microsoft.graph.downloadUrl'];
+        if (!downloadUrl) { toast('OneDrive: no download link returned'); return; }
+        toast('Downloading ' + item.name + '\u2026');
+        try {
+          const res = await fetch(downloadUrl);
+          if (!res.ok) throw new Error('Download failed (' + res.status + ')');
+          openCloudFile(await res.blob(), item.name);
+        } catch(e) {
+          toast('OneDrive download failed: ' + e.message);
+        }
+      },
+      cancel: () => {},
+      error: (e) => toast('OneDrive error: ' + (e && e.message ? e.message : 'unknown error')),
+    });
+  } catch(e) {
+    toast('OneDrive connection failed: ' + e.message);
+  }
+}
+
+/* ── Dropbox ── */
+async function openDropboxPicker(){
+  if (!isCloudConfigured(CLOUD_CONFIG.dropboxAppKey)) {
+    toast('Dropbox isn\u2019t configured yet \u2014 add your App key in CLOUD_CONFIG');
+    return;
+  }
+  try {
+    await loadScriptOnce('https://www.dropbox.com/static/api/2/dropins.js', 'dropbox', {
+      id: 'dropboxjs',
+      'data-app-key': CLOUD_CONFIG.dropboxAppKey,
+    });
+    Dropbox.choose({
+      success: async (files) => {
+        const f = files[0];
+        toast('Downloading ' + f.name + '\u2026');
+        try {
+          const res = await fetch(f.link);
+          if (!res.ok) throw new Error('Download failed (' + res.status + ')');
+          openCloudFile(await res.blob(), f.name);
+        } catch(e) {
+          toast('Dropbox download failed: ' + e.message);
+        }
+      },
+      cancel: () => {},
+      linkType: 'direct',
+      multiselect: false,
+      extensions: ['.docx', '.md', '.markdown', '.txt', '.pdf'],
+    });
+  } catch(e) {
+    toast('Dropbox connection failed: ' + e.message);
+  }
 }
 document.getElementById('file-input').addEventListener('change',e=>{
   const file=e.target.files[0]; if(file){ docxFileHandle=null; mdFileHandle=null; loadFileByType(file); } e.target.value='';
