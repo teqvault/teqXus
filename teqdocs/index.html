@@ -1781,6 +1781,7 @@ let msalInstance = null;
 let msalAccount = null;
 let oneDriveAccessToken = null;
 let oneDriveFolderStack = [];
+let oneDriveCurrentItems = {};
 
 async function ensureMsal(){
   if (!msalInstance) {
@@ -1867,12 +1868,15 @@ async function loadOneDriveFolder(folderId){
       if (!!a.folder !== !!b.folder) return a.folder ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
+    // Keyed by id so click handlers can look items up instead of re-embedding
+    // filenames (which can contain quotes/apostrophes) into inline HTML —
+    // that was breaking the onclick attribute for most real filenames.
+    oneDriveCurrentItems = {};
     listEl.innerHTML = items.map(item => {
+      oneDriveCurrentItems[item.id] = item;
       const icon = item.folder ? '\ud83d\udcc1' : '\ud83d\udcc4';
       const meta = item.folder ? ((item.folder.childCount || 0) + ' items') : formatBytes(item.size);
-      const action = item.folder
-        ? `onedriveOpenFolder('${item.id}', ${JSON.stringify(item.name)})`
-        : `onedriveSelectFile('${item.id}', ${JSON.stringify(item.name)})`;
+      const action = item.folder ? `onedriveOpenFolder('${item.id}')` : `onedriveSelectFile('${item.id}')`;
       return `<div class="version-item onedrive-row" onclick="${action}">
         <div class="version-meta"><span class="version-date">${icon} ${escapeHtml(item.name)}</span><span class="version-words">${meta}</span></div>
       </div>`;
@@ -1882,9 +1886,11 @@ async function loadOneDriveFolder(folderId){
   }
 }
 
-function onedriveOpenFolder(id, name){
-  oneDriveFolderStack.push({ id, name });
-  loadOneDriveFolder(id);
+function onedriveOpenFolder(id){
+  const item = oneDriveCurrentItems[id];
+  if (!item) return;
+  oneDriveFolderStack.push({ id: item.id, name: item.name });
+  loadOneDriveFolder(item.id);
 }
 
 function onedriveGoToBreadcrumb(index){
@@ -1892,7 +1898,10 @@ function onedriveGoToBreadcrumb(index){
   loadOneDriveFolder(oneDriveFolderStack[oneDriveFolderStack.length - 1].id);
 }
 
-async function onedriveSelectFile(id, name){
+async function onedriveSelectFile(id){
+  const item = oneDriveCurrentItems[id];
+  if (!item) return;
+  const name = item.name;
   const listEl = document.getElementById('onedrive-file-list');
   listEl.innerHTML = '<div class="version-empty">Downloading ' + escapeHtml(name) + '\u2026</div>';
   try {
