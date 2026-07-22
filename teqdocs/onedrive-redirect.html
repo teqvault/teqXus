@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Signing in…</title>
+<script type="text/javascript" src="https://js.live.net/v7.2/OneDrive.js"></script>
 <style>
   body {
     margin: 0;
@@ -20,11 +21,12 @@
 <body>
 Signing in&hellip;
 <!--
-  Intentionally minimal. The OneDrive picker SDK (js.live.net) handles the
-  actual token handshake itself by polling this popup's URL from the parent
-  page — this file doesn't need any of its own JS logic. It exists purely so
-  the sign-in popup shows a blank page instead of a full second copy of
-  TeqDocs while Microsoft's login redirects back here.
+  This page needs the OneDrive.js script loaded directly on it (not just on
+  the main app page) — the picker SDK opens its sign-in popup pointed at
+  this exact URL with an ?oauth=... parameter describing the auth request,
+  and it's the SDK running HERE that reads that parameter and redirects on
+  to Microsoft's actual login page. Without the script tag above, this page
+  just sits blank forever instead of continuing the sign-in.
 -->
 </body>
 </html>
