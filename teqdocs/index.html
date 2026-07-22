@@ -1664,8 +1664,8 @@ async function openFilePicker() {
      (or the older account.live.com/developers/applications). Add this app's
      URL as a redirect URI (or http://localhost while testing locally). */
 const CLOUD_CONFIG = {
-  googleClientId: '82010673747-ncf14j7en7pv1c1pps6715e9v94fcd95.apps.googleusercontent.com',
-  googleApiKey: 'AIzaSyAfRKfSh9WHxN9Dt58tAKDlU7gGRaVkuhU',
+  googleClientId: '127823724009-97uojetdfkipoplugsomdcd8kifrh05r.apps.googleusercontent.com',
+  googleApiKey: 'AIzaSyCrCqTsBRuk0r4RpfcCnPQ3HFYGZ3jTZhc',
   oneDriveClientId: '6539977e-c8f7-4748-8e9d-602f1aa2004f',
 };
 function isCloudConfigured(value){ return !!value && !value.startsWith('YOUR_'); }
@@ -1700,7 +1700,7 @@ function openCloudFile(blob, filename){
 /* ── Google Drive ── */
 async function openGoogleDrivePicker(){
   if (!isCloudConfigured(CLOUD_CONFIG.googleClientId) || !isCloudConfigured(CLOUD_CONFIG.googleApiKey)) {
-    toast('Google Drive isn\u2019t configured yet \u2014 add your API key in CLOUD_CONFIG');
+    toast('Google Drive isn\u2019t set up yet \u2014 check back soon');
     return;
   }
   try {
@@ -1751,7 +1751,7 @@ async function openGoogleDrivePicker(){
 /* ── OneDrive ── */
 async function openOneDrivePicker(){
   if (!isCloudConfigured(CLOUD_CONFIG.oneDriveClientId)) {
-    toast('OneDrive isn\u2019t configured yet \u2014 add your Application ID in CLOUD_CONFIG');
+    toast('OneDrive isn\u2019t set up yet \u2014 check back soon');
     return;
   }
   try {
@@ -1793,7 +1793,7 @@ async function openOneDrivePicker(){
 /* ── Dropbox ── */
 async function openDropboxPicker(){
   if (!isCloudConfigured(CLOUD_CONFIG.dropboxAppKey)) {
-    toast('Dropbox isn\u2019t configured yet \u2014 add your App key in CLOUD_CONFIG');
+    toast('Dropbox isn\u2019t set up yet \u2014 check back soon');
     return;
   }
   try {
