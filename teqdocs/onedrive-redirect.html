@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signing in…</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f0e8;
+    color: #6b6760;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+Signing in&hellip;
+<!--
+  Intentionally minimal. The OneDrive picker SDK (js.live.net) handles the
+  actual token handshake itself by polling this popup's URL from the parent
+  page — this file doesn't need any of its own JS logic. It exists purely so
+  the sign-in popup shows a blank page instead of a full second copy of
+  TeqDocs while Microsoft's login redirects back here.
+-->
+</body>
+</html>

@@ -1760,7 +1760,15 @@ async function openOneDrivePicker(){
       clientId: CLOUD_CONFIG.oneDriveClientId,
       action: 'download',
       multiSelect: false,
-      advanced: { filter: '.docx,.md,.markdown,.txt,.pdf' },
+      advanced: {
+        filter: '.docx,.md,.markdown,.txt,.pdf',
+        // Without this, the sign-in popup briefly shows the redirect URI's
+        // content before settling on Microsoft's login page — since our
+        // registered redirect URI was the whole app, that looked like a
+        // second TeqDocs window flashing open. Pointing it at a tiny
+        // dedicated page instead fixes that.
+        redirectUri: 'https://teqxus.app/teqdocs/onedrive-redirect.html',
+      },
       success: async (response) => {
         const item = response.value[0];
         const downloadUrl = item['@content.downloadUrl'] || item['@microsoft.graph.downloadUrl'];
