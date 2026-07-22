@@ -871,12 +871,19 @@ mark.current { background: var(--gold); color: #000; }
 /* ── OPEN FROM CLOUD ── */
 #cloud-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 #cloud-modal.open { display: flex; }
+#onedrive-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+#onedrive-modal.open { display: flex; }
 .cloud-provider-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
 .cloud-provider-btn { display: flex; align-items: center; gap: 10px; background: var(--parchment); border: 1px solid var(--parchment3); border-radius: 8px; padding: 12px 14px; font-size: 0.9rem; font-weight: 600; color: var(--ink); cursor: pointer; font-family: var(--font-ui); transition: all 0.15s; text-align: left; }
 .cloud-provider-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
 .cloud-provider-btn:active { transform: scale(0.98); }
 .cloud-provider-icon { font-size: 1.2rem; }
 .cloud-hint { font-size: 0.72rem; color: var(--ink3); font-style: italic; margin-top: 8px; text-align: center; }
+.onedrive-breadcrumb { font-size: 0.78rem; color: var(--ink3); margin-bottom: 10px; }
+.onedrive-crumb { cursor: pointer; color: var(--accent); }
+.onedrive-crumb:hover { text-decoration: underline; }
+.onedrive-row { cursor: pointer; transition: all 0.15s; }
+.onedrive-row:hover { border-color: var(--accent); transform: translateY(-1px); }
 
 /* ── TOAST ── */
 #toast { position: fixed; bottom: 24px; left: 50%; background: var(--ink); border-radius: 20px; padding: 9px 20px; font-size: 0.82rem; font-weight: 600; color: var(--parchment); z-index: 600; opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.94); transition: opacity 0.25s ease, transform 0.32s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; pointer-events: none; box-shadow: var(--shadow); }
@@ -1557,6 +1564,18 @@ mark.current { background: var(--gold); color: #000; }
   </div>
 </div>
 
+<!-- OneDrive file browser -->
+<div id="onedrive-modal">
+  <div class="version-box">
+    <div class="version-box-title">
+      OneDrive
+      <button class="version-box-close" onclick="closeOneDrivePicker()" title="Close">✕</button>
+    </div>
+    <div id="onedrive-breadcrumb" class="onedrive-breadcrumb"></div>
+    <div class="version-list" id="onedrive-file-list"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <input type="file" id="file-input" accept=".md,.markdown,.txt,.pdf,.docx">
 
@@ -1670,7 +1689,7 @@ const CLOUD_CONFIG = {
 };
 function isCloudConfigured(value){ return !!value && !value.startsWith('YOUR_'); }
 
-let cloudScriptsLoaded = { google: false, googlePicker: false, oneDrive: false };
+let cloudScriptsLoaded = { google: false, googlePicker: false, msal: false, dropbox: false };
 function loadScriptOnce(src, flagKey, attrs){
   return new Promise((resolve, reject) => {
     if (cloudScriptsLoaded[flagKey]) return resolve();
@@ -1749,44 +1768,148 @@ async function openGoogleDrivePicker(){
 }
 
 /* ── OneDrive ── */
+/* ── OneDrive (MSAL.js + Microsoft Graph API) ──
+   The old classic OneDrive picker SDK (js.live.net) works by repeatedly
+   checking whether its sign-in popup has closed — modern browsers now block
+   that kind of cross-origin check by default (Cross-Origin-Opener-Policy),
+   which is what caused the silent "unknown error" it kept throwing. MSAL.js
+   is Microsoft's current, actively-maintained auth library, built to work
+   correctly with that browser behavior. It doesn't come with a hosted file
+   browser widget like the old SDK did, so we build a small one here against
+   the Microsoft Graph API directly. */
+let msalInstance = null;
+let msalAccount = null;
+let oneDriveAccessToken = null;
+let oneDriveFolderStack = [];
+
+async function ensureMsal(){
+  if (!msalInstance) {
+    await loadScriptOnce('https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js', 'msal');
+    msalInstance = new msal.PublicClientApplication({
+      auth: {
+        clientId: CLOUD_CONFIG.oneDriveClientId,
+        authority: 'https://login.microsoftonline.com/consumers',
+        redirectUri: 'https://teqxus.app/teqdocs/',
+      },
+      cache: { cacheLocation: 'sessionStorage' },
+    });
+    await msalInstance.initialize();
+  }
+  return msalInstance;
+}
+
 async function openOneDrivePicker(){
   if (!isCloudConfigured(CLOUD_CONFIG.oneDriveClientId)) {
     toast('OneDrive isn\u2019t set up yet \u2014 check back soon');
     return;
   }
   try {
-    await loadScriptOnce('https://js.live.net/v7.2/OneDrive.js', 'oneDrive');
-    OneDrive.open({
-      clientId: CLOUD_CONFIG.oneDriveClientId,
-      action: 'download',
-      multiSelect: false,
-      advanced: {
-        filter: '.docx,.md,.markdown,.txt,.pdf',
-        // Without this, the sign-in popup briefly shows the redirect URI's
-        // content before settling on Microsoft's login page — since our
-        // registered redirect URI was the whole app, that looked like a
-        // second TeqDocs window flashing open. Pointing it at a tiny
-        // dedicated page instead fixes that.
-        redirectUri: 'https://teqxus.app/teqdocs/onedrive-redirect.html',
-      },
-      success: async (response) => {
-        const item = response.value[0];
-        const downloadUrl = item['@content.downloadUrl'] || item['@microsoft.graph.downloadUrl'];
-        if (!downloadUrl) { toast('OneDrive: no download link returned'); return; }
-        toast('Downloading ' + item.name + '\u2026');
-        try {
-          const res = await fetch(downloadUrl);
-          if (!res.ok) throw new Error('Download failed (' + res.status + ')');
-          openCloudFile(await res.blob(), item.name);
-        } catch(e) {
-          toast('OneDrive download failed: ' + e.message);
-        }
-      },
-      cancel: () => {},
-      error: (e) => toast('OneDrive error: ' + (e && e.message ? e.message : 'unknown error')),
-    });
+    await ensureMsal();
+    if (!msalAccount) {
+      toast('Signing in to OneDrive\u2026');
+      const loginResponse = await msalInstance.loginPopup({ scopes: ['Files.Read'] });
+      msalAccount = loginResponse.account;
+    }
+    let tokenResponse;
+    try {
+      tokenResponse = await msalInstance.acquireTokenSilent({ scopes: ['Files.Read'], account: msalAccount });
+    } catch(e) {
+      tokenResponse = await msalInstance.acquireTokenPopup({ scopes: ['Files.Read'], account: msalAccount });
+    }
+    oneDriveAccessToken = tokenResponse.accessToken;
+    oneDriveFolderStack = [{ id: null, name: 'OneDrive' }];
+    document.getElementById('onedrive-modal').classList.add('open');
+    await loadOneDriveFolder(null);
   } catch(e) {
-    toast('OneDrive connection failed: ' + e.message);
+    console.error('OneDrive sign-in error:', e);
+    toast('OneDrive sign-in failed: ' + (e && e.message ? e.message : 'unknown error'));
+  }
+}
+
+function closeOneDrivePicker(){
+  document.getElementById('onedrive-modal').classList.remove('open');
+}
+
+function formatBytes(bytes){
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function renderOneDriveBreadcrumb(){
+  const el = document.getElementById('onedrive-breadcrumb');
+  el.innerHTML = oneDriveFolderStack.map((f, i) => {
+    const isLast = i === oneDriveFolderStack.length - 1;
+    return isLast
+      ? `<span>${escapeHtml(f.name)}</span>`
+      : `<span class="onedrive-crumb" onclick="onedriveGoToBreadcrumb(${i})">${escapeHtml(f.name)}</span><span> / </span>`;
+  }).join('');
+}
+
+async function loadOneDriveFolder(folderId){
+  const listEl = document.getElementById('onedrive-file-list');
+  listEl.innerHTML = '<div class="version-empty">Loading\u2026</div>';
+  renderOneDriveBreadcrumb();
+  const url = folderId
+    ? `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}/children?$top=200`
+    : `https://graph.microsoft.com/v1.0/me/drive/root/children?$top=200`;
+  try {
+    const res = await fetch(url, { headers: { Authorization: 'Bearer ' + oneDriveAccessToken } });
+    if (!res.ok) throw new Error('Graph API error (' + res.status + ')');
+    const data = await res.json();
+    const items = (data.value || []).filter(item => item.folder || /\.(docx|md|markdown|txt|pdf)$/i.test(item.name));
+    if (!items.length) {
+      listEl.innerHTML = '<div class="version-empty">This folder is empty (or has no supported files).</div>';
+      return;
+    }
+    items.sort((a, b) => {
+      if (!!a.folder !== !!b.folder) return a.folder ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+    listEl.innerHTML = items.map(item => {
+      const icon = item.folder ? '\ud83d\udcc1' : '\ud83d\udcc4';
+      const meta = item.folder ? ((item.folder.childCount || 0) + ' items') : formatBytes(item.size);
+      const action = item.folder
+        ? `onedriveOpenFolder('${item.id}', ${JSON.stringify(item.name)})`
+        : `onedriveSelectFile('${item.id}', ${JSON.stringify(item.name)})`;
+      return `<div class="version-item onedrive-row" onclick="${action}">
+        <div class="version-meta"><span class="version-date">${icon} ${escapeHtml(item.name)}</span><span class="version-words">${meta}</span></div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    listEl.innerHTML = '<div class="version-empty">Couldn\u2019t load this folder: ' + e.message + '</div>';
+  }
+}
+
+function onedriveOpenFolder(id, name){
+  oneDriveFolderStack.push({ id, name });
+  loadOneDriveFolder(id);
+}
+
+function onedriveGoToBreadcrumb(index){
+  oneDriveFolderStack = oneDriveFolderStack.slice(0, index + 1);
+  loadOneDriveFolder(oneDriveFolderStack[oneDriveFolderStack.length - 1].id);
+}
+
+async function onedriveSelectFile(id, name){
+  const listEl = document.getElementById('onedrive-file-list');
+  listEl.innerHTML = '<div class="version-empty">Downloading ' + escapeHtml(name) + '\u2026</div>';
+  try {
+    const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${id}`, {
+      headers: { Authorization: 'Bearer ' + oneDriveAccessToken },
+    });
+    if (!res.ok) throw new Error('Graph API error (' + res.status + ')');
+    const meta = await res.json();
+    const downloadUrl = meta['@microsoft.graph.downloadUrl'];
+    if (!downloadUrl) throw new Error('No download link returned');
+    const fileRes = await fetch(downloadUrl);
+    if (!fileRes.ok) throw new Error('Download failed (' + fileRes.status + ')');
+    closeOneDrivePicker();
+    openCloudFile(await fileRes.blob(), name);
+  } catch(e) {
+    toast('OneDrive download failed: ' + e.message);
+    closeOneDrivePicker();
   }
 }
 
