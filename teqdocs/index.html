@@ -880,6 +880,30 @@ mark.current { background: var(--gold); color: #000; }
 
 /* ── OPEN FROM CLOUD ── */
 #cloud-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+
+/* ── PRO ── */
+#pro-modal { position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px; }
+#pro-modal.open { display:flex; }
+.pro-box { background:var(--parchment2);border:1px solid var(--parchment3);border-radius:var(--radius-lg);width:100%;max-width:400px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:14px; }
+.pro-header { display:flex;align-items:center;justify-content:space-between; }
+.pro-title { font-size:1.1rem;font-weight:800;color:var(--ink); }
+.pro-close { background:none;border:none;cursor:pointer;color:var(--ink3);font-size:1.2rem; }
+.pro-badge { display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;padding:4px 12px;border-radius:20px;text-transform:uppercase; }
+.pro-perks { display:flex;flex-direction:column;gap:6px; }
+.pro-perk { font-size:0.82rem;color:var(--ink2);display:flex;align-items:center;gap:8px; }
+.pro-perk span { color:var(--gold);font-size:1rem; }
+.pro-divider { border:none;border-top:1px solid var(--parchment3); }
+.pro-input { width:100%;background:var(--parchment3);border:1px solid var(--parchment3);border-radius:10px;color:var(--ink);font-family:var(--font-mono);font-size:1rem;padding:11px 14px;outline:none;text-align:center;letter-spacing:0.08em;text-transform:uppercase; }
+.pro-input:focus { border-color:var(--accent); }
+.pro-activate-btn { width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;font-family:var(--font-ui);cursor:pointer;transition:opacity 0.15s; }
+.pro-activate-btn:hover { opacity:0.88; }
+.pro-activate-btn:disabled { opacity:0.5;cursor:not-allowed; }
+.pro-msg { font-size:0.8rem;text-align:center;padding:6px 0;min-height:20px; }
+.pro-msg.success { color:var(--gold); }
+.pro-msg.error { color:var(--danger); }
+.pro-get-link { font-size:0.75rem;color:var(--ink3);text-align:center; }
+.pro-get-link a { color:var(--accent);font-weight:600; }
+#pro-btn.pro-active { background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:8px;padding:5px 12px;border:none; }
 #cloud-modal.open { display: flex; }
 #onedrive-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 #onedrive-modal.open { display: flex; }
@@ -1011,6 +1035,7 @@ mark.current { background: var(--gold); color: #000; }
     <button class="hdr-btn" onclick="toggleSearch()" title="Search (Ctrl+F)">🔍 Search</button>
     <button class="hdr-btn" onclick="toggleFocusMode()" id="focus-btn" title="Focus mode (Ctrl+Shift+F)">⊙</button>
     <button class="hdr-btn" onclick="toggleTheme()" id="theme-btn" title="Switch look">🎨</button>
+    <button class="hdr-btn" id="pro-btn" onclick="openProModal()" title="Activate TeqXus Pro" style="font-weight:700;">⚡ Pro</button>
     <button class="hdr-btn" onclick="openShortcuts()" title="Keyboard shortcuts (?)">⌨</button>
     <button class="hdr-btn" onclick="openAbout()" title="About TeqDocs">ℹ</button>
     <a href="https://ko-fi.com/teqvault" target="_blank" title="Support TeqVault on Ko-fi" style="text-decoration:none;">
@@ -1593,6 +1618,36 @@ mark.current { background: var(--gold); color: #000; }
   </div>
 </div>
 
+<!-- Pro -->
+<div id="pro-modal">
+  <div class="pro-box">
+    <div class="pro-header">
+      <div class="pro-title">⚡ TeqXus Pro</div>
+      <button class="pro-close" onclick="closeProModal()">✕</button>
+    </div>
+    <div id="pro-active-state" style="display:none;flex-direction:column;gap:10px;align-items:center;text-align:center;">
+      <div style="font-size:2.5rem;">🎉</div>
+      <div class="pro-badge">⚡ Pro Active</div>
+      <div style="font-size:0.82rem;color:var(--ink2);">You have full Pro access — a much higher read-aloud allowance, natural-voice quality.</div>
+      <button onclick="deactivatePro()" style="background:none;border:1px solid var(--parchment3);border-radius:8px;color:var(--ink3);font-size:0.75rem;font-family:var(--font-ui);padding:6px 14px;cursor:pointer;margin-top:4px;">Remove Pro code</button>
+    </div>
+    <div id="pro-inactive-state" style="display:flex;flex-direction:column;gap:14px;">
+      <div class="pro-perks">
+        <div class="pro-perk"><span>🔊</span> Much higher read-aloud allowance</div>
+        <div class="pro-perk"><span>🎙️</span> Natural neural voice quality</div>
+        <div class="pro-perk"><span>⚡</span> Priority processing</div>
+      </div>
+      <hr class="pro-divider">
+      <input id="pro-code-input" class="pro-input" type="text" placeholder="TXPRO-XXXX-XXXX" maxlength="14"
+        onkeydown="if(event.key==='Enter')activatePro()"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'')">
+      <button class="pro-activate-btn" id="pro-activate-btn" onclick="activatePro()">⚡ Activate Pro</button>
+      <div class="pro-msg" id="pro-msg"></div>
+      <div class="pro-get-link">Don't have a code? <a href="https://teqxus.app" target="_blank">Get TeqXus Pro →</a></div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <input type="file" id="file-input" accept=".md,.markdown,.txt,.pdf,.docx">
 
@@ -2006,8 +2061,19 @@ async function speakChunk(){
     const res = await fetch(TTS_BACKEND + '/teqdocs/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({
+        text,
+        proCode: localStorage.getItem('teqxus-pro-code') || undefined,
+        deviceId: getDeviceId(),
+      }),
     });
+    if (res.status === 403) {
+      const limitData = await res.json().catch(() => ({}));
+      toast(limitData.message || 'Read-aloud allowance reached for now.');
+      stopTTS();
+      if (!localStorage.getItem('teqxus-pro-code')) openProModal();
+      return;
+    }
     if (!res.ok) throw new Error('TTS request failed (' + res.status + ')');
     const data = await res.json();
     if (!data.audioContent) throw new Error('No audio returned');
@@ -2068,6 +2134,108 @@ const _origRenderDocTTS = typeof renderDoc === 'function' ? renderDoc : null;
 if (_origRenderDocTTS) {
   renderDoc = function() { stopTTS(); _origRenderDocTTS(); };
 }
+
+/* ── TeqXus Pro (shared backend/pro_codes system with Student Desktop) ──
+   Right now this only gates the read-aloud character allowance — Live
+   doesn't have flashcards. Same activation flow either way, so a Pro code
+   bought for one TeqDocs edition works in this one too. */
+function getDeviceId(){
+  let id = localStorage.getItem('td-device-id');
+  if (!id) {
+    id = 'td-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+    localStorage.setItem('td-device-id', id);
+  }
+  return id;
+}
+
+function openProModal(){
+  document.getElementById('pro-modal').classList.add('open');
+  const proCode = localStorage.getItem('teqxus-pro-code');
+  if (proCode) {
+    document.getElementById('pro-active-state').style.display = 'flex';
+    document.getElementById('pro-inactive-state').style.display = 'none';
+  } else {
+    document.getElementById('pro-active-state').style.display = 'none';
+    document.getElementById('pro-inactive-state').style.display = 'flex';
+    setTimeout(() => document.getElementById('pro-code-input').focus(), 100);
+  }
+  document.getElementById('pro-msg').textContent = '';
+  document.getElementById('pro-msg').className = 'pro-msg';
+}
+
+function closeProModal(){
+  document.getElementById('pro-modal').classList.remove('open');
+}
+
+async function activatePro(){
+  const code = document.getElementById('pro-code-input').value.trim().toUpperCase();
+  if (!code) { showProMsg('Enter your Pro code', 'error'); return; }
+  const btn = document.getElementById('pro-activate-btn');
+  btn.disabled = true; btn.textContent = 'Verifying\u2026';
+  showProMsg('', '');
+  try {
+    const res = await fetch(TTS_BACKEND + '/verify-pro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, identifier: getDeviceId() }),
+    });
+    const data = await res.json();
+    if (data.valid) {
+      localStorage.setItem('teqxus-pro-code', code);
+      updateProUI(true);
+      showProMsg('\u2713 ' + data.message, 'success');
+      setTimeout(() => {
+        document.getElementById('pro-active-state').style.display = 'flex';
+        document.getElementById('pro-inactive-state').style.display = 'none';
+      }, 1200);
+      toast('\u26a1 TeqXus Pro activated!');
+    } else {
+      showProMsg('\u2715 ' + data.message, 'error');
+    }
+  } catch(e) {
+    showProMsg('Connection failed \u2014 check your internet', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '\u26a1 Activate Pro';
+  }
+}
+
+function deactivatePro(){
+  if (!confirm('Remove your Pro code from this device?')) return;
+  localStorage.removeItem('teqxus-pro-code');
+  updateProUI(false);
+  document.getElementById('pro-active-state').style.display = 'none';
+  document.getElementById('pro-inactive-state').style.display = 'flex';
+  document.getElementById('pro-code-input').value = '';
+  toast('Pro code removed');
+}
+
+function showProMsg(msg, type){
+  const el = document.getElementById('pro-msg');
+  el.textContent = msg;
+  el.className = 'pro-msg' + (type ? ' ' + type : '');
+}
+
+function updateProUI(isPro){
+  const btn = document.getElementById('pro-btn');
+  if (!btn) return;
+  if (isPro) {
+    btn.textContent = '\u26a1 Pro';
+    btn.classList.add('pro-active');
+    btn.title = 'TeqXus Pro \u2014 Active';
+  } else {
+    btn.textContent = '\u26a1 Pro';
+    btn.classList.remove('pro-active');
+    btn.title = 'Activate TeqXus Pro';
+  }
+}
+
+(function initProState(){
+  updateProUI(!!localStorage.getItem('teqxus-pro-code'));
+})();
+
+document.getElementById('pro-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('pro-modal')) closeProModal();
+});
 
 /* ── Dropbox ── */
 async function openDropboxPicker(){
