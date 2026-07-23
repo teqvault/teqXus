@@ -10,6 +10,9 @@
 <meta name="description" content="TeqDocs is a document reader and editor for Markdown, Word (.docx), and PDF files. Read, edit, and organize documents with bookmarks, highlights, version history, and file access from Google Drive, OneDrive, and Dropbox.">
 <title>TeqDocs</title>
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="atom-one-dark.min.css">
 <script src="highlight.min.js"></script>
 <script src="pdf.min.js"></script>
@@ -32,9 +35,12 @@
   --accent2: #a0522d;
   --accent-light: rgba(139,69,19,0.12);
   --gold: #c49a3c;
+  --warning: #c49a3c;
+  --danger: #b3413f;
   --sidebar-w: 260px;
   --header-h: 52px;
   --radius: 10px;
+  --radius-lg: 16px;
   --shadow: 0 2px 16px rgba(0,0,0,0.10);
   --page-shadow: 2px 0 12px rgba(0,0,0,0.08);
   --font-serif: 'Georgia','Times New Roman',serif;
@@ -44,19 +50,23 @@
   --line-height: 1.85;
   --max-width: 680px;
 }
-.dark {
-  --parchment: #1a1814;
-  --parchment2: #221f1a;
-  --parchment3: #2d2a24;
-  --ink: #e8e4da;
-  --ink2: #c8c4ba;
-  --ink3: #8a867e;
-  --accent: #d4894a;
-  --accent2: #c47a3a;
-  --accent-light: rgba(212,137,74,0.12);
-  --gold: #d4a84b;
+.theme-redesign {
+  /* ── Live edition "Redesign" palette (design doc §5.2) — optional alternate theme ── */
+  --parchment: #0E151B;
+  --parchment2: #15232B;
+  --parchment3: #1d313c;
+  --ink: #F2F8FA;
+  --ink2: #c2d0d6;
+  --ink3: #91A8B3;
+  --accent: #27B8D4;
+  --accent2: #1d8ba0;
+  --accent-light: rgba(39,184,212,0.15);
+  --gold: #46D1B2;
+  --warning: #E7B34B;
+  --danger: #E05A64;
   --shadow: 0 2px 16px rgba(0,0,0,0.4);
   --page-shadow: 2px 0 12px rgba(0,0,0,0.3);
+  --font-ui: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: var(--font-size); scroll-behavior: smooth; }
@@ -799,8 +809,8 @@ mark.current { background: var(--gold); color: #000; }
 #autosave-indicator, #docx-save-status { display: inline-block; }
 #docx-save-status { color: var(--ink3); font-size: 0.8rem; font-weight: 600; transition: color 0.25s ease; }
 #autosave-indicator.saving, #docx-save-status.saving { animation: tqPulseSaving 1s ease-in-out infinite; }
-#autosave-indicator.saved, #docx-save-status.saved { color: #3ecf64; animation: tqPopSaved 0.42s cubic-bezier(.34,1.56,.64,1); }
-#autosave-indicator.error, #docx-save-status.error { color: #e35d5d; animation: tqShake 0.4s ease; }
+#autosave-indicator.saved, #docx-save-status.saved { color: #3ecf64; animation: tqPopSaved 0.2s cubic-bezier(.34,1.56,.64,1); }
+#autosave-indicator.error, #docx-save-status.error { color: #e35d5d; animation: tqShake 0.2s ease; }
 @keyframes tqPulseSaving { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 @keyframes tqPopSaved { 0% { transform: scale(0.8); } 55% { transform: scale(1.12); } 100% { transform: scale(1); } }
 @keyframes tqShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
@@ -808,7 +818,7 @@ mark.current { background: var(--gold); color: #000; }
 /* ── ABOUT PANEL ── */
 #about-panel { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 800; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 #about-panel.open { display: flex; }
-.about-box { background: var(--parchment2); border-radius: var(--radius); padding: 2rem; width: 90%; max-width: 360px; border: 1px solid var(--parchment3); text-align: center; position: relative; }
+.about-box { background: var(--parchment2); border-radius: var(--radius-lg); padding: 2rem; width: 90%; max-width: 360px; border: 1px solid var(--parchment3); text-align: center; position: relative; }
 .about-close { position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.1rem; }
 .about-logo { width: 56px; height: 56px; background: var(--accent); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem; }
 .about-title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--ink); }
@@ -823,7 +833,7 @@ mark.current { background: var(--gold); color: #000; }
 /* ── SHORTCUTS PANEL ── */
 #shortcuts-panel { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 800; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 #shortcuts-panel.open { display: flex; }
-.shortcuts-box { background: var(--parchment2); border-radius: var(--radius); padding: 1.5rem; width: 90%; max-width: 400px; border: 1px solid var(--parchment3); position: relative; max-height: 80vh; overflow-y: auto; }
+.shortcuts-box { background: var(--parchment2); border-radius: var(--radius-lg); padding: 1.5rem; width: 90%; max-width: 400px; border: 1px solid var(--parchment3); position: relative; max-height: 80vh; overflow-y: auto; }
 .shortcuts-close { position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 1.1rem; }
 .shortcuts-title { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 1rem; }
 .shortcut-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--parchment3); }
@@ -842,7 +852,7 @@ mark.current { background: var(--gold); color: #000; }
 /* ── MODAL ── */
 #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
 #modal-overlay.open { display: flex; }
-.modal-box { background: var(--parchment2); border-radius: var(--radius) var(--radius) 0 0; padding: 1.5rem; width: 100%; max-width: 480px; border: 1px solid var(--parchment3); }
+.modal-box { background: var(--parchment2); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 1.5rem; width: 100%; max-width: 480px; border: 1px solid var(--parchment3); }
 .modal-title { font-weight: 700; font-size: 1rem; margin-bottom: 1rem; font-family: var(--font-serif); color: var(--ink); }
 .modal-input { width: 100%; background: var(--parchment); border: 1px solid var(--parchment3); border-radius: 8px; color: var(--ink); font-size: 1rem; font-family: var(--font-ui); padding: 10px 12px; outline: none; margin-bottom: 1rem; }
 .modal-input:focus { border-color: var(--accent); }
@@ -854,7 +864,7 @@ mark.current { background: var(--gold); color: #000; }
 /* ── VERSION HISTORY ── */
 #version-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 #version-modal.open { display: flex; }
-.version-box { background: var(--parchment2); border-radius: var(--radius); padding: 1.5rem; width: 100%; max-width: 460px; max-height: 70vh; border: 1px solid var(--parchment3); display: flex; flex-direction: column; }
+.version-box { background: var(--parchment2); border-radius: var(--radius-lg); padding: 1.5rem; width: 100%; max-width: 460px; max-height: 70vh; border: 1px solid var(--parchment3); display: flex; flex-direction: column; }
 .version-box-title { font-weight: 700; font-size: 1rem; margin-bottom: 1rem; font-family: var(--font-serif); color: var(--ink); display: flex; align-items: center; justify-content: space-between; }
 .version-box-close { background: none; border: none; color: var(--ink3); font-size: 1.1rem; cursor: pointer; padding: 2px 6px; }
 .version-box-close:hover { color: var(--accent); }
@@ -886,7 +896,7 @@ mark.current { background: var(--gold); color: #000; }
 .onedrive-row:hover { border-color: var(--accent); transform: translateY(-1px); }
 
 /* ── TOAST ── */
-#toast { position: fixed; bottom: 24px; left: 50%; background: var(--ink); border-radius: 20px; padding: 9px 20px; font-size: 0.82rem; font-weight: 600; color: var(--parchment); z-index: 600; opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.94); transition: opacity 0.25s ease, transform 0.32s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; pointer-events: none; box-shadow: var(--shadow); }
+#toast { position: fixed; bottom: 24px; left: 50%; background: var(--ink); border-radius: 20px; padding: 9px 20px; font-size: 0.82rem; font-weight: 600; color: var(--parchment); z-index: 600; opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.94); transition: opacity 0.2s ease, transform 0.2s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; pointer-events: none; box-shadow: var(--shadow); }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 
 /* ── DROP OVERLAY ── */
@@ -919,6 +929,7 @@ mark.current { background: var(--gold); color: #000; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--parchment3); border-radius: 4px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+:focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -999,7 +1010,7 @@ mark.current { background: var(--gold); color: #000; }
     <div class="hdr-spacer"></div>
     <button class="hdr-btn" onclick="toggleSearch()" title="Search (Ctrl+F)">🔍 Search</button>
     <button class="hdr-btn" onclick="toggleFocusMode()" id="focus-btn" title="Focus mode (Ctrl+Shift+F)">⊙</button>
-    <button class="hdr-btn" onclick="toggleTheme()" id="theme-btn">☀️</button>
+    <button class="hdr-btn" onclick="toggleTheme()" id="theme-btn" title="Switch look">🎨</button>
     <button class="hdr-btn" onclick="openShortcuts()" title="Keyboard shortcuts (?)">⌨</button>
     <button class="hdr-btn" onclick="openAbout()" title="About TeqDocs">ℹ</button>
     <a href="https://ko-fi.com/teqvault" target="_blank" title="Support TeqVault on Ko-fi" style="text-decoration:none;">
@@ -1089,6 +1100,12 @@ mark.current { background: var(--gold); color: #000; }
           <div class="dib-actions">
             <button class="dib-btn" id="doc-edit-btn" onclick="openEditorFromReader()" style="display:none">✏️ Edit</button>
             <button class="dib-btn" onclick="openVersionHistory()" title="Version history">🕒 History</button>
+            <button class="dib-btn" id="tts-btn" onclick="toggleTTS()" title="Read aloud">🔊 Listen</button>
+            <span id="tts-inline-controls" style="display:none;align-items:center;gap:4px;">
+              <button class="dib-btn" id="tts-pause-btn" onclick="pauseTTS()" title="Pause reading">⏸</button>
+              <button class="dib-btn" onclick="stopTTS()" title="Stop reading">■</button>
+              <span id="tts-progress" style="font-size:0.72rem;color:var(--ink3);white-space:nowrap;"></span>
+            </span>
             <button class="dib-btn" onclick="addBookmark()" title="Add bookmark (Ctrl+M)">🔖 Bookmark</button>
             <button class="dib-btn" onclick="openSigPanel()" title="Add signature">✍ Sign</button>
             <button class="dib-btn" id="doc-export-btn" onclick="toggleExportMenu()">Export ▾</button>
@@ -1611,7 +1628,7 @@ let currentMd='', currentFilename='', currentSavedId=null, currentFileType='md',
 let editorMode='write', focusMode=false, sidebarOpen=true;
 let searchMatches=[], searchIndex=0;
 let fontSizePx=parseInt(localStorage.getItem('teqdocs-font')||'18');
-let isDark=localStorage.getItem('teqdocs-theme')==='dark';
+let isRedesignTheme=localStorage.getItem('teqdocs-visual-theme')==='redesign';
 let activeTab='open';
 
 /* PDF state */
@@ -1920,6 +1937,136 @@ async function onedriveSelectFile(id){
     toast('OneDrive download failed: ' + e.message);
     closeOneDrivePicker();
   }
+}
+
+/* ── Text-to-Speech (Google Cloud Neural voices, via backend) ──
+   Unlike Student Desktop's TTS (free, browser-native speechSynthesis, but
+   robotic-sounding), this calls our backend, which calls Google Cloud TTS
+   with a service-account key — natural-sounding voices, but not free at
+   scale, so the key has to stay server-side. The document gets split into
+   paragraph-sized chunks and played back sequentially, same chunking
+   approach Student Desktop already uses for its own reading flow. */
+let ttsChunks = [];
+let ttsChunkIndex = 0;
+let ttsActive = false;
+let ttsPaused = false;
+let ttsAudio = null;
+const TTS_BACKEND = 'https://teqxus-backend-zszr.onrender.com';
+
+function getDocParagraphsForTTS(){
+  const body = document.getElementById('md-body');
+  if (!body) return [];
+  return Array.from(body.querySelectorAll('p,h1,h2,h3,h4,li,blockquote,td'))
+    .map(el => el.textContent.trim())
+    .filter(t => t.length > 0);
+}
+
+function toggleTTS(){
+  if (ttsActive) { stopTTS(); return; }
+  startTTS();
+}
+
+function startTTS(){
+  const sel = window.getSelection();
+  const selectedText = sel ? sel.toString().trim() : '';
+
+  let chunks = selectedText.length > 10 ? [selectedText] : getDocParagraphsForTTS();
+  if (!chunks.length) { toast('Nothing to read'); return; }
+
+  // Google's API caps input around ~5000 bytes per request — keep chunks
+  // comfortably under that even if a single paragraph runs long.
+  const MAX_CHUNK_CHARS = 4000;
+  const safeChunks = [];
+  chunks.forEach(c => {
+    if (c.length <= MAX_CHUNK_CHARS) { safeChunks.push(c); return; }
+    for (let i = 0; i < c.length; i += MAX_CHUNK_CHARS) safeChunks.push(c.slice(i, i + MAX_CHUNK_CHARS));
+  });
+
+  ttsChunks = safeChunks;
+  ttsChunkIndex = 0;
+  ttsActive = true;
+  ttsPaused = false;
+
+  document.getElementById('tts-btn').classList.add('active');
+  document.getElementById('tts-btn').textContent = '\ud83d\udd0a Stop';
+  document.getElementById('tts-inline-controls').style.display = 'flex';
+
+  speakChunk();
+}
+
+async function speakChunk(){
+  if (!ttsActive || ttsChunkIndex >= ttsChunks.length) {
+    if (ttsActive) toast('\u2713 Done reading');
+    stopTTS();
+    return;
+  }
+  updateTTSProgress();
+  const text = ttsChunks[ttsChunkIndex];
+  try {
+    const res = await fetch(TTS_BACKEND + '/teqdocs/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) throw new Error('TTS request failed (' + res.status + ')');
+    const data = await res.json();
+    if (!data.audioContent) throw new Error('No audio returned');
+    if (!ttsActive) return; // stopped while this request was in flight
+
+    ttsAudio = new Audio('data:audio/mp3;base64,' + data.audioContent);
+    ttsAudio.onended = () => {
+      if (!ttsActive || ttsPaused) return;
+      ttsChunkIndex++;
+      speakChunk();
+    };
+    ttsAudio.onerror = () => {
+      if (!ttsActive) return;
+      ttsChunkIndex++;
+      speakChunk();
+    };
+    await ttsAudio.play();
+  } catch(e) {
+    console.error('TTS error:', e);
+    toast('Read aloud failed: ' + e.message);
+    stopTTS();
+  }
+}
+
+function pauseTTS(){
+  if (!ttsActive || !ttsAudio) return;
+  if (ttsPaused) {
+    ttsPaused = false;
+    ttsAudio.play();
+    document.getElementById('tts-pause-btn').textContent = '\u23f8';
+  } else {
+    ttsPaused = true;
+    ttsAudio.pause();
+    document.getElementById('tts-pause-btn').textContent = '\u25b6';
+  }
+}
+
+function stopTTS(){
+  ttsActive = false;
+  ttsPaused = false;
+  if (ttsAudio) { ttsAudio.pause(); ttsAudio.onended = null; ttsAudio.onerror = null; ttsAudio = null; }
+  ttsChunks = []; ttsChunkIndex = 0;
+  const btn = document.getElementById('tts-btn');
+  if (btn) { btn.classList.remove('active'); btn.textContent = '\ud83d\udd0a Listen'; }
+  const controls = document.getElementById('tts-inline-controls');
+  if (controls) controls.style.display = 'none';
+  const progress = document.getElementById('tts-progress');
+  if (progress) progress.textContent = '';
+}
+
+function updateTTSProgress(){
+  const el = document.getElementById('tts-progress');
+  if (el) el.textContent = (ttsChunkIndex + 1) + ' / ' + ttsChunks.length;
+}
+
+// Stop reading when switching documents, same guard Student Desktop uses
+const _origRenderDocTTS = typeof renderDoc === 'function' ? renderDoc : null;
+if (_origRenderDocTTS) {
+  renderDoc = function() { stopTTS(); _origRenderDocTTS(); };
 }
 
 /* ── Dropbox ── */
@@ -3711,8 +3858,8 @@ function nextMatch(){if(!searchMatches.length)return;searchMatches[searchIndex].
 function clearHighlights2(){document.querySelectorAll('#md-body mark').forEach(m=>{if(!m.parentNode)return;m.parentNode.replaceChild(document.createTextNode(m.textContent),m);});searchMatches=[];searchIndex=0;}
 
 /* ── Theme ── */
-function toggleTheme(){isDark=!isDark;applyTheme();localStorage.setItem('teqdocs-theme',isDark?'dark':'light');}
-function applyTheme(){document.body.classList.toggle('dark',isDark);document.getElementById('theme-btn').textContent=isDark?'☀️':'🌙';document.querySelector('meta[name="theme-color"]').content=isDark?'#1a1814':'#f5f0e8';}
+function toggleTheme(){isRedesignTheme=!isRedesignTheme;applyTheme();localStorage.setItem('teqdocs-visual-theme',isRedesignTheme?'redesign':'classic');}
+function applyTheme(){document.body.classList.toggle('theme-redesign',isRedesignTheme);document.getElementById('theme-btn').textContent=isRedesignTheme?'\ud83d\udcdc':'\ud83c\udfa8';document.getElementById('theme-btn').title=isRedesignTheme?'Switch to Classic look':'Switch to Redesign look';document.querySelector('meta[name="theme-color"]').content=isRedesignTheme?'#0E151B':'#f5f0e8';}
 
 /* ── Progress bar ── */
 // Handled by the unified scroll handler below
