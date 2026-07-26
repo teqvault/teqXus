@@ -988,12 +988,18 @@ mark.current { background: var(--gold); color: #000; }
     <div class="about-logo">📖</div>
     <div class="about-title">Teq<span>Docs</span></div>
     <div class="about-version">Version 2.0.0 · TeqVault LLC</div>
-    <div class="about-desc">Your beautiful offline reading & writing companion. Built for documents, notes, and everything in between.</div>
+    <div class="about-desc">Your offline reading & writing companion for Markdown, Word, and PDF. Built for low-data environments and focused work.</div>
     <div class="about-formats">
       <span class="about-badge">📝 Markdown</span>
       <span class="about-badge">📄 PDF</span>
       <span class="about-badge">📃 Word</span>
       <span class="about-badge">📋 Text</span>
+    </div>
+    <div style="margin-top:1rem; font-size:0.78rem; font-family:var(--font-ui); display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">
+      <a href="/about.html" style="color:var(--accent);">About</a>
+      <a href="/guides/" style="color:var(--accent);">Guides</a>
+      <a href="/privacy.html" style="color:var(--accent);">Privacy</a>
+      <a href="/contact.html" style="color:var(--accent);">Contact</a>
     </div>
     <div class="about-brand">Made with ♥ by <strong>TeqVault LLC</strong></div>
   </div>
@@ -3861,7 +3867,8 @@ function closeExportMenu(){document.getElementById('export-menu').classList.remo
 function exportHTML(){
   closeExportMenu();
   const title=currentFilename.replace(/\.md$/i,'')||'document';
-  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title><style>body{background:#f5f0e8;color:#1c1a16;font-family:Georgia,serif;max-width:720px;margin:0 auto;padding:2rem 1.5rem;line-height:1.85}h1,h2,h3,h4,h5,h6{font-family:Georgia,serif}h1{color:#8b4513;border-bottom:2px solid #e0d9cc;padding-bottom:.6rem}h2{border-bottom:1px solid #e0d9cc}a{color:#8b4513}code{background:#e0d9cc;padding:.15em .4em;border-radius:4px;font-size:.85em}pre{background:#1e1e2e;padding:1rem;border-radius:8px;overflow-x:auto}pre code{background:none;color:#cdd6f4}blockquote{border-left:3px solid #c49a3c;padding:.5rem 1rem;margin:1rem 0;font-style:italic}table{border-collapse:collapse;width:100%}th,td{padding:8px 14px;border-bottom:1px solid #e0d9cc;text-align:left}img{max-width:100%}</style></head><body>${document.getElementById('md-body').innerHTML}</body></html>`;
+  const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title><style>body{background:#f5f0e8;color:#1c1a16;font-family:Georgia,serif;max-width:720px;margin:0 auto;padding:2rem 1.5rem;line-height:1.85}h1,h2,h3,h4,h5,h6{font-family:Georgia,serif}h1{color:#8b4513;border-bottom:2px solid #e0d9cc;padding-bottom:.6rem}h2{border-bottom:1px solid #e0d9cc}a{color:#8b4513}code{background:#e0d9cc;padding:.15em .4em;border-radius:4px;font-size:.85em}pre{background:#1e1e2e;padding:1rem;border-radius:8px;overflow-x:auto}pre code{background:none;color:#cdd6f4}blockquote{border-left:3px solid #c49a3c;padding:.5rem 1rem;margin:1rem 0;font-style:italic}table{border-collapse:collapse;width:100%}th,td{padding:8px 14px;border-bottom:1px solid #e0d9cc;text-align:left}img{max-width:100%}</style></head><body>${document.getElementById('md-body').innerHTML}<script src="/cookie-consent.js"></script>
+</body></html>`;
   triggerDownload(title+'.html',html,'text/html');
   toast('Exported as HTML ✓');
 }
@@ -3916,6 +3923,7 @@ function buildPdfExportHtml(title, content, includeAutoPrint){
 <body>
 <div class="page">${content}</div>
 ${includeAutoPrint ? '<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}}<\/script>' : ''}
+<script src="/cookie-consent.js"></script>
 </body>
 </html>`;
 }
@@ -5716,5 +5724,6 @@ if (!window.electronAPI) {
 }
 
 </script>
+<script src="/cookie-consent.js"></script>
 </body>
 </html>

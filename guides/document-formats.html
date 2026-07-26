@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choosing the Right Document Format — TeqXus Guides</title>
+<meta name="description" content="Markdown vs Word vs PDF explained. Practical advice on when to use each format for notes, study materials, reports, and long-term storage.">
+<link rel="canonical" href="https://teqxus.app/guides/document-formats.html">
+<style>
+  :root {
+    --navy: #0A1628; --navy2: #111F35; --teal: #3ECFA0; --text: #EEF2F7; --text-muted: #7A9BBF; --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--navy); color: var(--text); line-height: 1.75; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+  a { color: var(--teal); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header { margin-bottom: 36px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+  .logo { font-size: 20px; font-weight: 700; }
+  .logo span { color: var(--teal); }
+  nav { margin-top: 10px; font-size: 13px; color: var(--text-muted); }
+  nav a { margin-right: 14px; }
+  h1 { font-size: 26px; margin-bottom: 10px; line-height: 1.3; }
+  .meta { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+  h2 { font-size: 18px; color: var(--teal); margin: 34px 0 12px; }
+  h3 { font-size: 16px; color: var(--text); margin: 22px 0 8px; }
+  p { font-size: 15px; color: var(--text-muted); margin-bottom: 14px; }
+  ul { padding-left: 22px; margin-bottom: 16px; color: var(--text-muted); }
+  li { margin-bottom: 7px; font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0 28px; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+  th { color: var(--text); font-weight: 600; }
+  .note { background: var(--navy2); border-left: 3px solid var(--teal); padding: 14px 18px; margin: 22px 0; border-radius: 0 10px 10px 0; font-size: 14px; color: var(--text-muted); }
+  footer { margin-top: 50px; padding-top: 22px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-muted); }
+  .related { margin-top: 40px; }
+  .related a { display: block; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">Teq<span>Xus</span></div>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/guides/">Guides</a>
+      <a href="/teqdocs/">Open TeqDocs</a>
+      <a href="/about.html">About</a>
+    </nav>
+  </header>
+
+  <h1>Choosing the Right Document Format</h1>
+  <p class="meta">Guide · Updated July 2026 · ~7 min read</p>
+
+  <p>Markdown, Word (.docx), and PDF are the three formats TeqDocs supports. Each has clear strengths. Choosing the right one for a given task saves time and reduces frustration later — especially when you move between devices or need to keep files for years.</p>
+
+  <h2>Quick comparison</h2>
+  <table>
+    <thead>
+      <tr><th>Need</th><th>Best choice</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Personal notes & drafts</td><td>Markdown</td></tr>
+      <tr><td>Collaborative editing / school or office requirements</td><td>Word (.docx)</td></tr>
+      <tr><td>Fixed layout, forms, official documents, textbooks</td><td>PDF</td></tr>
+      <tr><td>Long-term archival of text</td><td>Markdown or PDF/A</td></tr>
+      <tr><td>Reading on low-end phones</td><td>Markdown (lightest)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Markdown — best for notes and thinking</h2>
+  <p>Markdown is plain text with simple symbols for headings, lists, links, and emphasis. Files are tiny, open on almost any device, and remain readable even decades from now. Because the formatting is part of the text, you can edit Markdown in any text editor if needed.</p>
+  <p><strong>Use Markdown when:</strong></p>
+  <ul>
+    <li>You are taking study notes or writing personal documentation</li>
+    <li>You want the lightest possible files for limited storage or data</li>
+    <li>You plan to convert the content later (to HTML, PDF, or Word)</li>
+    <li>You value long-term accessibility over fancy layout</li>
+  </ul>
+  <p>TeqDocs renders Markdown cleanly with proper headings, code blocks, and lists, making it pleasant for both writing and reading.</p>
+
+  <h2>Word (.docx) — best for collaboration and formal requirements</h2>
+  <p>Microsoft Word remains the default in many schools, universities, companies, and government offices. People expect .docx when they ask for “a document.” Tracked changes, comments, and complex formatting are native strengths of Word.</p>
+  <p><strong>Use Word when:</strong></p>
+  <ul>
+    <li>Someone else requires a .docx file</li>
+    <li>You need heavy formatting, tables of contents, or advanced layout</li>
+    <li>Multiple people will edit the same file with comments</li>
+    <li>You are preparing reports, CVs, or official submissions</li>
+  </ul>
+  <p>TeqDocs can open .docx files for reading and light review. For intensive editing you will still want a full word processor, but for reading and annotation TeqDocs keeps things fast.</p>
+
+  <h2>PDF — best for fixed layout and distribution</h2>
+  <p>PDF locks the visual appearance of a document. What you see is what the recipient sees, across devices and operating systems. That makes it ideal for forms, signed documents, published papers, textbooks, and any material where layout must not shift.</p>
+  <p><strong>Use PDF when:</strong></p>
+  <ul>
+    <li>Layout and page breaks matter</li>
+    <li>You are distributing a finished document</li>
+    <li>The file contains forms or must look identical everywhere</li>
+    <li>You received material that was only published as PDF</li>
+  </ul>
+  <p>PDFs can be large. On slow connections the first open may take longer; afterwards TeqDocs can keep the file available locally for offline reading.</p>
+
+  <h2>Practical recommendations by situation</h2>
+
+  <h3>Students</h3>
+  <p>Keep lecture notes and personal summaries in Markdown. Download official course PDFs and open them in TeqDocs. Submit assignments in whatever format the lecturer requires (often Word or PDF).</p>
+
+  <h3>Professionals</h3>
+  <p>Draft internal notes in Markdown or Word according to team preference. Convert to PDF when the document is final and needs to be shared widely or archived.</p>
+
+  <h3>Low-data and low-storage environments</h3>
+  <p>Prefer Markdown for anything you create yourself. It uses the least space and transfers quickly. Reserve PDF for material you cannot obtain in another form.</p>
+
+  <div class="note">TeqDocs is designed so you can switch between these formats without changing tools. Open whatever file you have, read it, bookmark important sections, and continue working even if the network is unreliable.</div>
+
+  <h2>Long-term thinking</h2>
+  <p>Formats come and go. Plain-text Markdown and well-made PDFs are among the safest bets for documents you may need years from now. Proprietary formats can become harder to open as software changes. When in doubt for personal archives, keep a Markdown or PDF version.</p>
+
+  <div class="related">
+    <p><strong>Related guides</strong></p>
+    <a href="how-to-use-teqdocs.html">How to use TeqDocs effectively →</a>
+    <a href="focus-with-ambient-sounds.html">Focus better with ambient sounds →</a>
+    <a href="offline-ai-guide.html">Getting the most from an offline-capable AI →</a>
+  </div>
+
+  <footer>
+    <p><a href="/guides/">← All guides</a> · <a href="/">TeqXus</a> · <a href="/privacy.html">Privacy</a></p>
+  </footer>
+</div>
+<script src="/cookie-consent.js"></script>
+</body>
+</html>
