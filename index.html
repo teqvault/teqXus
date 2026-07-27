@@ -9,7 +9,7 @@
 <title>TeqXus AI</title>
 <meta name="description" content="TeqXus AI is an offline-capable AI assistant that works even on slow connections — ask anything, in your language, with chats saved on your device.">
 <link rel="manifest" href="manifest.json">
-<!-- AdSense loaded after cookie consent via cookie-consent.js -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7932735753046865" crossorigin="anonymous"></script>
 <style>
   :root {
     --navy: #0A1628;
@@ -269,7 +269,7 @@
   <!-- MODEL BAR -->
   <div class="model-bar" id="model-bar">
     <div class="chip active" onclick="selectModel(this,'claude-haiku','Claude Haiku')">🆓 Claude Haiku</div>
-    <div class="chip" onclick="selectModel(this,'llama-free','Llama 3.3')">⚡ Llama 3.3</div>
+    <div class="chip" onclick="selectModel(this,'llama-free','Llama 3.3')" style="display:none">⚡ Llama 3.3</div>
     <div class="chip" onclick="selectModel(this,'meta-llama/llama-4-maverick','Llama 4')">🦙 Llama 4</div>
     <div class="chip" onclick="selectModel(this,'qwen/qwen3-235b-a22b','Qwen3')">Qwen3</div>
     <div class="chip pro-only" onclick="selectModel(this,'claude-sonnet','Claude Sonnet 5')">✨ Claude Sonnet 🔒</div>
@@ -380,15 +380,8 @@
       </div>
       <div class="settings-section">
         <div class="settings-label">About</div>
-        <div class="settings-row" style="flex-direction:column; align-items:flex-start; gap:6px;">
-          <span style="font-size:13px; color:var(--text-muted); line-height:1.7;">TeqXus AI is a fast, lightweight AI assistant built for low-data communities across Africa. Ask anything, in your language, anywhere — even when the connection is weak.</span>
-          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;">
-            <a href="/about.html" style="font-size:12px; color:var(--teal); text-decoration:none;">About TeqXus</a>
-            <a href="/guides/" style="font-size:12px; color:var(--teal); text-decoration:none;">Guides</a>
-            <a href="/privacy.html" style="font-size:12px; color:var(--teal); text-decoration:none;">Privacy</a>
-            <a href="/contact.html" style="font-size:12px; color:var(--teal); text-decoration:none;">Contact</a>
-            <a href="/teqdocs/" style="font-size:12px; color:var(--teal); text-decoration:none;">TeqDocs</a>
-          </div>
+        <div class="settings-row" style="flex-direction:column; align-items:flex-start; gap:4px;">
+          <span style="font-size:13px; color:var(--text-muted); line-height:1.7;">TeqXus AI is a fast, lightweight AI assistant built for low-data communities across Africa. Ask anything, in your language, anywhere.</span>
         </div>
       </div>
       <div class="about"><strong>TeqXus AI</strong> · v1.0 · Built for Africa 🌍</div>
@@ -951,6 +944,5 @@
     navigator.serviceWorker.register('/sw.js');
   }
 </script>
-<script src="/cookie-consent.js"></script>
 </body>
 </html>
