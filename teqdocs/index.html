@@ -4096,39 +4096,26 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 /* ══════════════════════════════════════════
    FEATURE 1 — SPLASH SCREEN
 ══════════════════════════════════════════ */
-// DOMContentLoaded, not 'load' — 'load' waits on every external resource on
-// the page (including the Google Fonts stylesheet), so a slow/blocked font
-// request (ad-blockers commonly block fonts.googleapis.com) could leave the
-// splash stuck on screen indefinitely. DOMContentLoaded only waits for the
-// HTML itself to finish parsing, which is all this actually needs.
-let _splashHidden = false;
-function _hideSplashScreen() {
-  if (_splashHidden) return;
-  _splashHidden = true;
+window.addEventListener('load', () => {
   const splash = document.getElementById('splash');
-  if (!splash) return;
-  splash.classList.add('hidden');
-  setTimeout(() => splash.style.display = 'none', 500);
-}
-document.addEventListener('DOMContentLoaded', () => {
   const start = Date.now();
   const minDisplay = 2000;
-  const elapsed = Date.now() - start;
-  const remaining = Math.max(0, minDisplay - elapsed);
-  setTimeout(_hideSplashScreen, remaining);
+  function hideSplash() {
+    const elapsed = Date.now() - start;
+    const remaining = Math.max(0, minDisplay - elapsed);
+    setTimeout(() => {
+      splash.classList.add('hidden');
+      setTimeout(() => splash.style.display = 'none', 500);
+    }, remaining);
+  }
+  hideSplash();
 });
-// Safety net: force it closed even if DOMContentLoaded itself never fires
-// for some unrelated reason — the person should never be stuck here.
-setTimeout(_hideSplashScreen, 6000);
 
 /* ══════════════════════════════════════════
    FEATURE 2 — READING PROGRESS SAVED
 ══════════════════════════════════════════ */
-function saveReadingProgress() {
+function saveReadingProgress(pct, scrollTop) {
   if (!currentFilename) return;
-  const scrollTop = document.getElementById('content').scrollTop;
-  const total = document.getElementById('content').scrollHeight;
-  const pct = total > 0 ? scrollTop / total : 0;
   try {
     let prog = JSON.parse(localStorage.getItem('teqdocs-progress') || '{}');
     prog[currentFilename] = { pct, scrollTop, date: Date.now() };
@@ -4151,11 +4138,6 @@ function resumeReading() {
     document.getElementById('content').scrollTo({ top: prog.scrollTop, behavior: 'smooth' });
   }
 }
-
-// Save progress on scroll
-document.getElementById('content').addEventListener('scroll', () => {
-  saveReadingProgress();
-});
 
 // Show resume hint when opening a file with saved progress
 function checkResumeHint() {
@@ -4476,6 +4458,11 @@ document.getElementById('content').addEventListener('scroll', e => {
   const text = document.getElementById('ring-text');
   if (fill) fill.style.strokeDashoffset = offset;
   if (text) text.textContent = pctRounded + '%';
+  // Persist progress — this used to live in a separate scroll listener with
+  // its own, less accurate percentage formula that never actually reached
+  // 100%, so "resume reading" percentages didn't match what the visible
+  // progress bar showed. Consolidated here with the correct formula.
+  saveReadingProgress(pct, el.scrollTop);
 });
 
 /* ══════════════════════════════════════════
