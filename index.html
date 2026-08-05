@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#0A1628">
+<meta name="theme-color" content="#070e1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>TeqXus AI</title>
@@ -12,20 +12,22 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7932735753046865" crossorigin="anonymous"></script>
 <style>
   :root {
-    --navy: #0A1628;
-    --navy2: #111F35;
-    --navy3: #162540;
-    --teal: #3ECFA0;
+    --navy: #070e1a;
+    --navy2: #0d1829;
+    --navy3: #142338;
+    --teal: #3EE8C5;
     --teal-dark: #1D9E75;
-    --teal-glow: rgba(62,207,160,0.15);
-    --text: #EEF2F7;
+    --teal-glow: rgba(62,232,197,0.16);
+    --text: #F0F7FA;
     --text-muted: #7A9BBF;
     --border: rgba(255,255,255,0.07);
-    --border2: rgba(62,207,160,0.2);
-    --surface: #162540;
-    --surface2: #0D1C30;
-    --danger: #E24B4A;
+    --border2: rgba(62,232,197,0.28);
+    --surface: #142338;
+    --surface2: #0b1524;
+    --danger: #F07178;
     --amber: #FAC775;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--navy); color: var(--text); }
@@ -241,6 +243,202 @@
   .tab { flex: 1; padding: 10px 4px 8px; text-align: center; font-size: 10px; color: var(--text-muted); cursor: pointer; border-top: 2px solid transparent; transition: color 0.2s; }
   .tab.active { color: var(--teal); border-top-color: var(--teal); }
   .tab svg { display: block; margin: 0 auto 3px; width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+
+  /* ═══════════════════════════════════════════
+     TEQXUS AI — BEAUTY PASS / JUICE
+     ═══════════════════════════════════════════ */
+
+  /* Deeper atmospheric background */
+  #space-bg::before {
+    background:
+      radial-gradient(ellipse at 18% 22%, rgba(62,232,197,0.18) 0%, transparent 48%),
+      radial-gradient(ellipse at 85% 78%, rgba(120,60,255,0.16) 0%, transparent 42%),
+      radial-gradient(ellipse at 50% 0%, rgba(30,100,180,0.14) 0%, transparent 40%),
+      radial-gradient(ellipse at 70% 45%, rgba(62,232,197,0.06) 0%, transparent 35%) !important;
+  }
+
+  /* Topbar glass */
+  .topbar {
+    background: rgba(13,24,41,0.82) !important;
+    backdrop-filter: blur(16px) saturate(1.3);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    border-bottom-color: rgba(62,232,197,0.12) !important;
+  }
+  .logo-icon {
+    box-shadow: 0 0 20px rgba(62,232,197,0.25);
+    transition: transform 0.25s var(--ease-out), box-shadow 0.25s;
+  }
+  .logo:hover .logo-icon { transform: scale(1.06); }
+  .logo-text span {
+    background: linear-gradient(135deg, #3EE8C5, #5B9FFF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .dot {
+    box-shadow: 0 0 10px var(--teal), 0 0 20px rgba(62,232,197,0.3) !important;
+  }
+
+  /* Chips */
+  .chip {
+    transition: all 0.2s var(--ease) !important;
+    border-radius: 999px !important;
+  }
+  .chip:hover {
+    border-color: var(--border2);
+    color: var(--text);
+    background: rgba(62,232,197,0.06);
+  }
+  .chip.active {
+    background: linear-gradient(135deg, rgba(62,232,197,0.22), rgba(62,232,197,0.1)) !important;
+    border-color: var(--teal) !important;
+    color: var(--teal) !important;
+    box-shadow: 0 0 18px rgba(62,232,197,0.2);
+    font-weight: 700 !important;
+  }
+
+  /* Language chips */
+  .lang {
+    transition: all 0.2s var(--ease) !important;
+  }
+  .lang.active {
+    box-shadow: 0 0 12px rgba(62,232,197,0.18);
+  }
+
+  /* Input bar elevation */
+  .input-bar {
+    background: rgba(13,24,41,0.9) !important;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top-color: rgba(62,232,197,0.1) !important;
+  }
+  .input-wrap {
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+  }
+  .input-wrap:focus-within {
+    border-color: var(--teal) !important;
+    box-shadow: 0 0 0 3px rgba(62,232,197,0.12), 0 0 24px rgba(62,232,197,0.08);
+  }
+
+  /* Send button glow */
+  .send-btn, button[onclick*="send"] {
+    transition: all 0.2s var(--ease) !important;
+  }
+
+  /* Message bubbles */
+  .bubble {
+    transition: transform 0.2s var(--ease-out);
+  }
+  .bubble.user {
+    background: linear-gradient(135deg, rgba(62,232,197,0.18), rgba(62,232,197,0.08)) !important;
+    border: 1px solid rgba(62,232,197,0.2);
+  }
+  .bubble.ai {
+    background: rgba(20,35,56,0.85) !important;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    background: rgba(13,24,41,0.92) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top-color: rgba(62,232,197,0.1) !important;
+  }
+
+  /* TeqDocs shortcut button */
+  .teqdocs-btn {
+    transition: all 0.22s var(--ease) !important;
+    backdrop-filter: blur(12px);
+  }
+  .teqdocs-btn:hover {
+    background: rgba(62,232,197,0.12) !important;
+    border-color: var(--teal) !important;
+    box-shadow: 0 4px 20px rgba(62,232,197,0.2);
+    transform: translateY(-1px);
+  }
+
+  /* Upgrade screen */
+  .upgrade-screen {
+    backdrop-filter: blur(20px);
+  }
+  .upgrade-btn {
+    background: linear-gradient(135deg, #3EE8C5, #2bb89a) !important;
+    color: #041016 !important;
+    box-shadow: 0 8px 28px rgba(62,232,197,0.35);
+    transition: all 0.25s var(--ease) !important;
+  }
+  .upgrade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px rgba(62,232,197,0.45);
+  }
+
+  /* Smooth scrollbar in chat */
+  .chat-area::-webkit-scrollbar-thumb {
+    background: rgba(62,232,197,0.25) !important;
+  }
+
+  /* Subtle entrance */
+  #app {
+    animation: appFade 0.45s var(--ease-out);
+  }
+  @keyframes appFade {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Status online pulse */
+  .dot:not(.offline) {
+    animation: pulseDot 2.2s ease-in-out infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { box-shadow: 0 0 8px var(--teal), 0 0 16px rgba(62,232,197,0.25); }
+    50% { box-shadow: 0 0 12px var(--teal), 0 0 28px rgba(62,232,197,0.4); }
+  }
+
+
+  /* Onboarding */
+  .ob-btn {
+    padding: 12px 32px; border-radius: 999px; border: none;
+    background: linear-gradient(135deg, #3EE8C5, #2bb89a);
+    color: #041016; font-weight: 800; font-size: 14px; cursor: pointer;
+    box-shadow: 0 8px 28px rgba(62,232,197,0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .ob-btn:active { transform: scale(0.97); }
+  .ob-lang {
+    padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-muted); font-size: 12px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ob-lang.active, .ob-lang:hover {
+    border-color: var(--teal); color: var(--teal);
+    background: rgba(62,232,197,0.12);
+  }
+
+  /* Grain / noise overlay for depth */
+  #space-bg::after {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.045;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat; background-size: 180px;
+  }
+
+  /* Docs tab active state when visiting */
+  .tab svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px; font-size: 10px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+  .tab.active { color: var(--teal); }
+  .tab:active { opacity: 0.8; }
+
+  /* Ask-context banner */
+  #ask-banner {
+    display: none; background: rgba(62,232,197,0.1); border-bottom: 1px solid rgba(62,232,197,0.25);
+    padding: 8px 14px; font-size: 12px; color: var(--teal); align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  #ask-banner.show { display: flex; }
+  #ask-banner button { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -335,7 +533,7 @@
     </div>
     <div class="input-bar">
       <!-- TEQDOCS LINK -->
-      <a class="teqdocs-btn" href="https://teqxus.app/teqdocs" target="_blank" rel="noopener" aria-label="Open TeqDocs">
+      <a class="teqdocs-btn" href="teqdocs/" target="_self" aria-label="Open TeqDocs">
         <span class="td-icon">📖</span>
         <span class="td-label">TeqDocs</span>
       </a>
@@ -394,6 +592,10 @@
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Chat
     </div>
+    <div class="tab" id="tab-docs" onclick="openDocs()">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Docs
+    </div>
     <div class="tab" id="tab-history" onclick="showTab('history')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       History
@@ -401,6 +603,37 @@
     <div class="tab" id="tab-settings" onclick="showTab('settings')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Settings
+    </div>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div id="onboarding" style="display:none;position:absolute;inset:0;z-index:100;background:rgba(7,14,26,0.96);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;text-align:center;">
+    <div id="ob-step-0" class="ob-step">
+      <div style="font-size:48px;margin-bottom:16px;filter:drop-shadow(0 0 24px rgba(62,232,197,0.4))">✦</div>
+      <div style="font-size:22px;font-weight:800;margin-bottom:8px;letter-spacing:-0.02em">Welcome to TeqXus</div>
+      <div style="font-size:14px;color:var(--text-muted);line-height:1.6;max-width:300px;margin-bottom:28px">Your AI assistant built to work on slow connections — and even offline.</div>
+      <button class="ob-btn" onclick="obNext()">Continue</button>
+    </div>
+    <div id="ob-step-1" class="ob-step" style="display:none">
+      <div style="font-size:40px;margin-bottom:16px">🌍</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:8px">Your language</div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.6;max-width:280px;margin-bottom:20px">Ask in English, Swahili, Hausa, Yoruba, Amharic, French, or Arabic.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:24px;max-width:320px">
+        <button class="ob-lang" onclick="obSetLang(this,'EN','English')">EN</button>
+        <button class="ob-lang" onclick="obSetLang(this,'SW','Swahili')">Swahili</button>
+        <button class="ob-lang" onclick="obSetLang(this,'HA','Hausa')">Hausa</button>
+        <button class="ob-lang" onclick="obSetLang(this,'YO','Yoruba')">Yoruba</button>
+        <button class="ob-lang" onclick="obSetLang(this,'AM','Amharic')">Amharic</button>
+        <button class="ob-lang" onclick="obSetLang(this,'FR','French')">French</button>
+        <button class="ob-lang" onclick="obSetLang(this,'AR','Arabic')">عربي</button>
+      </div>
+      <button class="ob-btn" onclick="obNext()">Continue</button>
+    </div>
+    <div id="ob-step-2" class="ob-step" style="display:none">
+      <div style="font-size:40px;margin-bottom:16px">📖</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:8px">Chat + Docs, together</div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.65;max-width:300px;margin-bottom:28px">Use the <strong style="color:var(--teal)">Docs</strong> tab for Markdown, Word &amp; PDF. Highlight text in a document and ask TeqXus about it.</div>
+      <button class="ob-btn" onclick="obFinish()">Get started</button>
     </div>
   </div>
 </div>
@@ -760,9 +993,12 @@
     const list = document.getElementById('history-list');
     if (history.length === 0) {
       list.innerHTML = `<div class="history-empty">
-        <div class="history-empty-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <div>No conversations yet</div>
-        <div style="font-size:12px;text-align:center;line-height:1.6">Start chatting and your<br>history will appear here</div>
+        <div class="history-empty-icon" style="background:linear-gradient(135deg,rgba(62,232,197,0.15),rgba(62,232,197,0.05));border-color:rgba(62,232,197,0.25);box-shadow:0 0 24px rgba(62,232,197,0.12)">
+          <svg viewBox="0 0 24 24" style="stroke:var(--teal)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div style="font-weight:700;font-size:16px;color:var(--text)">No conversations yet</div>
+        <div style="font-size:13px;text-align:center;line-height:1.65;max-width:240px;color:var(--text-muted)">Your chats live on this device — private, offline-ready, and ready when you are.</div>
+        <button onclick="showTab('chat')" style="margin-top:8px;padding:10px 22px;border-radius:999px;border:none;background:linear-gradient(135deg,#3EE8C5,#2bb89a);color:#041016;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 6px 20px rgba(62,232,197,0.3)">Start a chat</button>
       </div>`;
       return;
     }
@@ -943,6 +1179,89 @@
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');
   }
+
+  // ── Unified Docs tab ──
+  function openDocs() {
+    window.location.href = 'teqdocs/';
+  }
+
+  // ── Onboarding ──
+  let obStep = 0;
+  function startOnboarding() {
+    if (localStorage.getItem('teqxus_onboarded') === '1') return;
+    const el = document.getElementById('onboarding');
+    if (!el) return;
+    el.style.display = 'flex';
+  }
+  function obNext() {
+    document.getElementById('ob-step-' + obStep).style.display = 'none';
+    obStep++;
+    const next = document.getElementById('ob-step-' + obStep);
+    if (next) next.style.display = 'block';
+  }
+  function obSetLang(btn, code, name) {
+    document.querySelectorAll('.ob-lang').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // reuse existing language system if present
+    const langEl = document.querySelector(`.lang[onclick*="'${code}'"]`);
+    if (langEl) langEl.click();
+    else if (typeof setLang === 'function') {
+      // fallback
+      try { setLang({classList:{add:()=>{},remove:()=>{}}}, code, name); } catch(e) {}
+    }
+    lang = code; langName = name;
+    const ld = document.getElementById('lang-display');
+    if (ld) ld.textContent = name;
+  }
+  function obFinish() {
+    localStorage.setItem('teqxus_onboarded', '1');
+    const el = document.getElementById('onboarding');
+    if (el) { el.style.opacity = '0'; el.style.transition = 'opacity 0.4s'; setTimeout(() => el.style.display = 'none', 400); }
+  }
+
+  // ── Reading → Chat bridge (from TeqDocs) ──
+  function checkAskContext() {
+    const params = new URLSearchParams(window.location.search);
+    let ctx = params.get('ask') || localStorage.getItem('teqxus_ask_context');
+    if (!ctx) return;
+    localStorage.removeItem('teqxus_ask_context');
+    // clean URL
+    if (params.has('ask')) {
+      params.delete('ask');
+      const clean = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+      history.replaceState(null, '', clean);
+    }
+    const msg = document.getElementById('msg');
+    if (msg) {
+      const prompt = 'Explain or answer based on this text:\n\n"' + ctx.slice(0, 1200) + '"\n\n';
+      msg.value = prompt;
+      if (typeof resize === 'function') resize(msg);
+      msg.focus();
+    }
+    // optional banner
+    let banner = document.getElementById('ask-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'ask-banner';
+      banner.innerHTML = '📄 Context loaded from TeqDocs <button onclick="this.parentElement.classList.remove(\'show\')" title="Dismiss">✕</button>';
+      const chatView = document.getElementById('view-chat');
+      const chatArea = document.getElementById('chat-area');
+      if (chatView && chatArea) chatView.insertBefore(banner, chatArea);
+    }
+    banner.classList.add('show');
+  }
+
+  // boot
+  document.addEventListener('DOMContentLoaded', () => {
+    startOnboarding();
+    checkAskContext();
+  });
+  // also run immediately in case DOM already ready
+  if (document.readyState !== 'loading') {
+    setTimeout(() => { startOnboarding(); checkAskContext(); }, 50);
+  }
+
+
 </script>
 </body>
 </html>

@@ -37,35 +37,37 @@
   --gold: #c49a3c;
   --warning: #c49a3c;
   --danger: #b3413f;
-  --sidebar-w: 260px;
-  --header-h: 52px;
-  --radius: 10px;
-  --radius-lg: 16px;
-  --shadow: 0 2px 16px rgba(0,0,0,0.10);
-  --page-shadow: 2px 0 12px rgba(0,0,0,0.08);
+  --sidebar-w: 272px;
+  --header-h: 56px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --page-shadow: 4px 0 20px rgba(0,0,0,0.06);
   --font-serif: 'Georgia','Times New Roman',serif;
   --font-ui: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   --font-mono: 'Fira Code','Consolas',monospace;
   --font-size: 18px;
   --line-height: 1.85;
   --max-width: 680px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 .theme-redesign {
-  /* ── Live edition "Redesign" palette (design doc §5.2) — optional alternate theme ── */
-  --parchment: #0E151B;
-  --parchment2: #15232B;
-  --parchment3: #1d313c;
-  --ink: #F2F8FA;
-  --ink2: #c2d0d6;
-  --ink3: #91A8B3;
-  --accent: #27B8D4;
-  --accent2: #1d8ba0;
-  --accent-light: rgba(39,184,212,0.15);
-  --gold: #46D1B2;
-  --warning: #E7B34B;
-  --danger: #E05A64;
-  --shadow: 0 2px 16px rgba(0,0,0,0.4);
-  --page-shadow: 2px 0 12px rgba(0,0,0,0.3);
+  /* ── Juice Redesign — deep dark + electric cyan ── */
+  --parchment: #0a0f14;
+  --parchment2: #0f1820;
+  --parchment3: #1a2833;
+  --ink: #f0f7fa;
+  --ink2: #b8cdd6;
+  --ink3: #7a96a3;
+  --accent: #2dd4f0;
+  --accent2: #1aa8c4;
+  --accent-light: rgba(45,212,240,0.14);
+  --gold: #3ee8c5;
+  --warning: #f0b429;
+  --danger: #f07178;
+  --shadow: 0 8px 32px rgba(0,0,0,0.55);
+  --page-shadow: 6px 0 28px rgba(0,0,0,0.4);
   --font-ui: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -958,6 +960,8 @@ mark.current { background: var(--gold); color: #000; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 :focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; }
+
+
 /* ═══════════════════════════════════════════════════════════════
    TEQDOCS JUICE POLISH — visual upgrades that make people stare
    ═══════════════════════════════════════════════════════════════ */
@@ -1329,7 +1333,69 @@ body.focus-mode:hover #header {
 #app {
   animation: appIn 0.5s var(--ease-out);
 }
+@keyframes appIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
+
+/* ── Ambient sounds (Focus mode) ── */
+#ambient-panel {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  background: var(--parchment2); border: 1px solid var(--parchment3);
+  border-radius: 16px; padding: 14px 16px; box-shadow: var(--shadow);
+  display: none; flex-direction: column; gap: 10px; min-width: 200px;
+  backdrop-filter: blur(16px);
+}
+#ambient-panel.open { display: flex; }
+.theme-redesign #ambient-panel {
+  background: rgba(15,24,32,0.92); border-color: rgba(45,212,240,0.2);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 24px rgba(45,212,240,0.08);
+}
+.ambient-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink3); }
+.ambient-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.ambient-chip {
+  padding: 6px 12px; border-radius: 999px; border: 1px solid var(--parchment3);
+  background: transparent; color: var(--ink2); font-size: 0.78rem; cursor: pointer;
+  font-family: var(--font-ui); transition: all 0.2s;
+}
+.ambient-chip:hover, .ambient-chip.active {
+  border-color: var(--accent); color: var(--accent); background: var(--accent-light);
+}
+.theme-redesign .ambient-chip.active {
+  box-shadow: 0 0 14px rgba(45,212,240,0.2);
+}
+.ambient-vol { width: 100%; accent-color: var(--accent); }
+#ambient-fab {
+  position: fixed; bottom: 24px; right: 24px; z-index: 199;
+  width: 48px; height: 48px; border-radius: 14px; border: none;
+  background: var(--accent); color: #fff; font-size: 1.25rem; cursor: pointer;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 40%, transparent);
+  display: none; align-items: center; justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+#ambient-fab.show { display: flex; }
+#ambient-fab:hover { transform: scale(1.06); }
+
+/* ── Ask TeqXus selection bar ── */
+#ask-teqxus-bar {
+  position: fixed; z-index: 250; display: none;
+  background: linear-gradient(135deg, #0f1820, #15232B);
+  border: 1px solid rgba(45,212,240,0.35);
+  border-radius: 12px; padding: 8px 12px; gap: 8px; align-items: center;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.45), 0 0 20px rgba(45,212,240,0.15);
+  font-family: var(--font-ui); font-size: 0.82rem; color: #f0f7fa;
+  transform: translateX(-50%);
+}
+#ask-teqxus-bar.show { display: flex; }
+#ask-teqxus-bar button {
+  background: linear-gradient(135deg, #2dd4f0, #1aa8c4);
+  color: #041016; border: none; border-radius: 8px; padding: 6px 12px;
+  font-weight: 700; font-size: 0.78rem; cursor: pointer; white-space: nowrap;
+}
+#ask-teqxus-bar .ask-dismiss {
+  background: transparent; color: #7a96a3; border: none; cursor: pointer; font-size: 1rem; padding: 0 4px;
+}
 </style>
 </head>
 <body>
@@ -1350,11 +1416,32 @@ body.focus-mode:hover #header {
 <div class="progress-resume-hint" id="resume-hint" onclick="resumeReading()"></div>
 
 <!-- SPLASH SCREEN -->
+
+<!-- Ambient sound UI -->
+<button id="ambient-fab" onclick="toggleAmbientPanel()" title="Ambient sounds">🎧</button>
+<div id="ambient-panel">
+  <div class="ambient-title">Ambient sound</div>
+  <div class="ambient-row">
+    <button class="ambient-chip" data-sound="none" onclick="setAmbient(this,'none')">Off</button>
+    <button class="ambient-chip" data-sound="lofi" onclick="setAmbient(this,'lofi')">Lo-fi</button>
+    <button class="ambient-chip" data-sound="rain" onclick="setAmbient(this,'rain')">Rain</button>
+    <button class="ambient-chip" data-sound="forest" onclick="setAmbient(this,'forest')">Forest</button>
+    <button class="ambient-chip" data-sound="ocean" onclick="setAmbient(this,'ocean')">Ocean</button>
+    <button class="ambient-chip" data-sound="whitenoise" onclick="setAmbient(this,'whitenoise')">Noise</button>
+  </div>
+  <input type="range" class="ambient-vol" id="ambient-vol" min="0" max="1" step="0.05" value="0.35" oninput="setAmbientVolume(this.value)" title="Volume">
+</div>
+<div id="ask-teqxus-bar">
+  <span>Ask TeqXus about this</span>
+  <button onclick="askTeqXusAboutSelection()">✦ Ask</button>
+  <button class="ask-dismiss" onclick="hideAskBar()">✕</button>
+</div>
+
 <div id="splash">
   <div class="splash-logo">📖</div>
   <div class="splash-title">Teq<span>Docs</span></div>
-  <div class="splash-sub">Your beautiful reading & writing companion</div>
-  <div class="splash-version">v2.0.0 · TeqVault LLC</div>
+  <div class="splash-sub">Your beautiful offline reading &amp; writing companion</div>
+  <div class="splash-version">v2.1 · Juice Edition · TeqVault LLC</div>
 </div>
 
 <!-- ABOUT PANEL -->
@@ -1363,7 +1450,7 @@ body.focus-mode:hover #header {
     <button class="about-close" onclick="closeAbout()">✕</button>
     <div class="about-logo">📖</div>
     <div class="about-title">Teq<span>Docs</span></div>
-    <div class="about-version">Version 2.0.0 · TeqVault LLC</div>
+    <div class="about-version">Version 2.1 · Juice Edition · TeqVault LLC</div>
     <div class="about-desc">Your beautiful offline reading & writing companion. Built for documents, notes, and everything in between.</div>
     <div class="about-formats">
       <span class="about-badge">📝 Markdown</span>
@@ -1409,6 +1496,7 @@ body.focus-mode:hover #header {
     <span class="hdr-doc-title" id="hdr-doc-title">Your reading library</span>
     <div class="hdr-spacer"></div>
     <button class="hdr-btn" onclick="toggleSearch()" title="Search (Ctrl+F)">🔍 Search</button>
+    <a class="hdr-btn" href="../" title="Back to TeqXus Chat" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center">💬</a>
     <button class="hdr-btn" onclick="toggleFocusMode()" id="focus-btn" title="Focus mode (Ctrl+Shift+F)">⊙</button>
     <button class="hdr-btn" onclick="toggleTheme()" id="theme-btn" title="Switch look">🎨</button>
     <button class="hdr-btn" id="pro-btn" onclick="openProModal()" title="Activate TeqXus Pro" style="font-weight:700;">⚡ Pro</button>
@@ -1475,17 +1563,17 @@ body.focus-mode:hover #header {
       <div id="welcome">
         <div class="welcome-book">📚</div>
         <div class="welcome-title">Teq<span>Docs</span></div>
-        <p class="welcome-sub">TeqDocs is a document reader and editor for Markdown, Word, and PDF files — with bookmarks, highlights, version history, and cloud file access built in.</p>
+        <p class="welcome-sub">Beautiful offline reading &amp; writing. Markdown, Word &amp; PDF — with highlights, bookmarks, version history and cloud access.</p>
         <div class="welcome-actions">
           <button class="wa-btn primary" onclick="openFilePicker()">📂 Open File</button>
-          <button class="wa-btn secondary" onclick="openCloudModal()">☁️ Open from Cloud</button>
-          <button class="wa-btn secondary" onclick="newDocument()">✏️ New Document</button>
+          <button class="wa-btn secondary" onclick="openCloudModal()">☁️ Cloud</button>
+          <button class="wa-btn secondary" onclick="newDocument()">✏️ New</button>
         </div>
         <div class="welcome-formats">
           <span class="wf-badge">📝 Markdown</span>
           <span class="wf-badge">📄 PDF</span>
-          <span class="wf-badge">📃 Word (.docx)</span>
-          <span class="wf-badge">📋 Plain Text</span>
+          <span class="wf-badge">📃 Word</span>
+          <span class="wf-badge">📋 Text</span>
         </div>
       </div>
 
@@ -2059,7 +2147,7 @@ let currentMd='', currentFilename='', currentSavedId=null, currentFileType='md',
 let editorMode='write', focusMode=false, sidebarOpen=true;
 let searchMatches=[], searchIndex=0;
 let fontSizePx=parseInt(localStorage.getItem('teqdocs-font')||'18');
-let isRedesignTheme=localStorage.getItem('teqdocs-visual-theme')==='redesign';
+let isRedesignTheme=localStorage.getItem('teqdocs-visual-theme')!=='classic'; // Juice default
 let activeTab='open';
 
 /* PDF state */
@@ -4399,22 +4487,11 @@ function doSearch(term){
   else countEl.textContent='No results';
 }
 function nextMatch(){if(!searchMatches.length)return;searchMatches[searchIndex].classList.remove('current');searchIndex=(searchIndex+1)%searchMatches.length;searchMatches[searchIndex].classList.add('current');searchMatches[searchIndex].scrollIntoView({block:'center',behavior:'smooth'});document.getElementById('search-count').textContent=`${searchIndex+1} / ${searchMatches.length}`;}
-function clearHighlights2(){
-  document.querySelectorAll('#md-body mark').forEach(m=>{if(!m.parentNode)return;m.parentNode.replaceChild(document.createTextNode(m.textContent),m);});
-  // Unwrapping a <mark> leaves its text as a standalone node next to whatever
-  // sibling text surrounded the original match — the browser doesn't merge
-  // them back together on its own. Without this, a word that was split by an
-  // earlier search (e.g. "c" highlighted inside "claude" leaves "c" and
-  // "laude" as two separate text nodes) can never be found whole again by a
-  // later, longer search term that spans the old split point.
-  const body = document.getElementById('md-body');
-  if (body) body.normalize();
-  searchMatches=[];searchIndex=0;
-}
+function clearHighlights2(){document.querySelectorAll('#md-body mark').forEach(m=>{if(!m.parentNode)return;m.parentNode.replaceChild(document.createTextNode(m.textContent),m);});searchMatches=[];searchIndex=0;}
 
 /* ── Theme ── */
 function toggleTheme(){isRedesignTheme=!isRedesignTheme;applyTheme();localStorage.setItem('teqdocs-visual-theme',isRedesignTheme?'redesign':'classic');}
-function applyTheme(){document.body.classList.toggle('theme-redesign',isRedesignTheme);document.getElementById('theme-btn').textContent=isRedesignTheme?'\ud83d\udcdc':'\ud83c\udfa8';document.getElementById('theme-btn').title=isRedesignTheme?'Switch to Classic look':'Switch to Redesign look';document.querySelector('meta[name="theme-color"]').content=isRedesignTheme?'#0E151B':'#f5f0e8';}
+function applyTheme(){document.body.classList.toggle('theme-redesign',isRedesignTheme);document.getElementById('theme-btn').textContent=isRedesignTheme?'\ud83d\udcdc':'\ud83c\udfa8';document.getElementById('theme-btn').title=isRedesignTheme?'Switch to Classic look':'Switch to Redesign look';document.querySelector('meta[name="theme-color"]').content=isRedesignTheme?'#0a0f14':'#f5f0e8';}
 
 /* ── Progress bar ── */
 // Handled by the unified scroll handler below
@@ -6098,6 +6175,116 @@ if (!window.electronAPI) {
     }
   });
 }
+
+
+
+/* ── Ambient sounds ── */
+let ambientAudio = null;
+let ambientCurrent = 'none';
+
+function toggleAmbientPanel() {
+  const p = document.getElementById('ambient-panel');
+  if (!p) return;
+  p.classList.toggle('open');
+}
+
+function setAmbient(btn, name) {
+  document.querySelectorAll('.ambient-chip').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ambientCurrent = name;
+  if (ambientAudio) {
+    ambientAudio.pause();
+    ambientAudio = null;
+  }
+  if (name === 'none') {
+    localStorage.setItem('teqdocs_ambient', 'none');
+    return;
+  }
+  const src = 'sounds/' + name + '.mp3';
+  ambientAudio = new Audio(src);
+  ambientAudio.loop = true;
+  ambientAudio.volume = parseFloat(document.getElementById('ambient-vol')?.value || 0.35);
+  ambientAudio.play().catch(() => {});
+  localStorage.setItem('teqdocs_ambient', name);
+  localStorage.setItem('teqdocs_ambient_vol', ambientAudio.volume);
+}
+
+function setAmbientVolume(v) {
+  if (ambientAudio) ambientAudio.volume = parseFloat(v);
+  localStorage.setItem('teqdocs_ambient_vol', v);
+}
+
+// Show FAB in focus mode; restore ambient preference
+(function wireAmbientToFocus() {
+  const orig = window.toggleFocusMode;
+  if (typeof orig === 'function') {
+    window.toggleFocusMode = function() {
+      orig();
+      const fab = document.getElementById('ambient-fab');
+      const inFocus = document.body.classList.contains('focus-mode');
+      if (fab) fab.classList.toggle('show', inFocus);
+      if (!inFocus) {
+        document.getElementById('ambient-panel')?.classList.remove('open');
+      }
+    };
+  }
+  // restore
+  const saved = localStorage.getItem('teqdocs_ambient');
+  const vol = localStorage.getItem('teqdocs_ambient_vol');
+  if (vol && document.getElementById('ambient-vol')) document.getElementById('ambient-vol').value = vol;
+  if (saved && saved !== 'none') {
+    const chip = document.querySelector('.ambient-chip[data-sound="'+saved+'"]');
+    if (chip) setAmbient(chip, saved);
+  }
+})();
+
+/* ── Ask TeqXus selection bridge ── */
+let askBarTimer = null;
+function hideAskBar() {
+  const bar = document.getElementById('ask-teqxus-bar');
+  if (bar) bar.classList.remove('show');
+}
+
+function positionAskBar() {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || !sel.toString().trim()) {
+    hideAskBar();
+    return;
+  }
+  const text = sel.toString().trim();
+  if (text.length < 8) { hideAskBar(); return; }
+  const range = sel.getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  const bar = document.getElementById('ask-teqxus-bar');
+  if (!bar) return;
+  bar.classList.add('show');
+  const top = window.scrollY + rect.top - 48;
+  const left = window.scrollX + rect.left + rect.width / 2;
+  bar.style.top = Math.max(8, top) + 'px';
+  bar.style.left = Math.min(window.innerWidth - 20, Math.max(20, left)) + 'px';
+}
+
+function askTeqXusAboutSelection() {
+  const sel = window.getSelection();
+  const text = (sel && sel.toString().trim()) || '';
+  if (!text) return;
+  localStorage.setItem('teqxus_ask_context', text.slice(0, 2000));
+  // Navigate to main TeqXus chat with context
+  const base = window.location.pathname.includes('/teqdocs')
+    ? window.location.pathname.replace(/\/teqdocs\/?.*$/, '/')
+    : '../';
+  window.location.href = base + '?ask=' + encodeURIComponent(text.slice(0, 400));
+}
+
+document.addEventListener('mouseup', () => {
+  clearTimeout(askBarTimer);
+  askBarTimer = setTimeout(positionAskBar, 120);
+});
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'Escape') hideAskBar();
+});
+document.addEventListener('scroll', hideAskBar, true);
+
 
 </script>
 </body>

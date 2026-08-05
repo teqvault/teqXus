@@ -1,94 +1,54 @@
-# TeqXus — AI Health Intelligence Platform
-### by Teq Vault LLC
+# TeqXus
 
-> Your life, optimized by AI.
+**Offline-capable AI assistant + document reader.**  
+Built by Teq Vault LLC · [teqxus.app](https://teqxus.app)
 
----
+> Chat in your language. Read and edit Markdown, Word, and PDF. Works on slow connections — and offline.
 
-## Quick Start
+## What’s shipping
 
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Set up environment
-cp .env.example .env.local
-# Fill in all values
-
-# 3. Run schema in Supabase SQL Editor
-# → paste contents of supabase/schema.sql
-
-# 4. Start dev server
-npm run dev
-```
-
-## Stack
-
-| Layer | Tech |
+| Surface | What it does |
 |---|---|
-| Frontend | Next.js 14 + TypeScript |
-| Styling | Tailwind CSS |
-| Database | Supabase (PostgreSQL) |
-| Auth | Supabase Auth |
-| AI | Anthropic Claude claude-sonnet-4-6 |
-| Wearables | Terra API |
-| Payments | Stripe |
-| Email | Resend |
-| Charts | Recharts |
-| Hosting | Vercel |
+| **TeqXus AI** (`/`) | Lightweight chat PWA — Claude / Llama / Qwen, 7 languages, offline queue, device-local history |
+| **TeqDocs** (`/teqdocs/`) | Full document reader & editor — MD, DOCX, PDF, highlights, bookmarks, focus mode + ambient sounds |
+| **Guides** (`/guides/`) | Offline-friendly how-tos |
 
-## Project Structure
+### Unified shell
+Bottom tabs: **Chat · Docs · History · Settings**. Docs opens TeqDocs on the same origin.
 
-```
-src/
-├── app/
-│   ├── page.tsx                         ← Landing page
-│   ├── (auth)/login & signup            ← Auth pages
-│   ├── dashboard/                       ← Main app
-│   ├── onboarding/                      ← 5-step setup
-│   ├── settings/                        ← All settings
-│   └── api/
-│       ├── chat/                        ← Claude AI streaming
-│       ├── terra/connect/               ← Wearable connect
-│       ├── stripe/checkout/             ← Payments
-│       ├── user/profile/                ← Profile CRUD
-│       ├── cron/morning-briefing/       ← Daily email
-│       └── webhooks/terra & stripe/     ← Incoming data
-├── components/
-│   ├── auth/AuthComponents.tsx
-│   ├── chat/ChatPanel.tsx
-│   ├── dashboard/DashboardClient.tsx
-│   ├── onboarding/OnboardingFlow.tsx
-│   └── settings/SettingsClient.tsx
-└── lib/
-    ├── ai/system-prompt.ts              ← Claude prompt builder
-    ├── db/supabase.ts                   ← DB query helpers
-    ├── email/morning-briefing.ts        ← Email template
-    └── scoring/nexus-score.ts           ← TeqXus Score™ algorithm
-```
+### Reading → Chat bridge
+Highlight text in TeqDocs → **Ask TeqXus** → opens chat with that passage as context.
 
-## Accounts Needed
+### Focus mode + ambient
+In TeqDocs, enable Focus (Ctrl+Shift+F) and pick Lo-fi / Rain / Forest / Ocean / Noise.
 
-- [Supabase](https://supabase.com) — database + auth
-- [Anthropic](https://console.anthropic.com) — Claude API
-- [Terra API](https://tryterra.co) — wearables
-- [Stripe](https://stripe.com) — payments
-- [Resend](https://resend.com) — email
-- [Vercel](https://vercel.com) — hosting
+### First-run onboarding
+Short 3-step intro (value → language → Docs + bridge). Stored in `localStorage`.
 
-## Deployment
+## Stack (current PWA)
+
+- Vanilla HTML / CSS / JS (no framework on the public shell)
+- Service worker for offline caching of shell + guides + TeqDocs
+- Backend for AI: Render (`teqxus-backend`)
+- Optional Pro via Stripe
+
+## Local preview
+
+Serve the `TeqXus_ai` folder as static files (any static host or `npx serve`).
 
 ```bash
-git push origin main  # auto-deploys to Vercel
+npx serve .
+# open http://localhost:3000
 ```
 
-Set all `.env.example` variables in Vercel dashboard.
+## Design system (Juice)
 
-## Webhook URLs (set after deploy)
+- Navy base: `#070e1a`
+- Accent teal: `#3EE8C5`
+- Glass bars, soft glows, grain overlay, micro-animations
 
-- Terra: `https://teqxus.app/api/webhooks/terra`
-- Stripe: `https://teqxus.app/api/webhooks/stripe`
+TeqDocs also ships a classic parchment theme (toggle in-app).
 
 ---
 
-**TeqXus** · Built by Teq Vault LLC · teqxus.app
+**TeqXus** · Teq Vault LLC · teqxus.app
