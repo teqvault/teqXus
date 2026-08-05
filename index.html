@@ -439,6 +439,119 @@
   }
   #ask-banner.show { display: flex; }
   #ask-banner button { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
+
+
+  /* ═══ TeqDocs CTA buttons ═══ */
+  .teqdocs-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s, background 0.2s, border-color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .teqdocs-cta:active { transform: scale(0.97); }
+
+  /* Topbar pill */
+  .teqdocs-cta--top {
+    padding: 5px 12px 5px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(62,232,197,0.2), rgba(62,232,197,0.08));
+    border: 1px solid rgba(62,232,197,0.4);
+    color: var(--teal);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: 0 0 16px rgba(62,232,197,0.15);
+  }
+  .teqdocs-cta--top:hover {
+    background: linear-gradient(135deg, rgba(62,232,197,0.3), rgba(62,232,197,0.12));
+    box-shadow: 0 0 22px rgba(62,232,197,0.28);
+    transform: translateY(-1px);
+  }
+  .teqdocs-cta--top .teqdocs-cta-icon { font-size: 13px; line-height: 1; }
+
+  /* Hero CTA under welcome features */
+  .teqdocs-cta--hero {
+    display: flex;
+    width: 100%;
+    margin-top: 14px;
+    margin-bottom: 4px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #3EE8C5 0%, #2bb89a 55%, #1a9a7e 100%);
+    border: none;
+    color: #041016;
+    box-shadow: 0 8px 28px rgba(62,232,197,0.35), 0 0 0 1px rgba(255,255,255,0.1) inset;
+    gap: 12px;
+  }
+  .teqdocs-cta--hero:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px rgba(62,232,197,0.45), 0 0 0 1px rgba(255,255,255,0.15) inset;
+  }
+  .teqdocs-cta--hero .teqdocs-cta-icon {
+    font-size: 22px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  }
+  .teqdocs-cta--hero .teqdocs-cta-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+  }
+  .teqdocs-cta--hero .teqdocs-cta-text strong {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .teqdocs-cta--hero .teqdocs-cta-text small {
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.75;
+  }
+  .teqdocs-cta--hero .teqdocs-cta-arrow {
+    font-size: 18px;
+    font-weight: 700;
+    opacity: 0.85;
+    align-self: center;
+  }
+
+  /* Compact input-bar CTA — proper flex sibling, never overlaps text */
+  .teqdocs-cta--input {
+    flex-shrink: 0;
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 21px;
+    background: linear-gradient(135deg, rgba(62,232,197,0.18), rgba(62,232,197,0.08));
+    border: 1px solid rgba(62,232,197,0.35);
+    color: var(--teal);
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 2px 12px rgba(62,232,197,0.12);
+  }
+  .teqdocs-cta--input:hover {
+    background: linear-gradient(135deg, rgba(62,232,197,0.28), rgba(62,232,197,0.12));
+    border-color: var(--teal);
+    box-shadow: 0 4px 18px rgba(62,232,197,0.22);
+  }
+  .teqdocs-cta--input .teqdocs-cta-icon { font-size: 15px; line-height: 1; }
+  .teqdocs-cta--input .teqdocs-cta-label { letter-spacing: 0.02em; }
+
+  /* Legacy absolute chip styles neutralized */
+  .teqdocs-btn { display: none !important; }
+
+  /* Ensure input-bar lays out cleanly */
+  .input-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .input-wrap { flex: 1; min-width: 0; }
+
 </style>
 </head>
 <body>
@@ -452,7 +565,11 @@
       </div>
       <div class="logo-text">Teq<span>Xus</span> AI</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <a href="teqdocs/" class="teqdocs-cta teqdocs-cta--top" title="Open TeqDocs">
+        <span class="teqdocs-cta-icon">📖</span>
+        <span class="teqdocs-cta-label">TeqDocs</span>
+      </a>
       <a href="https://ko-fi.com/teqvault" target="_blank" style="text-decoration:none;">
         <button style="font-size:11px;padding:4px 10px;border:1px solid rgba(255,94,86,0.3);border-radius:10px;background:rgba(255,94,86,0.08);color:#ff5e56;cursor:pointer;font-weight:700;">☕ Support</button>
       </a>
@@ -527,15 +644,22 @@
             <div class="welcome-feature"><div class="feature-dot"></div>Works offline</div>
             <div class="welcome-feature"><div class="feature-dot"></div>7 African languages</div>
           </div>
+          <a href="teqdocs/" class="teqdocs-cta teqdocs-cta--hero">
+            <span class="teqdocs-cta-icon">📖</span>
+            <span class="teqdocs-cta-text">
+              <strong>Open TeqDocs</strong>
+              <small>Read &amp; edit Markdown, Word &amp; PDF</small>
+            </span>
+            <span class="teqdocs-cta-arrow">→</span>
+          </a>
         </div>
         <div id="prompt-grid-container"></div>
       </div>
     </div>
     <div class="input-bar">
-      <!-- TEQDOCS LINK -->
-      <a class="teqdocs-btn" href="teqdocs/" target="_self" aria-label="Open TeqDocs">
-        <span class="td-icon">📖</span>
-        <span class="td-label">TeqDocs</span>
+      <a href="teqdocs/" class="teqdocs-cta teqdocs-cta--input" title="Open TeqDocs — documents">
+        <span class="teqdocs-cta-icon">📖</span>
+        <span class="teqdocs-cta-label">Docs</span>
       </a>
       <div class="input-wrap">
         <textarea id="msg" rows="1" placeholder="Ask anything..." oninput="resize(this)" onkeydown="onKey(event)"></textarea>
