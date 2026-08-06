@@ -68,6 +68,77 @@
   --page-shadow: 2px 0 12px rgba(0,0,0,0.3);
   --font-ui: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
+.theme-parchment {
+  /* ── Library Parchment ── */
+  --parchment: #f0e6d2;
+  --parchment2: #e8dcc0;
+  --parchment3: #dcc9a0;
+  --ink: #3d1f1f;
+  --ink2: #5c3838;
+  --ink3: #8a6a5a;
+  --accent: #7a1f2b;
+  --accent2: #5c1620;
+  --accent-light: rgba(122,31,43,0.15);
+  --gold: #b8860b;
+  --warning: #b8860b;
+  --danger: #7a1f2b;
+  --shadow: 0 2px 16px rgba(60,30,10,0.15);
+  --page-shadow: 2px 0 12px rgba(60,30,10,0.1);
+}
+.theme-glass {
+  /* ── Liquid Glass — see dedicated glass rules further down for the
+       backdrop-filter panels and glow blob ── */
+  --parchment: #0d1015;
+  --parchment2: #171b24;
+  --parchment3: #232838;
+  --ink: #f2f2f5;
+  --ink2: #c8c8d4;
+  --ink3: #8d8da0;
+  --accent: #e8a33d;
+  --accent2: #c47a1f;
+  --accent-light: rgba(232,163,61,0.18);
+  --gold: #e8a33d;
+  --warning: #e8a33d;
+  --danger: #e0576a;
+  --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  --page-shadow: 2px 0 20px rgba(0,0,0,0.4);
+}
+.theme-neon {
+  /* ── Neon — see dedicated glow rules further down for gradient title
+       text and glowing button outlines ── */
+  --parchment: #05050a;
+  --parchment2: #0d0d16;
+  --parchment3: #1a1a28;
+  --ink: #ffffff;
+  --ink2: #d0d0e8;
+  --ink3: #8f8fb0;
+  --accent: #00e5ff;
+  --accent2: #00b8cc;
+  --accent-light: rgba(0,229,255,0.18);
+  --gold: #ff2fd0;
+  --warning: #ffcc00;
+  --danger: #ff2f6d;
+  --shadow: 0 0 24px rgba(0,229,255,0.15);
+  --page-shadow: 0 0 30px rgba(160,32,240,0.12);
+}
+.theme-pastel {
+  /* ── Pastel Dream — see dedicated background-gradient rule further
+       down ── */
+  --parchment: #fdf0f2;
+  --parchment2: #fce4e8;
+  --parchment3: #f8d0d8;
+  --ink: #6b3a42;
+  --ink2: #8a5a62;
+  --ink3: #b08890;
+  --accent: #e0708a;
+  --accent2: #c95575;
+  --accent-light: rgba(224,112,138,0.18);
+  --gold: #e0708a;
+  --warning: #e0a050;
+  --danger: #d85a6a;
+  --shadow: 0 2px 20px rgba(200,120,140,0.15);
+  --page-shadow: 2px 0 16px rgba(200,120,140,0.1);
+}
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: var(--font-size); scroll-behavior: smooth; }
 body { background: var(--parchment); color: var(--ink); font-family: var(--font-ui); min-height: 100dvh; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
@@ -1330,6 +1401,71 @@ body.focus-mode:hover #header {
   animation: appIn 0.5s var(--ease-out);
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME-SPECIFIC STRUCTURAL EFFECTS
+   ═══════════════════════════════════════════════════════════════ */
+.theme-glass #header,
+.theme-glass #sidebar,
+.theme-glass .file-card,
+.theme-glass .version-box,
+.theme-glass .pro-box {
+  background: rgba(23,27,36,0.6) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-color: rgba(255,255,255,0.08) !important;
+}
+.theme-glass #welcome { position: relative; }
+.theme-glass #welcome::before {
+  content: '';
+  position: absolute;
+  top: 15%; left: 50%;
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(232,163,61,0.28), transparent 70%);
+  filter: blur(70px);
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 0;
+}
+.theme-glass .welcome-book, .theme-glass .welcome-title, .theme-glass .welcome-sub,
+.theme-glass .welcome-actions, .theme-glass .welcome-formats {
+  position: relative;
+  z-index: 1;
+}
+.theme-neon .welcome-title {
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 14px rgba(0,229,255,0.35));
+}
+.theme-neon .wa-btn.primary, .theme-neon .sb-open-btn {
+  box-shadow: 0 0 16px rgba(0,229,255,0.5), inset 0 0 8px rgba(0,229,255,0.08);
+  border: 1px solid var(--accent) !important;
+}
+.theme-neon .wa-btn.secondary, .theme-neon .sb-new-btn {
+  box-shadow: 0 0 16px rgba(255,47,208,0.35);
+  border: 1px dashed var(--gold) !important;
+}
+.theme-neon .file-card:hover, .theme-neon .hdr-btn:hover {
+  box-shadow: 0 0 12px rgba(0,229,255,0.3);
+}
+.theme-pastel #app {
+  background:
+    radial-gradient(circle at 25% 15%, rgba(253,215,220,0.9), transparent 55%),
+    radial-gradient(circle at 75% 55%, rgba(224,213,245,0.8), transparent 55%),
+    radial-gradient(circle at 45% 90%, rgba(252,228,232,0.9), transparent 55%),
+    var(--parchment);
+}
+
+/* ── Theme picker dropdown ── */
+.theme-picker-wrap { position: relative; display: inline-flex; }
+.theme-menu { position: absolute; top: 100%; right: 0; margin-top: 6px; background: var(--parchment2); border: 1px solid var(--parchment3); border-radius: var(--radius); padding: 6px; z-index: 300; display: none; flex-direction: column; gap: 2px; box-shadow: var(--shadow); min-width: 190px; }
+.theme-menu.open { display: flex; }
+.theme-item { background: none; border: none; cursor: pointer; color: var(--ink); font-size: 0.85rem; font-family: var(--font-ui); padding: 9px 12px; border-radius: 7px; text-align: left; display: flex; align-items: center; gap: 8px; transition: background 0.12s; white-space: nowrap; }
+.theme-item:hover { background: var(--parchment3); }
+.theme-item.active { background: var(--accent-light); color: var(--accent); font-weight: 700; }
+
 </style>
 </head>
 <body>
@@ -1410,7 +1546,17 @@ body.focus-mode:hover #header {
     <div class="hdr-spacer"></div>
     <button class="hdr-btn" onclick="toggleSearch()" title="Search (Ctrl+F)">🔍 Search</button>
     <button class="hdr-btn" onclick="toggleFocusMode()" id="focus-btn" title="Focus mode (Ctrl+Shift+F)">⊙</button>
-    <button class="hdr-btn" onclick="toggleTheme()" id="theme-btn" title="Switch look">🎨</button>
+    <span class="theme-picker-wrap">
+      <button class="hdr-btn" onclick="toggleThemeMenu()" id="theme-btn" title="Change theme">🎨</button>
+      <div class="theme-menu" id="theme-menu">
+        <button class="theme-item" data-theme="classic" onclick="selectTheme('classic')">📜 Classic</button>
+        <button class="theme-item" data-theme="redesign" onclick="selectTheme('redesign')">🎨 Redesign</button>
+        <button class="theme-item" data-theme="parchment" onclick="selectTheme('parchment')">📜 Library Parchment</button>
+        <button class="theme-item" data-theme="glass" onclick="selectTheme('glass')">🌫️ Liquid Glass</button>
+        <button class="theme-item" data-theme="neon" onclick="selectTheme('neon')">🔹 Neon</button>
+        <button class="theme-item" data-theme="pastel" onclick="selectTheme('pastel')">🌸 Pastel Dream</button>
+      </div>
+    </span>
     <button class="hdr-btn" id="pro-btn" onclick="openProModal()" title="Activate TeqXus Pro" style="font-weight:700;">⚡ Pro</button>
     <button class="hdr-btn" onclick="openShortcuts()" title="Keyboard shortcuts (?)">⌨</button>
     <button class="hdr-btn" onclick="openAbout()" title="About TeqDocs">ℹ</button>
@@ -2060,7 +2206,7 @@ let currentMd='', currentFilename='', currentSavedId=null, currentFileType='md',
 let editorMode='write', focusMode=false, sidebarOpen=true;
 let searchMatches=[], searchIndex=0;
 let fontSizePx=parseInt(localStorage.getItem('teqdocs-font')||'18');
-let isRedesignTheme=localStorage.getItem('teqdocs-visual-theme')==='redesign';
+let currentTheme=localStorage.getItem('teqdocs-visual-theme')||'classic';
 let activeTab='open';
 
 /* PDF state */
@@ -4523,8 +4669,29 @@ function clearHighlights2(){
 }
 
 /* ── Theme ── */
-function toggleTheme(){isRedesignTheme=!isRedesignTheme;applyTheme();localStorage.setItem('teqdocs-visual-theme',isRedesignTheme?'redesign':'classic');}
-function applyTheme(){document.body.classList.toggle('theme-redesign',isRedesignTheme);document.getElementById('theme-btn').textContent=isRedesignTheme?'\ud83d\udcdc':'\ud83c\udfa8';document.getElementById('theme-btn').title=isRedesignTheme?'Switch to Classic look':'Switch to Redesign look';document.querySelector('meta[name="theme-color"]').content=isRedesignTheme?'#0E151B':'#f5f0e8';}
+const THEME_CLASS_MAP={redesign:'theme-redesign',parchment:'theme-parchment',glass:'theme-glass',neon:'theme-neon',pastel:'theme-pastel'};
+const THEME_META_COLOR={classic:'#f5f0e8',redesign:'#0E151B',parchment:'#f0e6d2',glass:'#0d1015',neon:'#05050a',pastel:'#fdf0f2'};
+const THEME_TITLE={parchment:'Library Parchment',glass:'Liquid Glass',neon:'Neon',pastel:'Pastel Dream'};
+function toggleThemeMenu(){document.getElementById('theme-menu').classList.toggle('open');}
+function closeThemeMenu(){document.getElementById('theme-menu').classList.remove('open');}
+function selectTheme(name){
+  currentTheme=name;
+  localStorage.setItem('teqdocs-visual-theme',name);
+  applyTheme();
+  closeThemeMenu();
+}
+function applyTheme(){
+  Object.values(THEME_CLASS_MAP).forEach(c=>document.body.classList.remove(c));
+  if(THEME_CLASS_MAP[currentTheme])document.body.classList.add(THEME_CLASS_MAP[currentTheme]);
+  document.querySelectorAll('.theme-item').forEach(el=>el.classList.toggle('active',el.dataset.theme===currentTheme));
+  const metaColor=document.querySelector('meta[name="theme-color"]');
+  if(metaColor)metaColor.content=THEME_META_COLOR[currentTheme]||'#f5f0e8';
+  document.title=THEME_TITLE[currentTheme]||'TeqDocs';
+}
+document.addEventListener('click',e=>{
+  const wrap=document.querySelector('.theme-picker-wrap');
+  if(wrap&&!wrap.contains(e.target))closeThemeMenu();
+});
 
 /* ── Progress bar ── */
 // Handled by the unified scroll handler below
