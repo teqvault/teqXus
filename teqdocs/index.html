@@ -2207,6 +2207,9 @@ let editorMode='write', focusMode=false, sidebarOpen=true;
 let searchMatches=[], searchIndex=0;
 let fontSizePx=parseInt(localStorage.getItem('teqdocs-font')||'18');
 let currentTheme=localStorage.getItem('teqdocs-visual-theme')||'classic';
+const THEME_CLASS_MAP={redesign:'theme-redesign',parchment:'theme-parchment',glass:'theme-glass',neon:'theme-neon',pastel:'theme-pastel'};
+const THEME_META_COLOR={classic:'#f5f0e8',redesign:'#0E151B',parchment:'#f0e6d2',glass:'#0d1015',neon:'#05050a',pastel:'#fdf0f2'};
+const THEME_TITLE={parchment:'Library Parchment',glass:'Liquid Glass',neon:'Neon',pastel:'Pastel Dream'};
 let activeTab='open';
 
 /* PDF state */
@@ -4669,9 +4672,6 @@ function clearHighlights2(){
 }
 
 /* ── Theme ── */
-const THEME_CLASS_MAP={redesign:'theme-redesign',parchment:'theme-parchment',glass:'theme-glass',neon:'theme-neon',pastel:'theme-pastel'};
-const THEME_META_COLOR={classic:'#f5f0e8',redesign:'#0E151B',parchment:'#f0e6d2',glass:'#0d1015',neon:'#05050a',pastel:'#fdf0f2'};
-const THEME_TITLE={parchment:'Library Parchment',glass:'Liquid Glass',neon:'Neon',pastel:'Pastel Dream'};
 function toggleThemeMenu(){document.getElementById('theme-menu').classList.toggle('open');}
 function closeThemeMenu(){document.getElementById('theme-menu').classList.remove('open');}
 function selectTheme(name){
