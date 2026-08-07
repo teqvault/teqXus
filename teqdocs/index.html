@@ -897,6 +897,11 @@ mark.current { background: var(--gold); color: #000; }
 .about-version { font-size: 0.78rem; color: var(--ink3); margin-top: 4px; font-family: var(--font-ui); }
 .about-desc { font-size: 0.85rem; color: var(--ink2); margin-top: 1rem; line-height: 1.6; font-family: var(--font-serif); font-style: italic; }
 .about-brand { margin-top: 1.5rem; font-size: 0.78rem; color: var(--ink3); font-family: var(--font-ui); }
+.about-update-btn { margin-top: 1.2rem; width: 100%; background: none; border: 1px solid var(--parchment3); border-radius: 8px; padding: 9px; font-size: 0.82rem; font-weight: 700; color: var(--ink2); cursor: pointer; font-family: var(--font-ui); transition: all 0.15s; }
+.about-update-btn:hover { border-color: var(--accent); color: var(--accent); }
+.about-update-btn:disabled { opacity: 0.6; cursor: default; }
+.about-update-status { margin-top: 8px; font-size: 0.76rem; color: var(--ink3); font-family: var(--font-ui); min-height: 16px; }
+.about-update-status.available { color: var(--gold); font-weight: 700; }
 .about-brand strong { color: var(--accent); }
 .about-formats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 1rem; }
 .about-badge { font-size: 0.68rem; padding: 3px 8px; border-radius: 12px; background: var(--parchment3); color: var(--ink3); font-family: var(--font-ui); font-weight: 600; }
@@ -1506,7 +1511,10 @@ body.focus-mode:hover #header {
       <span class="about-badge">📄 PDF</span>
       <span class="about-badge">📃 Word</span>
       <span class="about-badge">📋 Text</span>
+      <span class="about-badge">📕 EPUB</span>
     </div>
+    <button class="about-update-btn" id="about-update-btn" onclick="checkForUpdates(true)">🔄 Check for Updates</button>
+    <div class="about-update-status" id="about-update-status"></div>
     <div class="about-brand">Made with ♥ by <strong>TeqVault LLC</strong></div>
   </div>
 </div>
@@ -1653,6 +1661,10 @@ body.focus-mode:hover #header {
               <button class="dib-btn" id="tts-pause-btn" onclick="pauseTTS()" title="Pause reading">⏸</button>
               <button class="dib-btn" onclick="stopTTS()" title="Stop reading">■</button>
               <span id="tts-progress" style="font-size:0.72rem;color:var(--ink3);white-space:nowrap;"></span>
+            </span>
+            <span class="dib-fontsize" style="display:flex;align-items:center;gap:2px;">
+              <button class="dib-btn" onclick="bumpReadingFontSize(-1)" title="Smaller text">A-</button>
+              <button class="dib-btn" onclick="bumpReadingFontSize(1)" title="Larger text">A+</button>
             </span>
             <button class="dib-btn" onclick="addBookmark()" title="Add bookmark (Ctrl+M)">🔖 Bookmark</button>
             <button class="dib-btn" onclick="openSigPanel()" title="Add signature">✍ Sign</button>
@@ -2207,6 +2219,15 @@ let currentMd='', currentFilename='', currentSavedId=null, currentFileType='md',
 let editorMode='write', focusMode=false, sidebarOpen=true;
 let searchMatches=[], searchIndex=0;
 let fontSizePx=parseInt(localStorage.getItem('teqdocs-font')||'18');
+// This variable existed already but was never actually wired to anything —
+// no control changed it and it was never applied to the page. Applying the
+// saved value now, and giving it the A-/A+ buttons to actually adjust it.
+document.documentElement.style.setProperty('--font-size', fontSizePx+'px');
+function bumpReadingFontSize(delta){
+  fontSizePx = Math.max(14, Math.min(28, fontSizePx + delta));
+  document.documentElement.style.setProperty('--font-size', fontSizePx+'px');
+  localStorage.setItem('teqdocs-font', String(fontSizePx));
+}
 let currentTheme=localStorage.getItem('teqdocs-visual-theme')||'classic';
 const THEME_CLASS_MAP={redesign:'theme-redesign',parchment:'theme-parchment',glass:'theme-glass',neon:'theme-neon',pastel:'theme-pastel'};
 const THEME_META_COLOR={classic:'#f5f0e8',redesign:'#0E151B',parchment:'#f0e6d2',glass:'#0d1015',neon:'#05050a',pastel:'#fdf0f2'};
@@ -5099,7 +5120,81 @@ function togglePdfDark() {
 /* ══════════════════════════════════════════
    FEATURE 7 — ABOUT + SHORTCUTS PANELS
 ══════════════════════════════════════════ */
-function openAbout() { document.getElementById('about-panel').classList.add('open'); }
+function openAbout() {
+  document.getElementById('about-panel').classList.add('open');
+  refreshUpdateDisplay();
+}
+
+/* ── Check for updates (PWA / service worker) ──
+   Unlike the desktop editions, there's no installer version to compare —
+   this is a browser tab, and "update" means "the service worker has a
+   newer cached copy of the app ready to take over." The registration
+   itself happens elsewhere (the root site, outside this file's scope) —
+   getRegistration() still works here since that worker's scope covers
+   this page as one of its clients.
+   Rather than coordinate a skipWaiting handshake with sw.js's own message
+   handling (which lives in a file this session never had visibility into,
+   so I can't verify what it does with a postMessage), Update Now does the
+   same unregister + clear caches + reload sequence that was manually
+   confirmed to fix the exact stale-cache issue earlier in this project —
+   slower than a clean handshake, but doesn't depend on unseen code
+   cooperating correctly. */
+async function refreshUpdateDisplay() {
+  const btn = document.getElementById('about-update-btn');
+  const status = document.getElementById('about-update-status');
+  if (!('serviceWorker' in navigator)) {
+    if (btn) btn.style.display = 'none';
+    return;
+  }
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) { if (status) status.textContent = ''; return; }
+    await reg.update();
+    if (reg.waiting || reg.installing) {
+      if (status) { status.textContent = 'Update available'; status.className = 'about-update-status available'; }
+      if (btn) { btn.textContent = '\u2b07 Update Now'; btn.onclick = applyPwaUpdate; }
+    } else {
+      if (status) status.textContent = '';
+      if (btn) { btn.textContent = '\ud83d\udd04 Check for Updates'; btn.onclick = () => checkForUpdates(true); }
+    }
+  } catch(e) { /* silent on the passive check that runs when About opens */ }
+}
+
+async function checkForUpdates(manual) {
+  const btn = document.getElementById('about-update-btn');
+  const status = document.getElementById('about-update-status');
+  if (!('serviceWorker' in navigator)) { if (manual && status) status.textContent = 'Not supported in this browser'; return; }
+  if (manual && btn) { btn.disabled = true; btn.textContent = '\ud83d\udd04 Checking\u2026'; }
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) { if (manual && status) status.textContent = 'No update service found for this page'; return; }
+    await reg.update();
+    if (reg.waiting || reg.installing) {
+      if (status) { status.textContent = 'Update available'; status.className = 'about-update-status available'; }
+      if (btn) { btn.textContent = '\u2b07 Update Now'; btn.onclick = applyPwaUpdate; }
+    } else if (manual && status) {
+      status.textContent = 'You\u2019re on the latest version \u2713';
+    }
+  } catch(e) {
+    if (manual && status) status.textContent = 'Update check failed \u2014 check your connection';
+  } finally {
+    if (manual && btn) { btn.disabled = false; if (btn.textContent.includes('Checking')) btn.textContent = '\ud83d\udd04 Check for Updates'; }
+  }
+}
+
+async function applyPwaUpdate() {
+  const status = document.getElementById('about-update-status');
+  if (status) status.textContent = 'Updating\u2026';
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg) await reg.unregister();
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch(e) { /* proceed to reload regardless — a stuck cache is worse than a clean reload */ }
+  location.reload();
+}
 function closeAbout() { document.getElementById('about-panel').classList.remove('open'); }
 function openShortcuts() { document.getElementById('shortcuts-panel').classList.add('open'); }
 function closeShortcuts() { document.getElementById('shortcuts-panel').classList.remove('open'); }
