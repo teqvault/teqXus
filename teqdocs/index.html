@@ -1632,6 +1632,7 @@ body.focus-mode:hover #header {
           <span class="wf-badge">📄 PDF</span>
           <span class="wf-badge">📃 Word (.docx)</span>
           <span class="wf-badge">📋 Plain Text</span>
+          <span class="wf-badge">📕 EPUB</span>
         </div>
       </div>
 
@@ -2172,7 +2173,7 @@ body.focus-mode:hover #header {
 </div>
 
 <div id="toast"></div>
-<input type="file" id="file-input" accept=".md,.markdown,.txt,.pdf,.docx">
+<input type="file" id="file-input" accept=".md,.markdown,.txt,.pdf,.docx,.epub">
 
 <script>
 /* ── PDF.js worker ── */
@@ -2808,6 +2809,7 @@ function loadFileByType(file) {
   const name=file.name.toLowerCase();
   if(name.endsWith('.pdf')) loadPDF(file);
   else if(name.endsWith('.docx')) loadDocx(file);
+  else if(name.endsWith('.epub')) loadEpub(file);
   else loadMD(file);
 }
 function loadMD(file) {
@@ -2889,6 +2891,148 @@ async function loadDocx(file) {
   } catch(e) {
     console.error(e);
     toast('Failed to open Word doc: '+e.message);
+  }
+}
+
+
+
+/* ── EPUB loader ──
+   An EPUB is just a zip file (JSZip is already bundled for docx/EPUB
+   export) containing XHTML chapter files listed in a package document
+   (the .opf file), whose location is found via META-INF/container.xml.
+   We read the spine (reading order), pull each chapter's body HTML in
+   order, inline any referenced images as data URLs (a chapter's <img>
+   tags reference other files inside the same zip by relative path, which
+   won't resolve once we're just working with an HTML string), and
+   concatenate everything into one continuous document — the same
+   "already-rendered HTML" pattern loadDocx() above uses, not the
+   Markdown pipeline, since there's no Markdown source to speak of. */
+function resolveEpubPath(href, baseDir){
+  const stack = (baseDir + href).split('/');
+  const resolved = [];
+  stack.forEach(seg => {
+    if (seg === '..') resolved.pop();
+    else if (seg !== '.' && seg !== '') resolved.push(seg);
+  });
+  return resolved.join('/');
+}
+async function loadEpub(file) {
+  if (typeof JSZip === 'undefined') { toast('EPUB reading unavailable — JSZip failed to load'); return; }
+  toast('Opening EPUB…');
+  try {
+    const zip = await JSZip.loadAsync(file);
+
+    const containerEntry = zip.file('META-INF/container.xml');
+    if (!containerEntry) throw new Error('Not a valid EPUB — missing container.xml');
+    const containerXml = await containerEntry.async('string');
+    const containerDoc = new DOMParser().parseFromString(containerXml, 'application/xml');
+    const rootfileEl = containerDoc.querySelector('rootfile');
+    if (!rootfileEl) throw new Error('Not a valid EPUB — no rootfile listed');
+    const opfPath = rootfileEl.getAttribute('full-path');
+    const opfDir = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1) : '';
+
+    const opfEntry = zip.file(opfPath);
+    if (!opfEntry) throw new Error('Not a valid EPUB — package document missing');
+    const opfXml = await opfEntry.async('string');
+    const opfDoc = new DOMParser().parseFromString(opfXml, 'application/xml');
+
+    const titleEl = opfDoc.querySelector('metadata > title, title');
+    const bookTitle = (titleEl && titleEl.textContent.trim()) || file.name.replace(/\.epub$/i, '');
+
+    const manifest = {};
+    opfDoc.querySelectorAll('manifest > item').forEach(item => {
+      manifest[item.getAttribute('id')] = {
+        href: item.getAttribute('href'),
+        mediaType: item.getAttribute('media-type') || '',
+      };
+    });
+    const spineIds = Array.from(opfDoc.querySelectorAll('spine > itemref')).map(el => el.getAttribute('idref'));
+    if (!spineIds.length) throw new Error('This EPUB has no readable chapters (empty spine)');
+
+    // Inline every image referenced in the manifest as a data URL up front,
+    // keyed by its resolved zip path, so chapter HTML can be rewritten to
+    // point at real displayable data instead of a path that only made
+    // sense inside the original zip.
+    const imageMap = {};
+    for (const entry of Object.values(manifest)) {
+      if (!entry.mediaType.startsWith('image/')) continue;
+      const resolvedPath = resolveEpubPath(entry.href, opfDir);
+      const imgFile = zip.file(resolvedPath);
+      if (!imgFile) continue;
+      try {
+        const base64 = await imgFile.async('base64');
+        imageMap[resolvedPath] = `data:${entry.mediaType};base64,${base64}`;
+      } catch(e) { /* skip images that fail to read rather than aborting the whole book */ }
+    }
+
+    let combinedHtml = '';
+    for (const id of spineIds) {
+      const item = manifest[id];
+      if (!item) continue;
+      const chapterPath = resolveEpubPath(item.href, opfDir);
+      const chapterFile = zip.file(chapterPath);
+      if (!chapterFile) continue;
+      const chapterXml = await chapterFile.async('string');
+      // text/html (not application/xhtml+xml) deliberately — the browser's
+      // HTML parser is far more forgiving of real-world EPUBs that aren't
+      // perfectly strict XML, and critically, parsing as XML re-stamps a
+      // redundant xmlns attribute onto every single element when the body
+      // is later serialized via innerHTML, badly bloating the output.
+      const chapterDoc = new DOMParser().parseFromString(chapterXml, 'text/html');
+      const chapterBody = chapterDoc.querySelector('body');
+      if (!chapterBody) continue;
+
+      const chapterDir = chapterPath.includes('/') ? chapterPath.slice(0, chapterPath.lastIndexOf('/') + 1) : '';
+      chapterBody.querySelectorAll('img').forEach(img => {
+        const src = img.getAttribute('src');
+        if (!src || src.startsWith('data:') || src.startsWith('http')) return;
+        const resolved = resolveEpubPath(src, chapterDir);
+        if (imageMap[resolved]) img.setAttribute('src', imageMap[resolved]);
+      });
+      // Cover pages / illustrations sometimes use SVG <image xlink:href="...">
+      // instead of a plain <img>, which needs the same treatment.
+      chapterBody.querySelectorAll('image').forEach(img => {
+        const href = img.getAttribute('xlink:href') || img.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+        if (!href || href.startsWith('data:') || href.startsWith('http')) return;
+        const resolved = resolveEpubPath(href, chapterDir);
+        if (imageMap[resolved]) img.setAttribute('xlink:href', imageMap[resolved]);
+      });
+
+      combinedHtml += chapterBody.innerHTML + '\n<hr class="epub-chapter-break">\n';
+    }
+    if (!combinedHtml.trim()) throw new Error('Couldn\u2019t find any readable chapter content in this file');
+
+    hideAll();
+    currentFilename = file.name;
+    currentSavedId = null;
+    currentFileType = 'epub';
+    currentMd = '';
+    const body = document.getElementById('md-body');
+    body.classList.remove('docx-preview-host');
+    body.innerHTML = combinedHtml;
+    body.classList.remove('fade-in');
+    void body.offsetWidth;
+    body.classList.add('fade-in');
+    body.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach((h,i)=>h.id='heading-'+i);
+    highlightCode('md-body');
+    document.getElementById('doc-filename').textContent = bookTitle;
+    document.getElementById('hdr-doc-title').textContent = bookTitle;
+    const words = body.innerText.trim().split(/\s+/).filter(Boolean).length;
+    const mins = Math.max(1, Math.round(words/200));
+    document.getElementById('doc-readtime').textContent = `${mins} min read`;
+    document.getElementById('doc-wordcount').textContent = `${words.toLocaleString()} words`;
+    document.getElementById('reader').classList.add('visible');
+    buildToc();
+    document.getElementById('reader').scrollTo(0,0);
+    // EPUB is read-only — there's no editable source format to convert
+    // back to, same reasoning as why PDF has no direct Edit button either.
+    document.getElementById('doc-edit-btn').style.display = 'none';
+    addRecent(file.name, '', 'epub');
+    toast('Opened \u201c' + bookTitle + '\u201d \u2713');
+    body.addEventListener('mouseup', handleMdHighlight);
+  } catch(e) {
+    console.error('EPUB load error:', e);
+    toast('Failed to open EPUB: ' + e.message);
   }
 }
 
@@ -3544,14 +3688,24 @@ async function renderSinglePage(pageNum,wrap) {
     const sel=window.getSelection();
     if(!sel||sel.isCollapsed)return;
     const text=sel.toString().trim();if(!text)return;
-    const r=canvas.getBoundingClientRect();
-    const x=e.clientX-r.left,y=e.clientY-r.top;
-    const hl={file:pdfCurrentFilename,page:pageNum,text,x:Math.max(0,x-80),y:Math.max(0,y-12),w:160,h:18,date:Date.now()};
+    // Real selection geometry instead of a guessed fixed-size box near the
+    // click point — getClientRects() gives one precise rect per visual line,
+    // so multi-line selections get highlighted line-by-line correctly
+    // instead of one small box landing wherever the mouse happened to be.
+    const range=sel.getRangeAt(0);
+    const rects=Array.from(range.getClientRects());
+    if(!rects.length)return;
+    const canvasRect=canvas.getBoundingClientRect();
     let hls=JSON.parse(localStorage.getItem('teqdocs-pdf-highlights')||'[]');
-    hls.unshift(hl);localStorage.setItem('teqdocs-pdf-highlights',JSON.stringify(hls));
-    const hrect=document.createElement('div');
-    hrect.style.cssText=`position:absolute;left:${hl.x}px;top:${hl.y}px;width:${hl.w}px;height:${hl.h}px;background:rgba(196,154,60,0.4);border-radius:2px;pointer-events:none;`;
-    annoLayer.appendChild(hrect);
+    const groupId='hl'+Date.now();
+    rects.forEach(rect=>{
+      const hl={file:pdfCurrentFilename,page:pageNum,text,groupId,x:rect.left-canvasRect.left,y:rect.top-canvasRect.top,w:rect.width,h:rect.height,date:Date.now()};
+      hls.unshift(hl);
+      const hrect=document.createElement('div');
+      hrect.style.cssText=`position:absolute;left:${hl.x}px;top:${hl.y}px;width:${hl.w}px;height:${hl.h}px;background:rgba(196,154,60,0.4);border-radius:2px;pointer-events:none;`;
+      annoLayer.appendChild(hrect);
+    });
+    localStorage.setItem('teqdocs-pdf-highlights',JSON.stringify(hls));
     savePdfAnnotation(text,pageNum);sel.removeAllRanges();toast('Highlighted ✓');
   });
   const label=document.createElement('div');
