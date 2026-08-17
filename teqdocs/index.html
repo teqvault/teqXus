@@ -155,6 +155,13 @@ body { background: var(--parchment); color: var(--ink); font-family: var(--font-
   box-shadow: var(--shadow);
   z-index: 50; position: relative;
 }
+#tab-bar { display: flex; align-items: center; gap: 2px; background: var(--parchment2); border-bottom: 1px solid var(--parchment3); padding: 6px 8px 0; overflow-x: auto; flex-shrink: 0; scrollbar-width: thin; }
+.doc-tab { display: flex; align-items: center; gap: 6px; padding: 7px 10px 8px; border-radius: 8px 8px 0 0; font-size: 0.8rem; font-weight: 600; color: var(--ink3); cursor: pointer; white-space: nowrap; max-width: 180px; background: transparent; border: 1px solid transparent; border-bottom: none; transition: background 0.12s, color 0.12s; }
+.doc-tab:hover { background: var(--parchment3); color: var(--ink2); }
+.doc-tab.active { background: var(--parchment); color: var(--ink); border-color: var(--parchment3); }
+.doc-tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-tab-close { background: none; border: none; color: var(--ink3); font-size: 0.7rem; padding: 1px 3px; border-radius: 4px; cursor: pointer; flex-shrink: 0; line-height: 1; }
+.doc-tab-close:hover { background: var(--parchment3); color: var(--danger); }
 .hdr-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; flex-shrink: 0; }
 .hdr-logo-icon { width: 30px; height: 30px; border-radius: 7px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 .hdr-logo-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -1576,6 +1583,9 @@ body.focus-mode:hover #header {
     </a>
   </div>
 
+  <!-- DOCUMENT TABS -->
+  <div id="tab-bar" style="display:none;"></div>
+
   <!-- BODY -->
   <div id="body">
     <!-- SIDEBAR -->
@@ -2831,10 +2841,148 @@ document.addEventListener('drop',e=>{
 });
 function loadFileByType(file) {
   const name=file.name.toLowerCase();
+  registerTabForFile(file);
   if(name.endsWith('.pdf')) loadPDF(file);
   else if(name.endsWith('.docx')) loadDocx(file);
   else if(name.endsWith('.epub')) loadEpub(file);
   else loadMD(file);
+}
+
+/* ── Document tabs ──
+   Deliberately NOT a "keep every open document's full live state in
+   memory" implementation — that would mean converting the entire app's
+   single-document assumptions (autosave, version history, the PDF/docx
+   editor state, TTS, bookmarks, all of it) into a per-tab structure,
+   touching a large fraction of the codebase. Instead, a tab just remembers
+   *how to reopen* a file, and switching tabs reloads it through the exact
+   same loading path already used everywhere else. Real tabs, real
+   click-to-switch — but switching isn't instant (a document re-renders),
+   and unsaved edits need to be handled before switching away, same as
+   closing the app already does.
+   Brand-new, never-saved documents don't get a tab until they're actually
+   saved somewhere — there's no stable "source" to reload an in-progress
+   draft from otherwise. */
+let tabs = [];
+let activeTabId = null;
+
+function registerTabForFile(file){
+  let source;
+  if (mdFileHandle || docxFileHandle) {
+    source = { kind: 'handle', handle: mdFileHandle || docxFileHandle };
+  } else if (typeof currentFilePath !== 'undefined' && currentFilePath && window.electronAPI) {
+    source = { kind: 'path', path: currentFilePath };
+  } else {
+    source = { kind: 'file', file: file };
+  }
+  registerTab(source, file.name);
+}
+
+function registerTab(source, title){
+  // Dedup by filename — a simple heuristic (two different files that happen
+  // to share a name in different folders would collide), not a perfect
+  // check, but the common case is "reopening the same file you already
+  // have open," which this handles correctly.
+  const existing = tabs.find(t => t.title === title);
+  if (existing) {
+    existing.source = source; // refresh in case this is a fresher handle/path
+    activeTabId = existing.id;
+    renderTabBar();
+    return;
+  }
+  const id = 'tab' + Date.now() + Math.random().toString(36).slice(2, 6);
+  tabs.push({ id, title, source });
+  activeTabId = id;
+  renderTabBar();
+}
+
+function hasUnsavedChanges(){
+  const mdInd = document.getElementById('autosave-indicator');
+  const isEd = document.getElementById('editor-screen')?.classList.contains('visible');
+  const mdDirty = isEd && mdInd && mdInd.textContent.includes('Unsaved');
+
+  const docxStatus = document.getElementById('docx-save-status');
+  const isDocxEd = document.getElementById('docx-editor-screen')?.classList.contains('visible');
+  const docxDirty = isDocxEd && docxStatus && docxStatus.textContent.includes('Unsaved');
+
+  return mdDirty || docxDirty;
+}
+
+async function switchToTab(id){
+  if (id === activeTabId) return;
+  if (hasUnsavedChanges() && !confirm('You have unsaved changes. Switch tabs anyway? Unsaved changes will be lost.')) return;
+  const tab = tabs.find(t => t.id === id);
+  if (!tab) return;
+  activeTabId = id;
+  renderTabBar();
+  await reloadTabContent(tab);
+}
+
+async function reloadTabContent(tab){
+  const src = tab.source;
+  try {
+    if (src.kind === 'handle') {
+      const file = await src.handle.getFile();
+      docxFileHandle = /\.docx$/i.test(file.name) ? src.handle : null;
+      mdFileHandle = /\.(md|markdown|txt)$/i.test(file.name) ? src.handle : null;
+      loadFileByType(file);
+    } else if (src.kind === 'file') {
+      loadFileByType(src.file);
+    } else if (src.kind === 'saved') {
+      openSavedFile(src.savedId);
+    } else if (src.kind === 'recent-content') {
+      currentMd = src.content; currentFilename = tab.title; currentSavedId = null; currentFilePath = null; mdFileHandle = null;
+      renderDoc();
+    } else if (src.kind === 'path' && window.electronAPI) {
+      const result = await window.electronAPI.readFile(src.path);
+      if (result && result.success) {
+        const filename = src.path.split(/[\\/]/).pop();
+        if (result.isBinary) {
+          const bytes = Uint8Array.from(atob(result.content), c => c.charCodeAt(0));
+          currentFilePath = src.path;
+          loadFileByType(new File([bytes], filename));
+        } else {
+          currentMd = result.content; currentFilename = filename; currentSavedId = null; currentFilePath = src.path;
+          renderDoc();
+        }
+      } else {
+        toast('Couldn\u2019t reopen "' + tab.title + '" \u2014 the file may have moved or been deleted');
+      }
+    }
+  } catch(e) {
+    console.error('Tab reload error:', e);
+    toast('Couldn\u2019t reopen "' + tab.title + '": ' + e.message);
+  }
+}
+
+function closeTab(id, event){
+  if (event) event.stopPropagation();
+  const idx = tabs.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  const wasActive = id === activeTabId;
+  tabs.splice(idx, 1);
+  if (wasActive) {
+    if (tabs.length) {
+      switchToTab(tabs[Math.max(0, idx - 1)].id);
+    } else {
+      activeTabId = null;
+      hideAll();
+      showWelcome();
+    }
+  }
+  renderTabBar();
+}
+
+function renderTabBar(){
+  const bar = document.getElementById('tab-bar');
+  if (!bar) return;
+  if (!tabs.length) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = tabs.map(t => `
+    <div class="doc-tab ${t.id===activeTabId?'active':''}" onclick="switchToTab('${t.id}')" title="${escapeHtml(t.title)}">
+      <span class="doc-tab-title">${escapeHtml(t.title)}</span>
+      <button class="doc-tab-close" onclick="closeTab('${t.id}', event)" title="Close">\u2715</button>
+    </div>
+  `).join('');
 }
 function loadMD(file) {
   const r=new FileReader();
@@ -3078,6 +3226,7 @@ function renderSaved() {
 function openSavedFile(id) {
   const f=getSaved().find(x=>x.id===id);if(!f)return;
   currentMd=f.content;currentFilename=f.name;currentSavedId=id;currentFileType='md';currentFilePath=null;mdFileHandle=null;
+  registerTab({kind:'saved', savedId:id}, f.name);
   renderDoc();document.getElementById('doc-edit-btn').style.display='block';
 }
 function deleteFile(id) {
@@ -3285,6 +3434,7 @@ function renderRecent(){
           currentFileType='md';
           currentFilePath=null;
           mdFileHandle=null;
+          registerTab({kind:'recent-content', content:f.content}, f.name);
           renderDoc();
           document.getElementById('doc-edit-btn').style.display='block';
         }
