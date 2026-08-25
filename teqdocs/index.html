@@ -5125,13 +5125,21 @@ function loadReadingProgress(filename) {
 function resumeReading() {
   const hint = document.getElementById('resume-hint');
   hint.classList.remove('show');
-  const prog = loadReadingProgress(currentFilename);
-  if (prog) {
-    document.getElementById('reader').scrollTo({ top: prog.scrollTop, behavior: 'smooth' });
+  // Use the position captured when the hint appeared, not a fresh re-read —
+  // if even a tiny scroll event fires between the hint showing and the
+  // click (the page settling, a stray wheel nudge), the scroll listener
+  // overwrites the saved progress down to near-zero, and a fresh read here
+  // would silently resume to "basically where you already are" — which
+  // looks exactly like the button doing nothing.
+  if (resumeTarget !== null) {
+    document.getElementById('reader').scrollTo({ top: resumeTarget, behavior: 'smooth' });
+    resumeTarget = null;
   }
 }
 
 // Show resume hint when opening a file with saved progress
+let resumeHintTimer = null;
+let resumeTarget = null;
 function checkResumeHint() {
   const prog = loadReadingProgress(currentFilename);
   if (prog && prog.pct > 0.05) {
@@ -5139,8 +5147,21 @@ function checkResumeHint() {
     const pct = Math.round(prog.pct * 100);
     hint.textContent = `↩ Resume at ${pct}%`;
     hint.classList.add('show');
-    setTimeout(() => hint.classList.remove('show'), 5000);
+    resumeTarget = prog.scrollTop; // capture now, before anything can invalidate it
+    // 5s was too tight — the instant the 'show' class comes off, pointer-events
+    // goes back to none immediately, even though the 0.3s opacity fade is
+    // still playing. So there was a real window where the hint looked like
+    // it was still there but couldn't be clicked. Longer timeout, and it now
+    // pauses entirely while the pointer is actually on the hint, so it can
+    // never vanish out from under someone reaching for it.
+    scheduleResumeHintHide();
+    hint.onmouseenter = () => clearTimeout(resumeHintTimer);
+    hint.onmouseleave = scheduleResumeHintHide;
   }
+}
+function scheduleResumeHintHide() {
+  clearTimeout(resumeHintTimer);
+  resumeHintTimer = setTimeout(() => document.getElementById('resume-hint').classList.remove('show'), 8000);
 }
 
 /* ══════════════════════════════════════════
