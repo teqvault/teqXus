@@ -170,6 +170,8 @@
 
   /* TYPING */
   .typing { display: flex; gap: 5px; align-items: center; padding: 3px 0; }
+  .typewriter-cursor { display: inline-block; animation: twBlink 0.8s step-start infinite; opacity: 0.7; }
+  @keyframes twBlink { 50% { opacity: 0; } }
   .typing span { width: 7px; height: 7px; background: var(--teal); border-radius: 50%; animation: bounce 1.1s infinite; }
   .typing span:nth-child(2) { animation-delay: 0.18s; }
   .typing span:nth-child(3) { animation-delay: 0.36s; }
@@ -1011,10 +1013,43 @@
     area.appendChild(bubble);
     area.scrollTop = area.scrollHeight;
 
-    let fullText = '';
+    let fullText = '';       // everything received from the server so far
+    let displayedText = '';  // what's currently rendered on screen
+    let networkDone = false; // true once the SSE stream itself has ended
+    let typewriterTimer = null;
+
+    // Reveals a few characters at a time on a fixed clock, independent of
+    // how bursty the incoming network chunks are — this is what actually
+    // produces the smooth typewriter feel instead of chunky jumps.
+    const CHARS_PER_TICK = 2;
+    const TICK_MS = 15;
+    function runTypewriter() {
+      typewriterTimer = setInterval(() => {
+        if (displayedText.length < fullText.length) {
+          displayedText = fullText.slice(0, displayedText.length + CHARS_PER_TICK);
+          contentDiv.innerHTML = parseMd(displayedText) + '<span class="typewriter-cursor">▌</span>';
+          bubble.dataset.text = displayedText;
+          area.scrollTop = area.scrollHeight;
+        } else if (networkDone) {
+          clearInterval(typewriterTimer);
+          contentDiv.innerHTML = parseMd(fullText);
+          bubble.dataset.text = fullText;
+          finishBubble();
+        }
+      }, TICK_MS);
+    }
+
+    function finishBubble() {
+      const actions = document.createElement('div');
+      actions.className = 'bubble-actions';
+      actions.innerHTML = `<button onclick="copyText(this)">Copy</button><button onclick="shareText(this)">Share</button>`;
+      bubble.appendChild(actions);
+    }
+
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    runTypewriter();
 
     while (true) {
       const { done, value } = await reader.read();
@@ -1030,23 +1065,26 @@
           if (parsed.type === 'done') {
             break;
           } else if (parsed.type === 'error') {
+            clearInterval(typewriterTimer);
             throw new Error(parsed.message);
           } else if (parsed.text) {
             fullText += parsed.text;
-            contentDiv.innerHTML = parseMd(fullText);
-            // Set full text on bubble for copy/share
-            bubble.dataset.text = fullText;
-            area.scrollTop = area.scrollHeight;
           }
         } catch(e) {}
       }
     }
+    networkDone = true;
 
-    // Add action buttons after streaming completes
-    const actions = document.createElement('div');
-    actions.className = 'bubble-actions';
-    actions.innerHTML = `<button onclick="copyText(this)">Copy</button><button onclick="shareText(this)">Share</button>`;
-    bubble.appendChild(actions);
+    // Wait for the typewriter to finish revealing whatever's left before
+    // returning — otherwise conversationHistory/return would fire early.
+    await new Promise(resolve => {
+      const check = setInterval(() => {
+        if (displayedText.length >= fullText.length) {
+          clearInterval(check);
+          resolve();
+        }
+      }, TICK_MS);
+    });
 
     conversationHistory.push({ role: 'assistant', content: fullText });
     return fullText;
