@@ -2567,7 +2567,7 @@ let ttsChunkIndex = 0;
 let ttsActive = false;
 let ttsPaused = false;
 let ttsAudio = null;
-const TTS_BACKEND = 'https://teqxus-backend-zszr.onrender.com';
+const TTS_BACKEND = 'https://teqxus-api.teqvault.online';
 
 function getDocParagraphsForTTS(){
   const body = document.getElementById('md-body');
@@ -4553,7 +4553,7 @@ async function convertPdfToDocx() {
 
   toast('Converting PDF to Word document…');
 
-  const CONVERT_URL = 'https://teqxus-backend-zszr.onrender.com/convert-pdf';
+  const CONVERT_URL = 'https://teqxus-api.teqvault.online/convert-pdf';
   const attemptConvert = async (timeoutMs) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);

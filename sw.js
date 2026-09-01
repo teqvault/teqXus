@@ -46,7 +46,7 @@ self.addEventListener('fetch', e => {
   const url = e.request.url;
   // Never cache API / auth / ads / CDNs
   if (
-    url.includes('onrender.com') ||
+    url.includes('teqvault.online') ||
     url.includes('supabase.co') ||
     url.includes('groq.com') ||
     url.includes('openrouter.ai') ||
