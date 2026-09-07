@@ -2567,7 +2567,7 @@ let ttsChunkIndex = 0;
 let ttsActive = false;
 let ttsPaused = false;
 let ttsAudio = null;
-const TTS_BACKEND = 'https://teqxus-api.teqvault.online';
+const TTS_BACKEND = 'https://teqxus-backend-zszr.onrender.com';
 
 function getDocParagraphsForTTS(){
   const body = document.getElementById('md-body');
@@ -3245,6 +3245,12 @@ function newDocument() {
 /* ── Recent ── */
 function addRecent(name,content,type='md'){
   try{let r=JSON.parse(localStorage.getItem('teqdocs-recent')||'[]');r=r.filter(x=>x.name!==name);r.unshift({name,content,date:Date.now(),type});r=r.slice(0,5);localStorage.setItem('teqdocs-recent',JSON.stringify(r));}catch(e){}
+  // The data was always saved correctly here — the bug was that most
+  // callers never told the sidebar to redraw afterward, so it kept
+  // showing whatever was there at last page load. Doing the refresh here,
+  // once, means every call site gets it automatically instead of relying
+  // on each one to separately remember.
+  renderRecent();
 }
 
 /* ── Version History ──
@@ -3724,7 +3730,6 @@ async function loadPDF(file) {
   document.getElementById('split-to').value=pdfTotalPages;
   pdfCurrentPage=1;
   addRecent(file.name,'','pdf');
-  renderRecent();
   await renderAllPages();
   setupPdfZoom();
   toast('PDF loaded ✓');
@@ -4553,7 +4558,7 @@ async function convertPdfToDocx() {
 
   toast('Converting PDF to Word document…');
 
-  const CONVERT_URL = 'https://teqxus-api.teqvault.online/convert-pdf';
+  const CONVERT_URL = 'https://teqxus-backend-zszr.onrender.com/convert-pdf';
   const attemptConvert = async (timeoutMs) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
