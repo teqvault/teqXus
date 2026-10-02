@@ -568,6 +568,7 @@
       <div class="logo-text">Teq<span>Xus</span> AI</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
+      <button id="go-pro-btn" onclick="showUpgrade()" style="font-size:11px;padding:4px 10px;border:1px solid var(--teal);border-radius:10px;background:var(--teal);color:var(--navy);cursor:pointer;font-weight:800;">⚡ Go Pro</button>
       <a href="teqdocs/" class="teqdocs-cta teqdocs-cta--top" title="Open TeqDocs">
         <span class="teqdocs-cta-icon">📖</span>
         <span class="teqdocs-cta-label">TeqDocs</span>
@@ -854,6 +855,9 @@
       c.classList.toggle('unlocked', pro);
       c.innerHTML = c.innerHTML.replace(' 🔒', '');
     });
+    // The "Go Pro" topbar button only makes sense for non-Pro users
+    const goProBtn = document.getElementById('go-pro-btn');
+    if (goProBtn) goProBtn.style.display = pro ? 'none' : 'inline-block';
     // Set default model
     if (pro) {
       model = 'claude-sonnet';
