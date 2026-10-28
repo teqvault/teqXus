@@ -1,4 +1,4 @@
-const CACHE = 'teqxus-v6-juice';
+const CACHE = 'teqxus-v7-live43';
 const ASSETS = [
   '/',
   '/index.html',

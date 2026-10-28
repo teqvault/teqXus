@@ -1008,6 +1008,8 @@ mark.current { background: var(--gold); color: #000; }
 /* ── TOAST ── */
 #toast { position: fixed; bottom: 24px; left: 50%; background: var(--ink); border-radius: 20px; padding: 9px 20px; font-size: 0.82rem; font-weight: 600; color: var(--parchment); z-index: 600; opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.94); transition: opacity 0.2s ease, transform 0.2s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; pointer-events: none; box-shadow: var(--shadow); }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+#highlight-popup-btn { position: fixed; z-index: 650; background: var(--ink); color: var(--parchment); border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.8rem; font-weight: 700; font-family: var(--font-ui); cursor: pointer; box-shadow: var(--shadow); white-space: nowrap; }
+#highlight-popup-btn:hover { background: var(--accent); }
 
 /* ── DROP OVERLAY ── */
 #drop-overlay { position: fixed; inset: 0; z-index: 700; background: rgba(245,240,232,0.92); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 16px; backdrop-filter: blur(8px); }
@@ -2198,6 +2200,7 @@ body.focus-mode:hover #header {
 </div>
 
 <div id="toast"></div>
+<button id="highlight-popup-btn" onclick="applyPendingHighlight()" style="display:none;">🖍 Highlight</button>
 <input type="file" id="file-input" accept=".md,.markdown,.txt,.pdf,.docx,.epub">
 
 <script>
@@ -3245,6 +3248,12 @@ function newDocument() {
 /* ── Recent ── */
 function addRecent(name,content,type='md'){
   try{let r=JSON.parse(localStorage.getItem('teqdocs-recent')||'[]');r=r.filter(x=>x.name!==name);r.unshift({name,content,date:Date.now(),type});r=r.slice(0,5);localStorage.setItem('teqdocs-recent',JSON.stringify(r));}catch(e){}
+  // The data was always saved correctly here — the bug was that most
+  // callers never told the sidebar to redraw afterward, so it kept
+  // showing whatever was there at last page load. Doing the refresh here,
+  // once, means every call site gets it automatically instead of relying
+  // on each one to separately remember.
+  renderRecent();
 }
 
 /* ── Version History ──
@@ -3423,7 +3432,7 @@ function renderRecent(){
       const typeLabel=type==='pdf'?'<span class="fc-type pdf">PDF</span>':type==='docx'?'<span class="fc-type md" style="background:rgba(30,100,200,0.12);color:#4a90d9;">DOCX</span>':'<span class="fc-type md">MD</span>';
       el.innerHTML=`<div class="fc-name">${escapeHtml(f.name)}</div><div class="fc-meta"><span>${ds}</span>${typeLabel}</div>`;
       el.onclick=()=>{
-        if(type==='pdf'||type==='docx'){
+        if(type==='pdf'||type==='docx'||type==='epub'){
           // Can't reopen binary from localStorage — prompt user to reopen
           toast(`Please reopen "${f.name}" from your files`);
           openFilePicker();
@@ -3658,18 +3667,45 @@ function renderDoc(){
 }
 
 /* ── MD Text Highlighting ── */
+let pendingHighlightRange = null;
 function handleMdHighlight(){
+  // This used to auto-wrap the selection in a highlight AND clear it
+  // immediately on mouseup — which meant the selection was gone before
+  // anyone could ever press Ctrl+C. Every attempt to copy text got
+  // silently swallowed by the highlight feature. Now it just shows a
+  // small button near the selection; nothing about the selection itself
+  // is touched unless that button is actually clicked, so normal
+  // select-and-copy works exactly like it would on any other page.
   const sel=window.getSelection();
-  if(!sel||sel.isCollapsed||!sel.toString().trim()) return;
-  const text=sel.toString().trim();
+  const btn=document.getElementById('highlight-popup-btn');
+  if(!sel||sel.isCollapsed||!sel.toString().trim()){
+    if(btn) btn.style.display='none';
+    pendingHighlightRange=null;
+    return;
+  }
   const range=sel.getRangeAt(0);
+  pendingHighlightRange=range.cloneRange();
+  if(btn){
+    const rect=range.getBoundingClientRect();
+    btn.style.display='block';
+    btn.style.left=Math.max(4,rect.left+rect.width/2-40)+'px';
+    btn.style.top=Math.max(4,rect.top-38)+'px';
+  }
+}
+function applyPendingHighlight(){
+  if(!pendingHighlightRange) return;
+  const text=pendingHighlightRange.toString().trim();
+  if(!text) return;
   const mark=document.createElement('span');
   mark.className='td-highlight';
   mark.title='Click to remove highlight';
   mark.onclick=e=>{e.stopPropagation();const parent=mark.parentNode;while(mark.firstChild)parent.insertBefore(mark.firstChild,mark);parent.removeChild(mark);saveHighlights();renderHighlights();};
-  try{range.surroundContents(mark);}catch(e){return;}
-  sel.removeAllRanges();
+  try{pendingHighlightRange.surroundContents(mark);}catch(e){toast('Couldn\u2019t highlight that selection');pendingHighlightRange=null;return;}
+  window.getSelection().removeAllRanges();
   saveHighlights(text);
+  const btn=document.getElementById('highlight-popup-btn');
+  if(btn) btn.style.display='none';
+  pendingHighlightRange=null;
 }
 function saveHighlights(text){
   if(!text)return;
@@ -3724,7 +3760,6 @@ async function loadPDF(file) {
   document.getElementById('split-to').value=pdfTotalPages;
   pdfCurrentPage=1;
   addRecent(file.name,'','pdf');
-  renderRecent();
   await renderAllPages();
   setupPdfZoom();
   toast('PDF loaded ✓');
@@ -5019,6 +5054,21 @@ function applyTheme(){
 document.addEventListener('click',e=>{
   const wrap=document.querySelector('.theme-picker-wrap');
   if(wrap&&!wrap.contains(e.target))closeThemeMenu();
+});
+document.addEventListener('click',e=>{
+  const hbtn=document.getElementById('highlight-popup-btn');
+  if(!hbtn||hbtn.style.display==='none') return;
+  if(hbtn.contains(e.target)) return; // the button's own onclick handles this case
+  // A mouseup always fires right before its matching click — so finishing a
+  // text-selection drag lands a click on the content itself, not the
+  // button, which would otherwise hide it the instant it appears. Only
+  // treat this as a genuine "clicked away" if the selection is actually
+  // gone too, not just because the click target wasn't the button.
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed||!sel.toString().trim()){
+    hbtn.style.display='none';
+    pendingHighlightRange=null;
+  }
 });
 
 /* ── Progress bar ── */
